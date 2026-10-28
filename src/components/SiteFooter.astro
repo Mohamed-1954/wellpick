@@ -1,0 +1,327 @@
+---
+// Site footer (v12). One dark stage in both themes, after Customer.io's dark
+// footer (brand alone in a wide first column, grouped links) and Huly's
+// closing scene (statement, brand artwork and footer as one surface), kept
+// to this publication's register. Order: the closing statement where a page
+// asks for it, the brand and grouped links, the base row with the single
+// affiliate disclosure and the theme switch, then the wordmark at poster
+// scale as the page's last line.
+import { SITE } from '../lib/site';
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import Glyph from './Glyph.astro';
+
+interface Props {
+  /** The closing statement and "Find your stack" button; off where the page ends with its own decision. */
+  closing?: boolean;
+}
+const { closing = false } = Astro.props;
+const year = new Date().getFullYear();
+const tools = [
+  { href: '/fillout/', label: 'Fillout', job: 'Intake', chapter: 'fillout', glyph: 'intake' },
+  { href: '/softr/', label: 'Softr', job: 'Client portal', chapter: 'softr', glyph: 'portal' },
+  { href: '/noloco/', label: 'Noloco', job: 'Portal and team', chapter: 'noloco', glyph: 'team' },
+] as const;
+const columns = [
+  {
+    head: 'Read',
+    links: [
+      { href: '/start/', label: 'Start here' },
+      { href: '/guides/', label: 'Guides' },
+      { href: '/compare/', label: 'Comparisons' },
+      { href: '/guides/portal-costs/', label: 'What it costs' },
+      { href: '/blog/', label: 'Blog' },
+    ],
+  },
+  {
+    head: 'Publication',
+    links: [
+      { href: '/about/', label: 'About' },
+      { href: '/methodology/', label: 'How we work' },
+    ],
+  },
+];
+---
+
+<footer class="site-footer">
+  <div class="shell f-shell">
+    {
+      closing && (
+        <section class="closing" aria-label="Where to start">
+          <p class="closing-statement">
+            Pick the broken job first. <span class="f-tone">The tool comes second.</span>
+          </p>
+          <a class="btn btn-light closing-cta" href="/start/">
+            Find your stack <Icon name="arrow-right-linear" class="btn-icon" />
+          </a>
+        </section>
+      )
+    }
+
+    <div class="f-grid">
+      <div class="f-brand">
+        <a href="/" class="f-logo" aria-label="Wellpick, home"><Logo size={36} word /></a>
+        <p>Independent software picks for small service businesses. Every price and limit links to the vendor's own page.</p>
+      </div>
+      <nav class="f-tools" aria-label="Tools">
+        <p class="f-head">Tools</p>
+        <ul>
+          {
+            tools.map((t) => (
+              <li data-chapter={t.chapter}>
+                <Glyph name={t.glyph} tone="canvas" size="2.5rem" />
+                <a class="ft-name" href={t.href}>{t.label}</a>
+                <span class="ft-job">{t.job}</span>
+                <a class="ft-price" href={`${t.href}pricing/`}>Pricing</a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      {
+        columns.map((c) => (
+          <nav class="f-col" aria-label={c.head}>
+            <p class="f-head">{c.head}</p>
+            <ul>
+              {c.links.map((l) => (
+                <li>
+                  <a href={l.href}>{l.label}</a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        ))
+      }
+    </div>
+
+    <div class="footer-base">
+      <p class="f-copy">© {year} {SITE.name}</p>
+      <nav class="f-legal" aria-label="Legal">
+        <a href="/disclosure/" data-disclosure>Affiliate disclosure</a>
+        <a href="/privacy/">Privacy</a>
+      </nav>
+      <div class="f-theme" role="group" aria-label="Color theme">
+        <button type="button" data-theme-set="light" aria-pressed="false"><Icon name="sun-2-linear" /> Light</button>
+        <button type="button" data-theme-set="dark" aria-pressed="false"><Icon name="moon-linear" /> Dark</button>
+      </div>
+    </div>
+  </div>
+  {
+    closing && (
+      <svg class="f-art" viewBox="0 0 32 32" aria-hidden="true" focusable="false" data-draw>
+        <defs>
+          <linearGradient id="f-art-g" x1="3" y1="0" x2="29.5" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stop-color="oklch(0.66 0.17 40)" />
+            <stop offset="0.52" stop-color="oklch(0.62 0.17 266)" />
+            <stop offset="1" stop-color="oklch(0.62 0.12 158)" />
+          </linearGradient>
+        </defs>
+        <path class="f-art-glow" d="M3.6 10.4 9.4 24.2 16 13.4 22.4 24.2 29.2 5.2" />
+        <path class="f-art-line" d="M3.6 10.4 9.4 24.2 16 13.4 22.4 24.2 29.2 5.2" />
+      </svg>
+    )
+  }
+  <p class="f-word" aria-hidden="true">Wellpick</p>
+</footer>
+
+<script>
+  import { initTheme } from '../scripts/theme';
+  initTheme();
+</script>
+
+<style>
+  /* The stage: the same dark ink in both themes (deeper in dark so it still
+     ends the page), lit from the top right in portal blue and from the
+     bottom left in intake ember, with the shared grain. */
+  .site-footer {
+    --f-bg: oklch(0.18 0.016 262);
+    --f-ink: oklch(0.97 0.004 110);
+    --f-ink-2: oklch(0.86 0.008 262);
+    --f-muted: oklch(0.76 0.012 262);
+    --f-line: oklch(1 0 0 / 0.13);
+    --logo-1: oklch(0.66 0.17 40);
+    --logo-2: oklch(0.64 0.17 266);
+    --logo-3: oklch(0.64 0.12 158);
+    position: relative;
+    isolation: isolate;
+    overflow: clip;
+    margin-top: var(--section);
+    padding-top: clamp(4rem, 2.6rem + 4vw, 7rem);
+    color: var(--f-ink);
+    background:
+      radial-gradient(60% 70% at 92% 0%, oklch(0.36 0.11 266 / 0.75) 0%, transparent 62%),
+      radial-gradient(50% 60% at 0% 100%, oklch(0.34 0.1 38 / 0.55) 0%, transparent 62%),
+      var(--f-bg);
+  }
+  :global([data-theme='dark']) .site-footer { --f-bg: oklch(0.125 0.012 262); box-shadow: inset 0 1px 0 var(--f-line); }
+  .site-footer::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--grain);
+    background-size: 160px;
+    mix-blend-mode: soft-light;
+    opacity: 0.35;
+    pointer-events: none;
+  }
+  .site-footer :focus-visible { outline-color: oklch(0.8 0.12 250); }
+
+  /* The mark at poster scale, behind the closing statement on the right
+     (pages with a closing statement only, so it never sits under links). */
+  .f-art {
+    position: absolute;
+    z-index: -1;
+    right: clamp(-3rem, -2vw, 0rem);
+    top: clamp(1.5rem, 1rem + 1vw, 2.5rem);
+    width: clamp(11rem, 5rem + 18vw, 22rem);
+    height: auto;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .f-art path { fill: none; stroke: url(#f-art-g); stroke-linecap: round; stroke-linejoin: round; }
+  .f-art-line { stroke-width: 2.4; opacity: 0.55; }
+  .f-art-glow { stroke-width: 5; opacity: 0.3; filter: blur(1.4px); }
+
+  .closing {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--s-6) var(--s-8);
+    padding-bottom: clamp(3.5rem, 2.4rem + 3.5vw, 6rem);
+    margin-bottom: clamp(3rem, 2.2rem + 2.5vw, 4.5rem);
+    border-bottom: 1px solid var(--f-line);
+  }
+  .closing-statement {
+    flex: 1 1 32rem;
+    max-width: 18ch;
+    font-size: var(--step-5);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    line-height: 0.98;
+    letter-spacing: var(--display-track);
+    text-wrap: balance;
+  }
+  .f-tone { color: var(--f-muted); }
+  .closing-cta { flex: none; }
+
+  .f-grid {
+    display: grid;
+    gap: var(--s-7) var(--s-5);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding-bottom: clamp(3rem, 2.4rem + 2vw, 4.5rem);
+  }
+  .f-brand, .f-tools { grid-column: 1 / -1; }
+  @media (min-width: 48rem) {
+    .f-tools { grid-column: auto; }
+  }
+  @media (min-width: 64rem) {
+    .f-grid { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1.25fr) repeat(2, minmax(0, 0.8fr)); }
+    .f-brand { grid-column: auto; }
+  }
+  .f-logo { display: inline-flex; min-height: 2.75rem; align-items: center; color: var(--f-ink); text-decoration: none; }
+  .f-brand p { margin-top: var(--s-4); max-width: 32ch; font-size: 1rem; line-height: 1.55; color: var(--f-ink-2); }
+  .f-head { margin-bottom: var(--s-3); font-size: 0.875rem; font-weight: 560; color: var(--f-muted); }
+  .site-footer ul { list-style: none; margin: 0; padding: 0; display: grid; }
+
+  /* Tools: glyph, name, job, and the pricing link as a pair. */
+  .f-tools ul { gap: var(--s-3); }
+  .f-tools li {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas: 'g name price' 'g job price';
+    align-items: center;
+    column-gap: var(--s-4);
+  }
+  .f-tools li :global(.glyph) { grid-area: g; }
+  .ft-name { grid-area: name; align-self: end; font-size: 1.125rem; font-weight: 700; color: var(--f-ink); text-decoration: none; }
+  .ft-name:hover { text-decoration: underline 1.5px; text-underline-offset: 0.2em; }
+  .ft-job { grid-area: job; align-self: start; font-size: 0.875rem; color: var(--f-muted); }
+  .ft-price {
+    grid-area: price;
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding-inline: 0.875rem;
+    border-radius: var(--r-pill);
+    box-shadow: inset 0 0 0 1px var(--f-line);
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--f-ink-2);
+    text-decoration: none;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .ft-price:hover { background: oklch(1 0 0 / 0.08); color: var(--f-ink); }
+  .f-col a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    font-size: 1rem;
+    color: var(--f-ink);
+    text-decoration: underline transparent 1px;
+    text-underline-offset: 0.25em;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .f-col a:hover { text-decoration-color: currentColor; }
+
+  .footer-base {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-4) var(--s-7);
+    padding-block: var(--s-6);
+    border-top: 1px solid var(--f-line);
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--f-muted);
+  }
+  .f-legal { display: flex; flex-wrap: wrap; gap: 0 var(--s-5); margin-right: auto; }
+  .f-legal a { display: inline-flex; align-items: center; min-height: 2.75rem; }
+  .footer-base a {
+    color: var(--f-ink);
+    font-weight: 560;
+    text-decoration: underline 1px oklch(1 0 0 / 0.35);
+    text-underline-offset: 0.2em;
+  }
+  .footer-base a:hover { text-decoration-color: currentColor; }
+  .f-theme { display: inline-flex; padding: 3px; border-radius: var(--r-pill); box-shadow: inset 0 0 0 1px var(--f-line); }
+  .f-theme button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0 0.9rem;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: none;
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--f-muted);
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .f-theme button:hover { color: var(--f-ink); }
+  .f-theme button[aria-pressed='true'] { background: oklch(1 0 0 / 0.12); color: var(--f-ink); }
+
+  /* The last line of every page: the wordmark at poster scale, cut by the
+     page edge. Decorative; the brand link above carries the name. */
+  .f-word {
+    margin: clamp(1rem, 2vw, 2rem) 0 -0.24em;
+    padding-inline: var(--gutter);
+    font-size: clamp(5rem, 1rem + 19vw, 19rem);
+    font-weight: 800;
+    font-variation-settings: "wdth" 110;
+    letter-spacing: -0.06em;
+    line-height: 0.9;
+    text-align: center;
+    white-space: nowrap;
+    background: linear-gradient(180deg, oklch(1 0 0 / 0.16) 0%, oklch(1 0 0 / 0.02) 82%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    user-select: none;
+  }
+</style>

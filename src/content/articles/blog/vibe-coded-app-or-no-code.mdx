@@ -1,0 +1,66 @@
+---
+title: "Vibe-coded app or no-code builder? Choosing for client-facing work"
+seoTitle: "Vibe-coded app or no-code builder for client work?"
+description: "AI can write a whole app from a prompt. For a portal clients log into, the deciding questions are hosting, logins, permissions and who maintains it."
+type: post
+topic: ai
+products: [softr, noloco]
+sourceIds: [nolocoHome, softrAiBuilder, nolocoRecordRules, softrRestrictions, zite]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    A code-writing AI gives you a codebase: fast to start, yours to host,
+    secure and maintain. A no-code builder with AI gives you a managed app:
+    less freedom, but logins, permissions and updates are the vendor's job.
+    For anything clients log into, pick the second unless someone on your team
+    can own the code.
+  </p>
+</aside>
+
+"Vibe coding" is the name people gave to building software by describing it to an AI and accepting what it writes. For a quick internal tool, it can be remarkable. A spreadsheet replacement for your team, built in an afternoon.
+
+Client portals are a different kind of software. Other people log in. Their data must stay separate. Something breaks on a Friday night. The question is not whether AI can build it. It is who looks after it afterwards.
+
+## Two kinds of AI building
+
+**Code-writing AI.** You describe the app; the AI writes source code. You get files: a front end, a database schema, an authentication setup. You run them somewhere. Changing the app means changing the code, with or without AI help.
+
+**No-code builders with AI.** You describe the app; the AI configures a hosted product. Softr says its AI app builder generates "the pages, database, permissions and workflows" and that there is "no generated code". Noloco's AI builder, Nola, builds inside Noloco's editor. You never see a codebase. You change the app in a visual editor or by asking the AI again. (Zite, the company behind Fillout, also sells an AI app builder; we have not checked how it stores what it builds.)
+
+Noloco makes the contrast part of its pitch: "AI prototyping tools are fast to spin up. Noloco gives you visual control, real permissions, and no codebase to maintain." That is a vendor talking, but it names the real trade.
+
+## The questions that decide it
+
+| Question | Code-writing AI | No-code builder with AI |
+| --- | --- | --- |
+| Who hosts it? | You choose and pay for hosting | The vendor |
+| Who handles logins and password resets? | Your code | The vendor's login system |
+| Where do permissions live? | In code someone must read | In settings you can open and test |
+| Who applies security updates? | You | The vendor |
+| Can you change anything at all? | Yes | Within what the builder supports |
+| What does leaving look like? | You own the code | You export records and rebuild |
+
+Neither column is better everywhere. The right one depends on who in your business will own the answers in the first column.
+
+## When code-writing AI is the better fit
+
+- **The tool is internal only.** Your team logs in; clients never do.
+- **Someone can read the code.** A developer on staff or on call who can review what the AI wrote.
+- **You need something builders cannot do.** A custom calculation, an unusual integration, a specific interface.
+- **The data is low risk.** A planning tool is different from a store of client contracts.
+
+## When a no-code builder is the better fit
+
+- **Clients log in.** Logins, resets, invitations and deactivation are already built and maintained.
+- **Permissions must be checkable.** You can open a role in Noloco or a user group in Softr and read the rule. With generated code, the rule is wherever the AI put it.
+- **Nobody on the team writes code.** The app still needs changes after launch. A visual editor is something an operations person can own.
+- **You want the vendor on the hook for uptime.** Paying for a hosted product includes someone else watching it.
+
+## A middle path
+
+Many teams end up with both: a no-code portal for clients, and small AI-written scripts or tools for internal jobs around it. That split keeps the client-facing part on a maintained platform and puts experiments where a mistake costs less.
+
+Whichever route you pick, the access test does not change. Before a real client logs in, sign in as two fictional clients and try to reach each other's records. Our post on [AI app builders for client portals](/blog/ai-app-builders-client-portals/) has a twenty-minute version of that audit.

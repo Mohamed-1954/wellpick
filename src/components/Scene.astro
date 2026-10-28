@@ -1,0 +1,138 @@
+---
+// A staged media scene: a lit chapter field holding one main plane (a vendor
+// screen or recording) that bleeds past the field's right and bottom edges,
+// and an optional detail plane that overlaps it. Both are real vendor files
+// from the media manifest; each carries its own alt text. No caption.
+//
+// layout="bleed"  main plane flat, anchored top-left, running off the edges
+// layout="angle"  main plane laid back in 3D (Airtable's angled chapter scenes)
+// tone="field"    the chapter color, lit; tone="wash" the chapter's light wash
+//
+// Geometry is set with custom properties so a caller can tune one scene
+// without a new variant: --scene-ratio, --mx / --my / --mw (main plane left,
+// top, width as % of the scene), --fx / --fr / --fy / --fb / --fw (float).
+import { vendorImage, vendorVideo } from '../lib/media';
+
+interface Media {
+  name: string;
+  alt: string;
+  /** Crop the plane to a ratio (top-left anchored), e.g. "16/10" */
+  ratio?: string;
+  /** Object position for a crop, e.g. "0% 20%" */
+  position?: string;
+}
+interface Props {
+  chapter: 'fillout' | 'softr' | 'noloco';
+  main: Media & { video?: string };
+  float?: Media;
+  layout?: 'bleed' | 'angle';
+  /** field: the lit chapter color; wash: the light wash; none: the parent is the field */
+  tone?: 'field' | 'wash' | 'none';
+  sizes?: string;
+  floatSizes?: string;
+  drift?: boolean;
+  class?: string;
+  style?: string;
+  loading?: 'lazy' | 'eager';
+}
+const {
+  chapter,
+  main,
+  float,
+  layout = 'bleed',
+  tone = 'field',
+  sizes = '(min-width: 64rem) 56rem, 110vw',
+  floatSizes = '(min-width: 64rem) 22rem, 50vw',
+  drift = false,
+  class: cls,
+  style,
+  loading = 'lazy',
+} = Astro.props;
+const img = main.video ? null : vendorImage(main.name);
+const vid = main.video ? vendorVideo(main.video) : null;
+const fl = float ? vendorImage(float.name) : null;
+const cropStyle = (m: Media) =>
+  m.ratio ? `aspect-ratio: ${m.ratio}; object-fit: cover; object-position: ${m.position ?? 'top left'};` : undefined;
+---
+
+<figure
+  class:list={['scene', { field: tone === 'field', 'field-wash': tone === 'wash' }, `scene-${layout}`, cls]}
+  data-chapter={chapter}
+  style={style}
+  data-reveal="media"
+>
+  <div class="scene-main" data-drift={drift ? '4' : undefined}>
+    <div class:list={['plane', { 'plane-angle': layout === 'angle' }]}>
+      {
+        vid ? (
+          <video
+            src={vid.src}
+            poster={vid.poster.src}
+            width={vid.width}
+            height={vid.height}
+            muted
+            loop
+            playsinline
+            controls
+            preload="none"
+            data-loop
+            aria-label={main.alt}
+          />
+        ) : (
+          img && (
+            <img
+              src={img.src}
+              srcset={img.srcset}
+              sizes={sizes}
+              width={img.width}
+              height={img.height}
+              alt={main.alt}
+              loading={loading}
+              decoding="async"
+              style={cropStyle(main)}
+            />
+          )
+        )
+      }
+    </div>
+  </div>
+  {
+    float && fl && (
+      <div class="float scene-float">
+        <div class="plane">
+          <img
+            src={fl.src}
+            srcset={fl.srcset}
+            sizes={floatSizes}
+            width={fl.width}
+            height={fl.height}
+            alt={float.alt}
+            loading={loading}
+            decoding="async"
+            style={cropStyle(float)}
+          />
+        </div>
+      </div>
+    )
+  }
+</figure>
+
+<style>
+  .scene {
+    margin: 0;
+    aspect-ratio: var(--scene-ratio, 16 / 10);
+    border-radius: var(--r-block);
+  }
+  .scene-main {
+    position: absolute;
+    left: var(--mx, 7%);
+    top: var(--my, 11%);
+    width: var(--mw, 108%);
+  }
+  .scene-angle .scene-main { left: var(--mx, 10%); top: var(--my, 9%); width: var(--mw, 96%); }
+  .scene-float .plane { box-shadow: 0 0 0 1px oklch(0.2 0.02 262 / 0.12), var(--lift-field); }
+  .scene-float { left: var(--fx, 5%); bottom: var(--fb, 7%); }
+  video { background: oklch(0.985 0.003 262); }
+  /* A detail plane under ~200px wide is unreadable; phones show the main one. */
+  @media (max-width: 40rem) { .scene-float { display: none; } }
+</style>

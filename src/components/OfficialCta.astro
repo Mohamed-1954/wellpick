@@ -1,0 +1,48 @@
+---
+import { getProduct, type ProductId } from '../lib/site';
+import Icon from './Icon.astro';
+
+interface Props {
+  product: ProductId;
+  /** Where the button goes. A pricing label must use 'pricing'. */
+  to?: 'site' | 'pricing';
+  label?: string;
+  note?: string;
+  placement?: string;
+  /** Light button for chapter-colored surfaces */
+  onDark?: boolean;
+  /** Ghost style for secondary placement */
+  ghost?: boolean;
+}
+const { product, to = 'site', label, note, placement = 'cta', onDark = false, ghost = false } = Astro.props;
+const p = await getProduct(product);
+
+// Pricing buttons go to the vendor's pricing page. An approved affiliate URL
+// replaces only the site destination: it is not known to land on pricing, so
+// a pricing label never points at it.
+const isAffiliate = to === 'site' && Boolean(p.affiliateUrl);
+const href = to === 'pricing' ? p.pricingUrl : (p.affiliateUrl ?? p.officialUrl);
+const rel = isAffiliate ? 'sponsored noopener' : 'noopener';
+---
+
+<span class="cta-block">
+  <a
+    class:list={['btn', { 'btn-light': onDark && !ghost, 'btn-ghost': ghost }]}
+    href={href}
+    rel={rel}
+    target="_blank"
+    data-product={product}
+    data-placement={placement}
+    data-affiliate={isAffiliate || undefined}
+  >
+    {label ?? `Visit ${p.name}`}
+    <Icon name="arrow-right-up-linear" class="btn-icon" />
+    <span class="sr-only">(opens {new URL(href).hostname} in a new tab)</span>
+  </a>
+  {note && <span class="cta-note">{note}</span>}
+</span>
+
+<style>
+  .cta-block { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+  .cta-note { font-size: 0.8125rem; color: var(--muted); max-width: 40ch; }
+</style>

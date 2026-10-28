@@ -1,0 +1,74 @@
+---
+title: "Why your portal shows yesterday's status: live vs scheduled sync"
+seoTitle: "Live vs scheduled sync in client portals"
+description: "Why a portal shows yesterday's status: how live sync, scheduled sync and cached reads differ in Noloco and Softr, plus a five-minute freshness test."
+type: post
+topic: operations
+products: [noloco, softr]
+sourceIds: [nolocoSync, softrData, forumSoftrSync, forumNolocoLookups]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Noloco syncs Airtable and SmartSuite live, and Google Sheets, MySQL,
+    PostgreSQL and Xano on a schedule. Softr reads your source directly with
+    its own cache. Formula and lookup fields are the usual weak spot. Time a
+    real change from source to client view before you promise "real time".
+  </p>
+</aside>
+
+A client opens the portal and sees "In review". Your team moved the project to "Approved" an hour ago. Nobody did anything wrong. The portal just has not caught up.
+
+How fast it catches up depends on one technical choice: how the portal gets data from where your records live.
+
+## Three ways a portal reads your records
+
+**Live sync.** The portal copies your records into its own database and keeps the copy updated as changes happen at the source. Changes arrive within moments, though not always instantly.
+
+**Scheduled sync.** The portal copies your records on a timer. A change at the source waits for the next run. Fine for a weekly summary, wrong for a same-day approval.
+
+**Direct read with a cache.** The portal reads the source when a page loads, and keeps recent results for a short while to stay fast. Freshness depends on how the cache decides that something changed.
+
+## Which sources use which
+
+Noloco's sync docs are specific. Airtable and SmartSuite sync live, and Stripe too, with limited live sync for HubSpot. Google Sheets, MySQL, PostgreSQL and Xano sync on a schedule. Edits made in Noloco write back to the source straight away. A change to the shape of your data, such as a new field, is a separate schema sync.
+
+Softr reads your data source directly and keeps its own cache. Its data-source guide recommends Softr Databases for a new build and treats an existing Airtable base as worth keeping.
+
+| Where your records live | Noloco | Softr |
+| --- | --- | --- |
+| Airtable | Live sync (Build plan) | Direct read with cache |
+| Google Sheets | Scheduled sync | Direct read with cache |
+| The tool's own tables | Native | Native (Softr Databases) |
+
+## The fields that lag
+
+Plain fields, such as a status or a date someone typed, usually travel well. Calculated fields are harder, because the source may not mark a record as changed when only a formula result changes.
+
+Both tools have public reports of this:
+
+- In December 2025, a Softr user found that Airtable formula and lookup changes did not reach a live Softr app, because Airtable did not mark those records as updated. Softr staff suggested a last-modified field as a workaround, and Softr later rolled out a new Airtable sync.
+- Noloco forum users report lookup-of-lookup fields that fill in only after the record is edited in Noloco.
+
+These are user reports, not measurements. They show where to look.
+
+## A five-minute freshness test
+
+1. Open the portal as a test client in a private window.
+2. In your source, change a plain field on that client's record, such as the status. Note the time.
+3. Refresh the portal every thirty seconds until the change appears. Note the time.
+4. Repeat with a formula field and with a field that comes through a linked record.
+5. Write the results down: "Status: under a minute. Totals: after the next edit."
+
+That one line tells you what you can promise clients and what needs a workaround.
+
+## Workarounds that hold up
+
+- **Show the source's time.** Add a "last updated" field that clients can see, so a stale status is at least honest.
+- **Avoid deep lookups on client pages.** Store the value the client needs directly on the record they read.
+- **Pick the live route for anything time-sensitive.** If approvals must be same day, keep those records in a source your portal syncs live, or in the portal's own tables.
+- **Say it in the invitation.** "Status updates appear within a few minutes" sets an expectation you can keep.
+
+For the full comparison of how each tool connects to your data, see [Softr vs Noloco](/compare/softr-vs-noloco/). If you are still deciding where records should live, start with the [portal data model guide](/guides/portal-data-model/).

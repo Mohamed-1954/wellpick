@@ -1,0 +1,73 @@
+---
+import type { ProductId } from '../lib/site';
+import Icon from './Icon.astro';
+
+interface Item {
+  to: string;
+  title: string;
+  product?: ProductId;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+---
+
+<nav class="next-steps" aria-labelledby="next-steps-title">
+  <p class="ns-head" id="next-steps-title">Read next</p>
+  <ul>
+    {
+      items.map((item) => (
+        <li data-chapter={item.product}>
+          <a class="ns-link" href={item.to}>
+            {item.product && <span class="chip-dot" aria-hidden="true" />}
+            <span class="ns-title">{item.title}</span>
+            <Icon name="arrow-right-linear" class="ns-arrow" />
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  /* Flat ruled rows: product swatch, title, arrow. The swatch column stays
+     reserved so titles line up whether or not a row names a product. */
+  .next-steps { margin-top: var(--s-8); max-width: none; }
+  .ns-head {
+    font-size: var(--step-1);
+    font-weight: 720;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--ink);
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--ink);
+  }
+  .next-steps ul { list-style: none; margin: 0; padding: 0; }
+  .next-steps li { margin: 0; border-bottom: 1px solid var(--line); }
+  .ns-link {
+    display: grid;
+    grid-template-columns: 0.5rem minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: var(--s-4);
+    min-height: 3.5rem;
+    padding-block: var(--s-4);
+    color: var(--ink);
+    text-decoration: none;
+    font-size: 1.0625rem;
+    font-weight: 650;
+    line-height: 1.35;
+  }
+  .ns-title {
+    grid-column: 2;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.2em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  a:hover .ns-title { text-decoration-color: currentColor; }
+  a :global(.ns-arrow) { grid-column: 3; color: var(--ink-2); transition: transform var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out); }
+  a:hover :global(.ns-arrow) { color: var(--ink); transform: translateX(3px); }
+</style>

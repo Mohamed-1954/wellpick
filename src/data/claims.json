@@ -1,0 +1,93 @@
+{
+  "softr-pricing": {
+    "subject": "Softr plans",
+    "category": "pricing",
+    "statement": "Free $0 (5 app users total, up to 3 builders, 5K records); Basic $25/mo monthly or $19/mo billed yearly ($228/yr), 5 team + 5 client users, no user add-ons; Pro $119/$99 ($1,188/yr), 10 team + 50 client, extra users $3 (team, max 50) and $1 (client, max 250) per user per month; Business $395/$329 ($3,948/yr), 30 team + 100 client, extra users $5 (team, max 100) and $2 (client, max 500); Enterprise custom. Builders included 1/2/3 on Basic/Pro/Business, extra builders $5/$6, $10/$12, $20/$24 (annual/monthly). Users beyond a plan's maximum are created deactivated. Prices from the schema.org Offer data embedded in softr.io/pricing, cross-checked against Softr's pricing help docs. Team users share a builder's business email domain; free email domains such as Gmail count as client users.",
+    "value": {
+      "plans": [
+        { "name": "Free", "monthly": 0, "yearlyMonthly": 0, "users": "5 app users total", "builders": 3, "records": 5000, "totalUsersMax": 5, "buildersMax": 3 },
+        { "name": "Basic", "monthly": 25, "yearlyMonthly": 19, "users": "5 team + 5 client", "builders": 1, "records": 50000, "teamIncluded": 5, "teamMax": 5, "teamExtra": 0, "clientIncluded": 5, "clientMax": 5, "clientExtra": 0, "builderExtraYearly": 5, "builderExtraMonthly": 6 },
+        { "name": "Pro", "monthly": 119, "yearlyMonthly": 99, "users": "10 team + 50 client", "builders": 2, "records": 500000, "teamIncluded": 10, "teamMax": 50, "teamExtra": 3, "clientIncluded": 50, "clientMax": 250, "clientExtra": 1, "builderExtraYearly": 10, "builderExtraMonthly": 12 },
+        { "name": "Business", "monthly": 395, "yearlyMonthly": 329, "users": "30 team + 100 client", "builders": 3, "records": 1000000, "teamIncluded": 30, "teamMax": 100, "teamExtra": 5, "clientIncluded": 100, "clientMax": 500, "clientExtra": 2, "builderExtraYearly": 20, "builderExtraMonthly": 24, "writeRestrictions": true }
+      ]
+    },
+    "sourceIds": ["softrPricing", "softrPlansDocs"],
+    "verifiedAt": "2026-09-26",
+    "reviewBy": "2026-12-26"
+  },
+  "noloco-pricing": {
+    "subject": "Noloco plans",
+    "category": "pricing",
+    "statement": "Free $0 (unlimited team seats, 50 active clients, 2,000 records, 100 workflow runs/mo, 1 GB storage, 2 user roles, Noloco Tables and CSV import only); Build $79/mo monthly or $65/mo billed yearly, 10 team seats then $6/$5 per extra seat, 1,000 active clients, 25,000 records then $25 per additional 25,000 up to 250,000, 3,000 workflow runs/mo, 20 GB storage, unlimited roles, field-level permissions, external data sources; Enterprise custom. A seat is used once a user logs in. Team = same email domain as the workspace, or a team member or data admin role. 14-day trial of Build, no card required.",
+    "value": {
+      "plans": [
+        { "name": "Free", "monthly": 0, "yearlyMonthly": 0, "teamUsers": "Unlimited", "clientUsers": 50, "records": 2000, "workflowRuns": 100, "storage": "1 GB", "clientMax": 50, "roles": 2, "externalData": false },
+        { "name": "Build", "monthly": 79, "yearlyMonthly": 65, "teamUsers": 10, "clientUsers": 1000, "records": 25000, "workflowRuns": 3000, "storage": "20 GB", "teamIncluded": 10, "seatExtraYearly": 5, "seatExtraMonthly": 6, "clientMax": 1000, "recordsMax": 250000, "recordBlock": 25000, "recordBlockPrice": 25, "externalData": true }
+      ]
+    },
+    "sourceIds": ["nolocoPricing", "nolocoPricingGuide"],
+    "verifiedAt": "2026-09-26",
+    "reviewBy": "2026-12-26"
+  },
+  "fillout-pricing": {
+    "subject": "Fillout plans",
+    "category": "pricing",
+    "statement": "Free $0 (1,000 responses/mo, unlimited forms and seats); Starter $15/mo billed annually or $19 monthly (2,000 responses/mo, login forms); Pro $40 annually or $49 monthly (5,000/mo); Business $75 annually or $89 monthly (unlimited responses, duplicate prevention, partial submissions); Team bundle $250/mo annually or $300 monthly; Enterprise custom. Max file size 20 MB on Free/Starter/Pro, 1 GB on Business and Team, 5 GB on Enterprise. No per-seat charge.",
+    "value": {
+      "plans": [
+        { "name": "Free", "monthly": 0, "yearlyMonthly": 0, "responses": 1000, "fileSize": "20 MB", "responsesMax": 1000, "fileMb": 20, "login": false, "duplicates": false },
+        { "name": "Starter", "monthly": 19, "yearlyMonthly": 15, "responses": 2000, "fileSize": "20 MB", "responsesMax": 2000, "fileMb": 20, "login": true, "duplicates": false },
+        { "name": "Pro", "monthly": 49, "yearlyMonthly": 40, "responses": 5000, "fileSize": "20 MB", "responsesMax": 5000, "fileMb": 20, "login": true, "duplicates": false },
+        { "name": "Business", "monthly": 89, "yearlyMonthly": 75, "responses": "Unlimited", "fileSize": "1 GB", "responsesMax": null, "fileMb": 1024, "login": true, "duplicates": true }
+      ]
+    },
+    "sourceIds": ["filloutPricing", "filloutFiles", "filloutBilling"],
+    "verifiedAt": "2026-09-26",
+    "reviewBy": "2026-12-26"
+  },
+  "softr-affiliate": {
+    "subject": "Softr affiliate program",
+    "category": "affiliate-terms",
+    "statement": "The affiliate page offers 25% commission for 12 months on new customers, a 90-day cookie that resets on a new click, and monthly payouts through PartnerStack; Enterprise referrals use a sliding scale. The program terms (updated September 2025) do not restate those figures: they cap commission at 12 months per customer, calculate it on net revenue after discounts, allow a minimum payout threshold, and require written consent for paid ads on generic keywords. Bidding on Softr's brand keywords is not permitted.",
+    "sourceIds": ["softrAffiliatePage", "softrAffiliate"],
+    "verifiedAt": "2026-09-26",
+    "reviewBy": "2026-12-26"
+  },
+  "noloco-affiliate": {
+    "subject": "Noloco affiliate program",
+    "category": "affiliate-terms",
+    "statement": "The affiliate page offers 20% on every subscription for 12 months via PartnerStack, paid monthly for monthly plans and upfront for annual plans, with manual approval. The partner terms (updated May 2024) restrict commission to completely new customers within a 90-day eligibility period, set a $100 minimum payout, and list a starting tier of 20% in year one plus 10% in year two, which conflicts with the page's 12 months. Confirm the governing rate on approval.",
+    "sourceIds": ["nolocoAffiliate", "nolocoPartnerTerms"],
+    "verifiedAt": "2026-09-26",
+    "reviewBy": "2026-12-26"
+  },
+  "fillout-affiliate": {
+    "subject": "Fillout affiliate program",
+    "category": "affiliate-terms",
+    "statement": "30% recurring commission for up to 12 months on paid Fillout or Zite plan signups by new users, joined self-serve from the in-app dashboard. Help docs: monthly ACH payouts, $20 minimum, 30 to 45 day holding period, first affiliate link clicked gets credit, and promoting the link with Google Ads closes the account.",
+    "sourceIds": ["filloutAffiliate", "filloutAffiliateHelp"],
+    "verifiedAt": "2026-09-27",
+    "reviewBy": "2026-12-26"
+  },
+  "video-softr-9QHOcQMY2RA": {
+    "subject": "Softr users walkthrough video",
+    "category": "video",
+    "statement": "Official video 'How to Setup Users in Softr: Database, Syncing & Permissions', author 'Softr' per YouTube oEmbed.",
+    "sourceIds": ["softrUserSync"],
+    "verifiedAt": "2026-09-20"
+  },
+  "video-noloco-6GT82uz0QrM": {
+    "subject": "Noloco per-user records video",
+    "category": "video",
+    "statement": "Official video 'How to show your users their own records in your Noloco app', author 'Noloco' per YouTube oEmbed.",
+    "sourceIds": ["nolocoPortal"],
+    "verifiedAt": "2026-09-20"
+  },
+  "video-fillout-ZhdKHlztgsk": {
+    "subject": "Fillout getting-started video",
+    "category": "video",
+    "statement": "Official video 'Getting Started with Fillout Forms'; oEmbed author_name returns 'Zite' with author_url @fillout; Fillout's parent company renamed to Zite on 9 March 2026; the product remains Fillout.",
+    "sourceIds": ["zite"],
+    "verifiedAt": "2026-09-20"
+  }
+}

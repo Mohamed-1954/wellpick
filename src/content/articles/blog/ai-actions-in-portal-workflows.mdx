@@ -1,0 +1,56 @@
+---
+title: "AI inside your workflows: five small jobs worth automating, and two to keep human"
+seoTitle: "AI actions in portal workflows: what to automate"
+description: "Noloco's workflows include AI text actions. Five client-work jobs worth automating, two to keep human, and how AI steps use your workflow runs."
+type: post
+topic: ai
+products: [noloco]
+sourceIds: [nolocoWorkflow, nolocoPricing, nistAiRmf]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Use AI actions on text your team reads: summaries of long briefs, tags for
+    sorting, cleaned-up notes. Keep a person between AI output and anything a
+    client reads or anything that changes money or access. Each automated
+    action rides on a workflow, so it counts against your run allowance.
+  </p>
+</aside>
+
+AI app builders get the headlines. The quieter change is AI inside the tools you already run. Noloco's workflow guide lists a set of AI actions next to the usual create, update and email steps: **Ask ChatGPT**, **Summarize Text**, **Correct Grammar**, **Extract Keywords** and **Finish Text**.
+
+These are small. That is their strength. A workflow can take a field, run one of these actions on it, and write the result into another field, the same way it would copy a value or send an email.
+
+## Five jobs worth automating
+
+**1. Summarise a long brief.** When an enquiry arrives with three paragraphs of context, a two-line summary in its own field lets the person triaging the inbox decide faster. They still open the full brief before replying.
+
+**2. Tag enquiries for sorting.** Extracting keywords from a brief ("e-commerce", "rebrand", "Shopify") gives you a column to filter by. It will not be perfect. It does not need to be: it is a sorting aid, not a decision.
+
+**3. Clean up internal notes.** Notes typed between calls are often fragments. A grammar pass makes them readable for the colleague who takes over the account.
+
+**4. Draft a first reply for a person to edit.** A "finish text" or prompt action can turn bullet points into a polite paragraph. Store it in a draft field. A person edits and sends it.
+
+**5. Turn meeting notes into next steps.** Ask for a short list of actions from a notes field, written into a separate field your team reviews before creating tasks.
+
+The pattern in all five: AI writes into a field your team reads. Nothing goes straight to a client.
+
+## Two jobs to keep human
+
+**Anything a client reads without review.** A summary that misreads a brief is harmless in an internal field. The same summary in an email to the client is a mistake with your name on it.
+
+**Anything that changes access or money.** Do not let AI output decide a user's role, a project's company or an invoice amount. Those fields drive permissions and billing. A wrong value there is a data leak or a dispute.
+
+## Watch the runs
+
+AI actions live inside workflows, and workflows have limits. Noloco Free includes 100 workflow runs a month and stops when they run out; Build includes 3,000 and bills extra runs. An "on every update" trigger with an AI step can use runs quickly. Trigger AI actions on a specific change, such as a new enquiry or a status moving to "Brief received", rather than on any edit. Our post on [estimating workflow runs](/blog/workflow-runs-explained/) has a worksheet.
+
+## Check the data rule first
+
+Text you send to an AI action leaves your table and passes through a model provider. Before you automate it, decide which fields may go through. A short [AI data policy](/blog/ai-client-data-policy/) answers that once for the whole team, so nobody has to decide case by case inside the workflow editor.
+
+## A small test before you rely on it
+
+Run the workflow on ten real, older records and read every output next to the source. Count how many you would have sent, edited or thrown away. If more than a couple need throwing away, narrow the action's job or keep it manual. If most are fine, keep the human review step anyway. It costs a few seconds and catches the one that matters.

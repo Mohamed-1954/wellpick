@@ -1,0 +1,181 @@
+---
+// Interactive plan finder for the cost guide. Server-renders the plan data;
+// the script picks the first fitting plan per product. Without JS the
+// section stays hidden and the static plans below it carry the same facts.
+import { getPricing } from '../lib/pricing';
+
+const [softr, noloco, fillout] = await Promise.all([getPricing('softr'), getPricing('noloco'), getPricing('fillout')]);
+const data = { softr: softr.plans, noloco: noloco.plans, fillout: fillout.plans };
+---
+
+<section class="calc" data-calc hidden aria-labelledby="calc-title">
+  <script is:inline type="application/json" data-calc-plans set:html={JSON.stringify(data)} />
+  <div class="calc-head">
+    <h2 id="calc-title">Find the first plan that fits</h2>
+    <p>Enter people, not companies. The finder applies each vendor's published limits and add-on prices. It does not know discounts, tax or usage overage.</p>
+  </div>
+  <form class="calc-form" data-calc-form>
+    <fieldset>
+      <legend>People who log in</legend>
+      <label>Staff, including you <input type="number" name="staff" min="1" max="500" value="3" inputmode="numeric" /></label>
+      <label>Of those, people who build the app <input type="number" name="builders" min="0" max="50" value="1" inputmode="numeric" /></label>
+      <label>Staff on Gmail, Outlook or another free address <input type="number" name="staffFreeEmail" min="0" max="500" value="0" inputmode="numeric" /></label>
+      <label>Client contacts who log in <input type="number" name="clients" min="0" max="5000" value="12" inputmode="numeric" /></label>
+    </fieldset>
+    <fieldset>
+      <legend>Data and access</legend>
+      <label>Records across all tables <input type="number" name="records" min="0" max="2000000" step="500" value="3000" inputmode="numeric" /></label>
+      <label class="check"><input type="checkbox" name="externalData" checked /> Records stay in Airtable, Sheets or another external source</label>
+      <label class="check"><input type="checkbox" name="granularRoles" /> Need more than 2 roles, or field-level permissions</label>
+      <label class="check"><input type="checkbox" name="writeRestrictions" /> Clients create or edit records under enforced rules</label>
+    </fieldset>
+    <fieldset>
+      <legend>Intake</legend>
+      <label class="check"><input type="checkbox" name="fillout" /> Add Fillout for intake forms</label>
+      <label>Form responses a month <input type="number" name="responses" min="0" max="100000" step="50" value="100" inputmode="numeric" /></label>
+      <label>Largest uploaded file, MB <input type="number" name="largestFileMb" min="0" max="5000" value="10" inputmode="numeric" /></label>
+      <label class="check"><input type="checkbox" name="loginForm" /> Respondents must log in to the form</label>
+      <label class="check"><input type="checkbox" name="duplicatePrevention" /> Block duplicate Airtable records automatically</label>
+    </fieldset>
+  </form>
+  <div class="calc-out" data-calc-out aria-live="polite"></div>
+  <p class="calc-foot">Yearly-billing figures are the plan price paid upfront for 12 months, plus any add-ons. Softr bills extra users monthly at the same per-user price on either basis. Treat the result as the plan to price first, then confirm it on the vendor's page.</p>
+</section>
+<noscript><p class="calc-noscript">The plan finder needs JavaScript. The plans below carry the same limits and prices.</p></noscript>
+
+<script>
+  import { fitSoftr, fitNoloco, fitFillout, type Needs } from '../lib/stackPlan';
+  import type { Plan } from '../lib/pricing';
+
+  const root = document.querySelector<HTMLElement>('[data-calc]');
+  const form = root?.querySelector<HTMLFormElement>('[data-calc-form]');
+  const out = root?.querySelector<HTMLElement>('[data-calc-out]');
+  const raw = root?.querySelector('[data-calc-plans]')?.textContent;
+
+  if (root && form && out && raw) {
+    const plans = JSON.parse(raw) as Record<'softr' | 'noloco' | 'fillout', Plan[]>;
+    root.hidden = false;
+    const fmt = (v: number | null) => (v === null ? 'Custom' : `$${v.toLocaleString('en-US')}`);
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c] ?? c);
+
+    const read = (): Needs => {
+      const f = new FormData(form);
+      const num = (k: string) => Math.max(0, Math.floor(Number(f.get(k)) || 0));
+      const on = (k: string) => f.get(k) === 'on';
+      return {
+        staff: Math.max(1, num('staff')),
+        builders: Math.min(num('builders'), Math.max(1, num('staff'))),
+        staffFreeEmail: num('staffFreeEmail'),
+        clients: num('clients'),
+        records: num('records'),
+        externalData: on('externalData'),
+        granularRoles: on('granularRoles'),
+        writeRestrictions: on('writeRestrictions'),
+        fillout: on('fillout'),
+        responses: num('responses'),
+        largestFileMb: num('largestFileMb'),
+        loginForm: on('loginForm'),
+        duplicatePrevention: on('duplicatePrevention'),
+      };
+    };
+
+    const render = () => {
+      const x = read();
+      const s = fitSoftr(plans.softr, x);
+      const nl = fitNoloco(plans.noloco, x);
+      const fo = x.fillout ? fitFillout(plans.fillout, x) : null;
+      if (fo && s.plan === 'Free') s.notes.push('Embedding Fillout inside a Softr page needs a paid Softr plan. Linking to the form works on Free.');
+      const add = (a: number | null, b: number | null) => (a === null || b === null ? null : a + b);
+      const card = (name: string, tone: string, f: typeof s) => `
+        <article class="calc-card" data-chapter="${tone}">
+          <h3><span class="calc-tool"><span class="chip-dot" aria-hidden="true"></span>${name}</span> <span class="calc-plan">${f.plan ?? 'Enterprise'}</span></h3>
+          <p class="calc-price num"><span><strong>${fmt(f.yearly)}</strong>/mo billed yearly</span><span><strong>${fmt(f.monthly)}</strong>/mo billed monthly</span></p>
+          ${f.notes.length ? `<ul>${f.notes.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>` : ''}
+        </article>`;
+      const total = (label: string, f: typeof s) =>
+        fo ? `<p class="calc-total num"><span>${label} + Fillout ${fo.plan ?? 'Enterprise'}</span><span><strong>${fmt(add(f.yearly, fo.yearly))}</strong>/mo yearly · <strong>${fmt(add(f.monthly, fo.monthly))}</strong>/mo monthly</span></p>` : '';
+      out.innerHTML = `
+        <div class="calc-cards">${card('Softr', 'softr', s)}${card('Noloco', 'noloco', nl)}${fo ? card('Fillout', 'fillout', fo) : ''}</div>
+        ${fo ? `<div class="calc-totals">${total('Softr', s)}${total('Noloco', nl)}</div>` : ''}`;
+    };
+    form.addEventListener('input', render);
+    render();
+  }
+</script>
+
+<style>
+  /* Flat and ruled: an ink rule opens the finder, each group of inputs sits
+     under a hairline label, and the results are one joined row. */
+  .calc {
+    container-type: inline-size;
+    display: grid;
+    gap: var(--s-6);
+    padding-top: var(--s-5);
+    border-top: 2px solid var(--ink);
+  }
+  .calc-head { display: grid; gap: var(--s-2); }
+  .calc-head h2 { margin: 0; font-size: var(--step-3); }
+  .calc-head p { color: var(--ink-2); font-size: 1rem; line-height: 1.55; max-width: 62ch; }
+  .calc-foot { color: var(--ink-2); font-size: 0.9375rem; line-height: 1.55; max-width: 66ch; }
+
+  .calc-form { display: grid; gap: var(--s-6) var(--s-6); }
+  @container (min-width: 46rem) { .calc-form { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  fieldset { border: 0; padding: 0; margin: 0; min-width: 0; display: grid; gap: var(--s-4); align-content: start; }
+  legend {
+    width: 100%;
+    padding: 0 0 0.6rem;
+    margin-bottom: var(--s-4);
+    border-bottom: 1px solid var(--line-strong);
+    font-size: 0.9375rem;
+    font-weight: 650;
+    line-height: 1.35;
+    color: var(--ink);
+  }
+  label { display: grid; gap: 0.4rem; font-size: 0.9375rem; line-height: 1.4; color: var(--ink-2); }
+  label.check { grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 0.65rem; cursor: pointer; }
+  input[type='number'] {
+    font: inherit;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+    background: var(--surface);
+    border: 1px solid color-mix(in oklab, var(--muted) 55%, var(--line-strong));
+    border-radius: var(--r-btn);
+    padding: 0.55rem 0.75rem;
+    width: 100%;
+    min-height: 2.75rem;
+    transition: border-color var(--t-fast) var(--ease-out);
+  }
+  input[type='number']:hover { border-color: var(--ink-2); }
+  input[type='number']:focus-visible { border-color: var(--ink); outline: 2.5px solid var(--focus); outline-offset: 2px; }
+  /* Out of range (after the reader has typed): a doubled rule in the ember
+     chapter color, so width carries the state as well as color. */
+  input[type='number']:user-invalid { border-color: var(--fillout); box-shadow: inset 0 0 0 1px var(--fillout); }
+  input:disabled { opacity: 0.5; cursor: not-allowed; }
+  .calc[hidden] { display: none; }
+  label:has(input:disabled) { color: var(--muted); cursor: not-allowed; }
+  input[type='checkbox'] { width: 1.15rem; height: 1.15rem; margin: 0.12rem 0 0; accent-color: var(--ink); cursor: inherit; }
+  input[type='checkbox']:focus-visible { outline: 2.5px solid var(--focus); outline-offset: 2px; }
+
+  /* Results: one joined row (swatch, tool, plan, prices, notes), hairlines between. */
+  .calc-out :global(.calc-cards) { display: grid; border-top: 1px solid var(--ink); border-bottom: 1px solid var(--line); }
+  .calc-out :global(.calc-card) { display: grid; gap: var(--s-2); align-content: start; padding-block: var(--s-4) var(--s-5); }
+  .calc-out :global(.calc-card + .calc-card) { border-top: 1px solid var(--line); }
+  @container (min-width: 40rem) {
+    .calc-out :global(.calc-cards) { grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); }
+    .calc-out :global(.calc-card) { padding-inline: var(--s-5); }
+    .calc-out :global(.calc-card:first-child) { padding-left: 0; }
+    .calc-out :global(.calc-card:last-child) { padding-right: 0; }
+    .calc-out :global(.calc-card + .calc-card) { border-top: 0; border-left: 1px solid var(--line); }
+  }
+  .calc-out :global(.calc-card h3) { display: grid; gap: 0.2rem; margin: 0; }
+  .calc-out :global(.calc-tool) { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.9375rem; font-weight: 650; line-height: 1.35; color: var(--ink); }
+  .calc-out :global(.calc-plan) { font-size: var(--step-2); font-weight: 760; font-variation-settings: "wdth" 104; letter-spacing: -0.015em; line-height: 1.15; color: var(--ink); }
+  .calc-out :global(.calc-price) { display: grid; gap: 0.15rem; margin: 0; font-size: 0.9375rem; line-height: 1.45; color: var(--ink-2); }
+  .calc-out :global(.calc-price strong) { font-size: 1.0625rem; font-weight: 700; color: var(--ink); }
+  .calc-out :global(.calc-card ul) { margin: var(--s-2) 0 0; padding-left: 1.1rem; font-size: 0.875rem; line-height: 1.45; color: var(--ink-2); display: grid; gap: 0.3rem; }
+  .calc-out :global(.calc-card li) { margin: 0; }
+  .calc-out :global(.calc-totals) { margin-top: var(--s-4); }
+  .calc-out :global(.calc-total) { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 0.25rem var(--s-4); margin: 0; padding-block: 0.75rem; border-bottom: 1px solid var(--line); font-size: 0.9375rem; color: var(--ink-2); }
+  .calc-out :global(.calc-total strong) { color: var(--ink); font-weight: 700; }
+  .calc-noscript { color: var(--ink-2); }
+</style>

@@ -1,0 +1,66 @@
+---
+title: "Offboarding a client from your portal: the checklist nobody writes"
+seoTitle: "Offboarding a client from your portal"
+description: "When a project ends, portal access should end too. What deactivation, deletion and sync do in Softr and Noloco, and the links that keep working."
+type: post
+topic: portals
+products: [softr, noloco, fillout]
+sourceIds: [softrUserSync, nolocoPricingGuide, nolocoWorkflow, nolocoUserTable, filloutUpdate]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Deactivate, do not delete. In both Softr and Noloco, deactivation blocks
+    the login and keeps the records. Then check the access that lives outside
+    the portal: synced user lists, form update links and shared files.
+  </p>
+</aside>
+
+Onboarding gets a checklist. Offboarding gets forgotten. A project ends, the invoice is paid, and the client's login quietly keeps working for a year. Or a contact moves to another company, and their old email still opens their old employer's records.
+
+Neither is dramatic until it is. Here is what to do when access should end, and what the tools actually do when you do it.
+
+## Two different events
+
+**The client relationship ends.** Every contact at that company should lose access, or keep read-only access to an archive if you promised one.
+
+**One contact leaves the client.** Only that person loses access. Their colleagues keep theirs, and someone may need the departing contact's open approvals reassigned.
+
+Write down which one you are handling before you touch any setting.
+
+## What the portal tools do
+
+**Softr.** Softr's user docs draw three distinctions. Deactivating a user keeps the record and blocks login. Unsyncing keeps the login but drops the connection to the data source. Deleting a record in the source can be undone by the next sync, which may add the user back. So if your users sync from Airtable or another source, change the source and Softr together, or the next sync can reverse your change.
+
+**Noloco.** Deactivating a user releases their seat from the next billing cycle, and their records stay. Noloco's workflows include a "Deactivate a User" action, so you can tie deactivation to a status change, such as a company marked "Former client".
+
+In both tools, deactivation is the safe default. Deletion removes the history you may need for invoices, disputes or a returning client.
+
+## Access that lives outside the portal
+
+The login is the obvious door. These are the others:
+
+- **Form update links.** A Fillout update link opens a record without a login. It keeps working after the client is gone. If the record should be closed, change the form setup or move the record out of the table the link edits.
+- **Synced user lists.** If users come from a spreadsheet or another app, remove or flag them there first.
+- **Shared file links.** Files delivered by link from a storage service are outside the portal's rules.
+- **Email threads and calendar invites.** Not software, but often where the next request arrives.
+
+## A ten-minute offboarding routine
+
+1. Mark the company or contact as former in your records, with the date.
+2. Deactivate each affected user in the portal. Do not delete.
+3. If users sync from a source, update the source so the next sync agrees.
+4. Reassign any open approvals or tasks the contact owned.
+5. Check update links and shared file links for that company.
+6. Sign in as the deactivated user in a private window. Confirm the login fails and saved links do not open records.
+7. Note the date in a simple access log: who, what, when.
+
+Step six is the one people skip. It is also the only one that proves the change worked.
+
+## Make it automatic where you can
+
+If your portal tool runs workflows, connect the routine to the status field your team already uses. "Former client" can trigger deactivation and a note to the account owner. Keep a person in the loop for the checks in steps five and six, since links outside the portal are invisible to the workflow.
+
+For the launch side of the same problem, see our [two-client launch test](/guides/client-portal-launch/), which ends with an offboarding row for exactly this reason.

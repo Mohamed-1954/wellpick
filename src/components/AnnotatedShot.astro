@@ -1,0 +1,93 @@
+---
+// A vendor screen with numbered pins and matched reading notes. The notes carry
+// the content and read fine without interaction; hovering or focusing a note
+// highlights its pin (CSS :has, no JS). The screen sits in the one product
+// frame, on the canvas; the notes are a ruled list beside it.
+import { vendorImage } from '../lib/media';
+
+interface Note {
+  x: number;
+  y: number;
+  title: string;
+  body: string;
+}
+interface Props {
+  name: string;
+  alt: string;
+  notes: Note[];
+  tone?: 'softr' | 'noloco' | 'fillout' | 'ink';
+}
+const { name, alt, notes, tone = 'ink' } = Astro.props;
+const img = vendorImage(name);
+---
+
+<figure class="annotated" data-chapter={tone === 'ink' ? undefined : tone}>
+  <div class="a-screen frame">
+    <img src={img.src} srcset={img.srcset} sizes="(min-width: 72rem) 52rem, 92vw" width={img.width} height={img.height} alt={alt} loading="lazy" decoding="async" />
+    {notes.map((n, i) => <span class={`pin pin-${i + 1}`} style={`left:${n.x}%;top:${n.y}%`} aria-hidden="true">{i + 1}</span>)}
+  </div>
+  <ol class="a-notes">
+    {
+      notes.map((n, i) => (
+        <li class={`note note-${i + 1}`} tabindex="0">
+          <span class="note-n num" aria-hidden="true">{i + 1}</span>
+          <div>
+            <strong>{n.title}</strong>
+            <p>{n.body}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style>
+  .annotated {
+    margin: 0;
+    display: grid;
+    gap: var(--s-6);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 64rem) {
+    .annotated { grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); align-items: start; gap: var(--s-7); }
+  }
+  .a-screen img { width: 100%; }
+  .pin {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: oklch(0.19 0.016 262);
+    color: oklch(0.975 0.004 110);
+    font-size: 0.8125rem;
+    font-weight: 800;
+    box-shadow: 0 0 0 3px oklch(1 0 0 / 0.9), 0 6px 14px -6px oklch(0.1 0.02 262 / 0.5);
+    transition: scale var(--t-med) var(--ease-out), background-color var(--t-fast) var(--ease-out);
+  }
+  .a-notes { list-style: none; margin: 0; padding: 0; border-top: 2px solid var(--ink); }
+  .note {
+    display: grid;
+    grid-template-columns: 1.75rem 1fr;
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-bottom: 1px solid var(--line);
+    outline-offset: 2px;
+  }
+  .note-n {
+    font-size: 0.9375rem;
+    font-weight: 750;
+    line-height: 1.5;
+    color: var(--muted);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .note strong { display: block; margin-bottom: 0.2rem; font-size: 1rem; font-weight: 700; line-height: 1.5; color: var(--ink); }
+  .note p { font-size: 0.9375rem; color: var(--ink-2); line-height: 1.55; }
+  .note:hover .note-n, .note:focus-visible .note-n { color: var(--ink); }
+  .annotated:has(.note-1:is(:hover, :focus-visible)) .pin-1,
+  .annotated:has(.note-2:is(:hover, :focus-visible)) .pin-2,
+  .annotated:has(.note-3:is(:hover, :focus-visible)) .pin-3,
+  .annotated:has(.note-4:is(:hover, :focus-visible)) .pin-4 { scale: 1.3; background: var(--ch, oklch(0.19 0.016 262)); color: var(--on-chapter); }
+</style>

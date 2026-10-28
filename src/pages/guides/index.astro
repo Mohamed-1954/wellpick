@@ -1,0 +1,245 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { breadcrumbSchema } from '../../lib/breadcrumbSchema';
+import Icon from '../../components/Icon.astro';
+import MiniStack from '../../components/MiniStack.astro';
+import Cover from '../../components/Cover.astro';
+import type { ProductId } from '../../lib/site';
+
+const guides = (await getCollection('articles', (a) => a.data.type === 'guide' && !a.data.draft && a.data.stage !== undefined)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const stages = [
+  { id: 'decide', title: 'Decide', blurb: 'Work out what you need and what it will cost, before you pay for anything.' },
+  { id: 'build', title: 'Build', blurb: 'Turn your records into intake, a portal and a working team view.' },
+  { id: 'launch', title: 'Launch', blurb: 'Test access with fictional clients, then invite real ones.' },
+] as const;
+const filters = [
+  { id: 'all', label: 'All tools' },
+  { id: 'fillout', label: 'Fillout' },
+  { id: 'softr', label: 'Softr' },
+  { id: 'noloco', label: 'Noloco' },
+];
+const site = Astro.site ?? Astro.url;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Guides for the whole client job.',
+    url: Astro.url.href,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: stages.flatMap((stage) => guides.filter((guide) => guide.data.stage === stage.id)).map((guide, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: guide.data.title,
+        url: new URL(`/${guide.id}/`, site).href,
+      })),
+    },
+  },
+  breadcrumbSchema([{ label: 'Home', href: '/' }, { label: 'Guides' }], site),
+];
+---
+
+<BaseLayout
+  title="Guides: intake, portals and team ops"
+  description="Step-by-step guides for small service businesses using Fillout, Softr and Noloco, grouped by where you are in the job: decide, build, launch."
+  jsonLd={jsonLd}
+  closing
+>
+  <section class="g-hero">
+    <div class="shell g-hero-grid">
+      <div class="g-hero-copy">
+        <h1>Guides for the whole client job.</h1>
+        <p class="lead">
+          Grouped by where you are: deciding, building or launching. Every guide ends with checks you can
+          run yourself with fictional data.
+        </p>
+      </div>
+      <MiniStack items={[{ name: 'fillout-airtable-sync.png', chapter: 'fillout' }, { name: 'softr-portal.webp', chapter: 'softr' }, { name: 'noloco-dash-canvas.png', chapter: 'noloco' }]} />
+    </div>
+    <div class="shell">
+      <div class="g-filter" role="group" aria-label="Filter guides by tool">
+        {
+          filters.map((f, i) => (
+            <button type="button" data-filter={f.id} data-chapter={f.id === 'all' ? undefined : f.id} aria-pressed={i === 0 ? 'true' : 'false'}>
+              {f.id !== 'all' && <span class="chip-dot" aria-hidden="true" />}
+              {f.label}
+            </button>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    stages.map((s) => (
+      <section class="g-stage" aria-labelledby={`stage-${s.id}`}>
+        <div class="shell">
+          <div class="g-stage-head">
+            <h2 id={`stage-${s.id}`}>{s.title}</h2>
+            <p>{s.blurb}</p>
+          </div>
+          <ul class="g-cards" data-reveal-stagger="80">
+            {guides
+              .filter((g) => g.data.stage === s.id)
+              .map((g) => {
+                const products = g.data.products.map((p) => p.id as ProductId);
+                const lead = products.find((p) => g.data.cover?.name.startsWith(p)) ?? products[0];
+                // A cover whose top-left crop is empty gets a denser screen of the same product.
+                const coverShot = g.data.cover?.name === 'softr-crm.webp' ? 'softr-uc-projects.webp' : g.data.cover?.name;
+                const words = g.data.title.split(' ');
+                const lastWord = words.pop();
+                return (
+                  <li data-products={products.join(' ')} data-chapter={products[0]} data-reveal>
+                    <a href={`/${g.id}/`}>
+                      <span class="g-thumb">
+                        <Cover products={[lead]} shot={coverShot} sizes="(min-width: 82rem) 24rem, (min-width: 64rem) 30vw, (min-width: 40rem) 46vw, 92vw" />
+                      </span>
+                      <span class="g-title">
+                        {words.join(' ')}{' '}
+                        <span class="g-last">{lastWord}<Icon name="arrow-right-linear" class="g-arrow" /></span>
+                      </span>
+                      <span class="g-desc">{g.data.description}</span>
+                      <span class="g-tools">
+                        {products.map((p) => (
+                          <span class="g-tool" data-chapter={p}>
+                            <span class="chip-dot" aria-hidden="true" />
+                            {p[0].toUpperCase() + p.slice(1)}
+                          </span>
+                        ))}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+          </ul>
+        </div>
+      </section>
+    ))
+  }
+
+  <section class="section g-more">
+    <div class="shell g-more-inner">
+      <h2>Choosing between tools?</h2>
+      <p class="lead">Side-by-side comparisons on the same client job, with a pick for each situation.</p>
+      <a class="btn" href="/compare/">See the comparisons <Icon name="arrow-right-linear" class="btn-icon" /></a>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('[data-filter]')];
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-products]')];
+  for (const b of buttons) {
+    b.addEventListener('click', () => {
+      const f = b.dataset.filter ?? 'all';
+      buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      for (const c of cards) c.hidden = f !== 'all' && !(c.dataset.products ?? '').split(' ').includes(f);
+      // A stage with no guide for the chosen tool drops out instead of showing an empty column.
+      for (const s of document.querySelectorAll<HTMLElement>('.g-stage')) {
+        s.hidden = [...s.querySelectorAll<HTMLElement>('[data-products]')].every((c) => c.hidden);
+      }
+    });
+  }
+</script>
+
+<style>
+  .g-hero { padding-block: clamp(1.75rem, 1.2rem + 2.6vw, 4rem) 0; }
+  .g-hero-grid { display: grid; gap: var(--s-6); align-items: center; }
+  @media (min-width: 64rem) { .g-hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .g-hero-copy { display: grid; justify-items: start; }
+  .g-hero h1 { font-size: var(--step-5); max-width: 13ch; }
+  .g-hero .lead { margin-top: var(--s-5); }
+
+  /* Filter: a row of tabs on a hairline, like the header nav. The pressed tab
+     is ink with a 2px underline; the others are muted. */
+  .g-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--s-5);
+    margin-top: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+    border-bottom: 1px solid var(--line);
+  }
+  .g-filter button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 2.75rem;
+    margin-bottom: -1px;
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+  }
+  .g-filter button:hover { color: var(--ink); }
+  .g-filter button[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--ink); }
+
+  /* Stages: a hairline, the stage name and one line, then the guides. */
+  .g-stage { padding-top: clamp(2.5rem, 2rem + 2vw, 4rem); }
+  .g-stage[hidden] { display: none; }
+  .g-stage-head { display: grid; gap: var(--s-2); padding-top: var(--s-5); border-top: 1px solid var(--line-strong); }
+  /* The filter tabs' hairline already separates the hero from the first
+     visible stage (which changes when a filter hides a stage), so that stage
+     drops its own rule; later stages keep theirs. */
+  .g-stage:not([hidden]):not(.g-stage:not([hidden]) ~ .g-stage) .g-stage-head { border-top: 0; padding-top: 0; }
+  .g-stage-head h2 { font-size: var(--step-3); letter-spacing: -0.025em; }
+  .g-stage-head p { color: var(--ink-2); max-width: 60ch; }
+
+  /* Guides: flat image units. A framed thumbnail, then title and description
+     on the canvas; no box around the unit. */
+  .g-cards { list-style: none; margin: var(--s-6) 0 0; padding: 0; display: grid; gap: var(--s-7) var(--s-6); }
+  @media (min-width: 40rem) {
+    .g-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    /* An odd count opens with one wide card (cover beside its text), so no
+       stage ends on a hole. */
+    .g-cards > li:first-child:nth-last-child(odd) { grid-column: 1 / -1; }
+    .g-cards > li:first-child:nth-last-child(odd) > a { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); grid-template-rows: 1fr auto auto auto 1fr; column-gap: var(--s-6); }
+    .g-cards > li:first-child:nth-last-child(odd) .g-thumb { grid-row: 1 / -1; margin-bottom: 0; }
+    .g-cards > li:first-child:nth-last-child(odd) :is(.g-title, .g-desc, .g-tools) { grid-column: 2; }
+    .g-cards > li:first-child:nth-last-child(odd) .g-title { grid-row: 2; }
+    .g-cards > li:first-child:nth-last-child(odd) .g-desc { grid-row: 3; }
+    .g-cards > li:first-child:nth-last-child(odd) .g-tools { grid-row: 4; }
+  }
+  /* Wide screens: the stage name holds its own column beside the cards. */
+  @media (min-width: 64rem) {
+    .g-stage > .shell { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.6fr); gap: var(--s-8); align-items: start; }
+    .g-stage-head { position: sticky; top: calc(var(--header-h) + 2rem); }
+    .g-cards { margin-top: 0; }
+  }
+  .g-cards li[hidden] { display: none; }
+  .g-cards a { display: grid; align-content: start; gap: var(--s-3); color: var(--ink); text-decoration: none; }
+  .g-thumb { display: block; margin-bottom: var(--s-2); }
+  .g-last { white-space: nowrap; }
+  .g-title {
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    font-weight: 740;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    text-wrap: balance;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .g-cards a:hover .g-title { text-decoration-color: currentColor; }
+  .g-cards a :global(.g-arrow) { margin-left: 0.3em; vertical-align: -0.12em; transition: transform var(--t-fast) var(--ease-out); }
+  .g-cards a:hover :global(.g-arrow) { transform: translateX(3px); }
+  .g-desc { color: var(--ink-2); font-size: 1rem; line-height: 1.5; }
+  .g-tools { display: flex; flex-wrap: wrap; gap: 0.25rem var(--s-4); font-size: 0.875rem; font-weight: 600; color: var(--ink-2); }
+  .g-tool { display: inline-flex; align-items: center; gap: 0.45rem; }
+
+  .g-more { margin-top: var(--section); padding-top: 0; }
+  .g-more-inner { display: grid; gap: var(--s-4); justify-items: start; padding-top: var(--s-6); border-top: 1px solid var(--line-strong); }
+  .g-more-inner h2 { font-size: var(--step-4); max-width: 18ch; }
+  .g-more-inner .btn { margin-top: var(--s-2); }
+</style>

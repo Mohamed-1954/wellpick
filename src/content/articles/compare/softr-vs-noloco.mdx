@@ -1,0 +1,302 @@
+---
+title: "Softr vs Noloco: client portal costs"
+description: Softr is cheaper up to 5 client logins; from the 6th, Noloco Build costs less. Who counts as a paid user, permissions, data sync and costs at six team sizes.
+type: comparison
+products: [softr, noloco, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+order: 1
+---
+
+import LayerDiagram from "../../../components/LayerDiagram.astro";
+import FlowDiagram from "../../../components/FlowDiagram.astro";
+import Shot from "../../../components/Shot.astro";
+import OfficialCta from "../../../components/OfficialCta.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Softr is the cheaper portal while you have 5 or fewer client logins: Basic
+    costs $19 a month billed yearly. The 6th client login forces Softr Pro at
+    $99, and from there Noloco Build ($65) costs less at every size we priced.
+  </p>
+  <p>
+    Price is the tiebreaker, not the decision. Choose Softr when clients mostly
+    read records your team keeps elsewhere. Choose Noloco when staff run the
+    pipeline, projects and invoices in the same app that clients log into.
+  </p>
+</aside>
+
+Both vendors publish their own comparisons ([Softr's](https://www.softr.io/softr-vs-noloco), [Noloco's](https://noloco.io/noloco-vs-softr)), and each argues for itself. This one works from their documentation and list prices.
+
+## What each product is for
+
+Both products put a login and per-client views on top of records. They differ in who else works in the app.
+
+<FlowDiagram
+  title="Softr as the portal layer"
+  description="Staff keep working in Airtable or another source; Softr reads the records and shows each client its own."
+  nodes={[
+    { label: "Staff work", sub: "Airtable, Sheets, Softr DB", marks: ["airtable", "googlesheets"] },
+    { label: "Softr app", sub: "user groups, restrictions", product: "softr" },
+    { label: "Client view", sub: "own records only", glyph: "client" },
+  ]}
+  arrowLabels={["records", "per-client rules"]}
+/>
+
+<FlowDiagram
+  title="Noloco as portal and operations"
+  description="Staff run CRM, projects and invoices in Noloco; clients log into the same app and see a role-filtered slice."
+  nodes={[
+    { label: "Noloco tables", sub: "or a synced source", product: "noloco" },
+    { label: "Staff views", sub: "pipeline, projects, invoices", product: "noloco" },
+    { label: "Client view", sub: "role-filtered", product: "noloco" },
+  ]}
+  arrowLabels={["same records", "permissions"]}
+/>
+
+<Shot
+  name="noloco-crm-canvas.png"
+  tone="noloco"
+  alt="Noloco-published image of a deal pipeline: totals for pipeline value, win rate and open deals above Kanban columns for Evaluation, Proposal, Won and Lost"
+/>
+
+Noloco's Agency OS template shows the operations side: a CRM with a sales pipeline on a Kanban board, plus projects, tasks and invoices. Its client portal runs on the same records, and each client role sees only its own company's projects, tasks and invoices. Softr's client-portal demo shows the portal side only: pages for projects, tasks and invoices over records that can live in Airtable, Google Sheets or Softr Databases.
+
+## Who counts as a paid user
+
+This is where most budgets go wrong. Both vendors split logins into "team" and "client", and both decide by email domain. Their community forums keep getting the same question from confused buyers ([Softr](https://community.softr.io/t/16820), [Noloco](https://community.noloco.io/t/2329)).
+
+<div class="table-scroll" role="region" aria-label="How Softr and Noloco count users" tabIndex={0}>
+  <table>
+    <caption>Softr and Noloco, rule by rule</caption>
+    <thead>
+      <tr><th scope="col">Rule</th><th scope="col">Softr</th><th scope="col">Noloco</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Team user</th>
+        <td>App user on the same business email domain as a builder in the workspace.</td>
+        <td>Same email domain as anyone in the workspace, or any user with a team member or data admin role.</td>
+      </tr>
+      <tr>
+        <th scope="row">Staff on Gmail</th>
+        <td>Counted as <strong>client</strong> users. Free email domains never count as a business domain.</td>
+        <td>Counted as team if their role is a team role. A Noloco staff member told a forum user that a role with access to all data also makes someone team.</td>
+      </tr>
+      <tr>
+        <th scope="row">Builders</th>
+        <td>Counted separately: 1 on Basic, 2 on Pro, 3 on Business. Builders can also be app users without using the allowance.</td>
+        <td>Count as team seats.</td>
+      </tr>
+      <tr>
+        <th scope="row">When a login counts</th>
+        <td>Unique email across all your apps. Deactivated users do not count.</td>
+        <td>Once the user logs in. An invitee who never signs in does not count.</td>
+      </tr>
+      <tr>
+        <th scope="row">Going over the cap</th>
+        <td>Basic sells no extra users. On Pro and Business, extras cost $3 or $5 per team user and $1 or $2 per client user a month, billed monthly even on a yearly plan, after a 7-day grace period. Past a plan's maximum, new users are created but stay deactivated.</td>
+        <td>Build includes 10 team seats, then $5 each (yearly) or $6 (monthly). Clients are included up to 1,000; beyond that, Enterprise.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Checkpoint:** list every person who will log in, with their email domain. Count staff on Gmail as clients for Softr. Count contacts, not client companies: a company with three people who log in uses three seats.
+
+## What it costs at six team sizes
+
+List prices in USD per month. "Yearly" is the monthly equivalent of an annual bill paid upfront. Every row assumes records stay in Airtable, fewer than 25,000 records, one builder unless stated, and no add-ons beyond users and seats.
+
+<div class="table-scroll" role="region" aria-label="Softr and Noloco cost at six team sizes" tabIndex={0}>
+  <table>
+    <caption>First plan that fits; yearly / monthly billing</caption>
+    <thead>
+      <tr><th scope="col">Who logs in</th><th scope="col">Softr</th><th scope="col">Noloco</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">You plus 4 client contacts</th><td>Free: $0 (5 app users in total)</td><td>Build: $65 / $79 (Free has no Airtable connection)</td></tr>
+      <tr><th scope="row">3 staff, 5 client contacts</th><td>Basic: $19 / $25</td><td>Build: $65 / $79</td></tr>
+      <tr><th scope="row">3 staff, 6 client contacts</th><td>Pro: $99 / $119</td><td>Build: $65 / $79</td></tr>
+      <tr><th scope="row">3 staff (one on Gmail), 5 client contacts</th><td>Pro: $99 / $119 (the Gmail user is the 6th client)</td><td>Build: $65 / $79</td></tr>
+      <tr><th scope="row">8 staff, 80 client contacts</th><td>Pro + 30 client users: $129 / $149</td><td>Build: $65 / $79</td></tr>
+      <tr><th scope="row">15 staff (2 builders), 300 client contacts</th><td>Business + 200 client users: $729 / $795 (Pro stops at 250 clients)</td><td>Build + 5 seats: $90 / $109</td></tr>
+    </tbody>
+  </table>
+</div>
+
+The crossover is the 6th client login, and it is sharp: Softr goes from $19 to $99. Noloco's cost barely moves with client count until 1,000 active clients. Softr's rises with every client past 50 on Pro.
+
+Two things push the other way. Softr's record allowances are larger (50,000 on Basic, 500,000 on Pro) than Noloco Build's 25,000, which grows at $25 per extra 25,000 up to 250,000. And on Noloco Free you get $0 only with Noloco's own tables, 2 roles, 50 active clients and 2,000 records. Put your own numbers into the [plan finder on the cost guide](/guides/portal-costs/).
+
+If another review quotes a Noloco Pro or Business plan, it describes Noloco's legacy plans. Noloco's docs say earlier subscribers keep those; new apps choose Free, Build or Enterprise ([legacy plans](https://guides.noloco.io/account/pricing/legacy-plans)). Check the date on any price you compare.
+
+Budget for change. In late 2025 Softr cut the Business plan's user allowance with no price change; a forum member quoted $150 a month (annual) for each extra 500 users after the change ([thread](https://community.softr.io/t/14375)). Plans in this category move; re-read the pricing page before you renew.
+
+## How each keeps one client out of another's records
+
+<LayerDiagram
+  title="Access controls in both products"
+  description="Each product separates interface visibility from data access. Only the record and field layers enforce the client boundary."
+  layers={[
+    { label: "Filters", detail: "Which records a view happens to show, not a boundary" },
+    { label: "Visibility", detail: "Softr page and block visibility; Noloco visibility rules" },
+    { label: "Record & field access", detail: "Softr global data restrictions; Noloco record and field permissions" },
+  ]}
+/>
+
+<div class="table-scroll" role="region" aria-label="Softr and Noloco permission differences" tabIndex={0}>
+  <table>
+    <caption>Access control in Softr and Noloco</caption>
+    <thead>
+      <tr><th scope="col">Question</th><th scope="col">Softr</th><th scope="col">Noloco</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Where the rule lives</th>
+        <td>Global data restrictions on a table, per user group. View, create, edit and delete are separate.</td>
+        <td>Record permissions per role; field permissions separately. Enforced on the server, per the docs.</td>
+      </tr>
+      <tr>
+        <th scope="row">Plan gate</th>
+        <td>View restrictions on all plans. Create, edit and delete restrictions on Business ($329) and above.</td>
+        <td>Record permissions on all plans. Field-level permissions and more than 2 roles on Build.</td>
+      </tr>
+      <tr>
+        <th scope="row">Several groups or roles</th>
+        <td>A "Can't" rule wins over a conflicting group rule.</td>
+        <td>Roles add up. Two record rules inside one role narrow to records that match both.</td>
+      </tr>
+      <tr>
+        <th scope="row">Known gap to test</th>
+        <td>An earlier version of the docs said global restrictions do not cover the Comments block.</td>
+        <td>Filters and visibility rules hide data from the interface only; the docs warn it stays reachable by URL or API.</td>
+      </tr>
+      <tr>
+        <th scope="row">Scope rows by company</th>
+        <td>Match the logged-in user's linked company. Softr staff say user-table fields become available once users are synced with your data source (<a href="https://community.softr.io/t/15970">thread</a>).</td>
+        <td>A rule such as Company equals User's Company. The target table needs a link to the User table.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+The Softr plan gate is the expensive surprise. If clients must edit records and you need the platform to enforce who edits what, that control starts on Business. On Noloco the equivalent is on Build.
+
+## Where the records live, and how fresh they are
+
+Softr reads your data source directly, with its own cache. Its guide recommends Softr Databases for a new build and treats an existing Airtable base as worth keeping. Noloco syncs external data into the app: live for Airtable and SmartSuite, on a schedule for Google Sheets, MySQL, PostgreSQL and Xano. A schema change is a separate sync.
+
+Both have had public freshness problems:
+
+- **Softr:** in December 2025, Airtable formula and lookup changes did not reach a live Softr app, because Airtable did not mark those records as updated. Softr staff suggested a last-modified field as a workaround. Softr then rolled out a new Airtable sync in January 2026 ([report](https://community.softr.io/t/14607), [announcement](https://community.softr.io/t/14705)).
+- **Noloco:** forum users report ([thread](https://community.noloco.io/t/1392)) lookup-of-lookup fields that populate only after a record is edited in Noloco. One user with heavy rollups moved the data back to Airtable and then called Noloco’s Airtable integration “much better than Softr” ([thread](https://community.noloco.io/t/2337)).
+
+These are user reports, not measurements. The practical test: change a formula field and a linked record in your source, then time how long the client view takes to show it.
+
+## Do you need a separate form tool?
+
+Both products can take a new request from a client without a second product.
+
+- **Softr:** standalone Softr Forms are documented as free and unlimited. The in-app Conditional Form Block is disputed: the pricing page lists conditional form logic under Basic, and the forms docs say Professional and higher. Ask Softr in writing before you plan a Basic build around it.
+- **Noloco:** each view has a form that creates records, with conditional fields and sections, default and hidden values, and e-signatures on all plans. Validation rules need Build. Public forms create records without a login; the pricing table lists them on every plan, while the troubleshooting guide requires Public Access, which is a Build feature. Treat Free as unconfirmed.
+
+Add [Fillout](/fillout/) when intake needs something neither documents: multi-page branching, a Stripe payment inside the form, or a link that lets a client update an existing Airtable record. Fillout Starter adds $15 a month billed yearly; embedding it inside a Softr page needs a paid Softr plan. [Softr Forms vs Fillout](/compare/softr-forms-vs-fillout/) covers the Softr side in detail.
+
+A disclosure about the form tool itself: Fillout's parent company renamed to Zite in March 2026, and [zite.com](https://www.zite.com/) now sells an app and portal builder of its own. Fillout's owner competes with both products on this page.
+
+## Six situations
+
+The businesses are fictional. Each pick follows from the documented limits and prices above.
+
+<div class="table-scroll" role="region" aria-label="Pick for six example situations" tabIndex={0}>
+  <table>
+    <caption>Which to pick, with prices on yearly billing</caption>
+    <thead>
+      <tr><th scope="col">Situation</th><th scope="col">Pick</th><th scope="col">Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Solo bookkeeper, 4 retainer clients, records in Airtable</th><td>Softr Free, then Basic</td><td>4 client logins fit Free. Basic ($19) adds a custom domain. Noloco would need Build for the Airtable connection.</td></tr>
+      <tr><th scope="row">New leads must pay a deposit in the intake form</th><td>Add Fillout Starter to either</td><td>Neither portal documents a payment step inside a form. Fillout's payment page is on every plan.</td></tr>
+      <tr><th scope="row">8-person studio, 30 active clients, deals and projects on boards</th><td>Noloco Build ($65)</td><td>30 clients put Softr on Pro ($99). Noloco adds the pipeline and the portal on one set of records.</td></tr>
+      <tr><th scope="row">3-person agency, 40 clients, long branching onboarding questionnaire</th><td>Noloco Build + Fillout Starter ($80)</td><td>Fillout's page logic handles the questionnaire and writes to Airtable; Noloco syncs Airtable live. Softr Pro plus Fillout would cost $114.</td></tr>
+      <tr><th scope="row">Clients must edit their own records under enforced rules</th><td>Noloco Build ($65), unless you already pay for Softr Business</td><td>Softr's create, edit and delete restrictions start on Business ($329).</td></tr>
+      <tr><th scope="row">Consultant with 2 clients, a shared folder and a yearly questionnaire</th><td>Buy neither yet</td><td>Nobody needs a login. A free form covers the questionnaire.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+## Leaving later
+
+Noloco documents CSV exports from a view or a whole table; linked fields export both a display value and an ID. That covers records, not files, workflows or permissions. With Softr the exit depends on the source: records in Airtable stay where they are, and Softr Databases need their own export. Softr's community team confirmed in 2024 that a Softr app cannot be exported as code ([thread](https://community.softr.io/t/10834)). Before the portal becomes business-critical, export a small set of records and check you could rebuild the project list from them.
+
+## The decision
+
+**Pick Softr if all of these are true:**
+
+- Your team works in Airtable or another source and wants to keep doing so.
+- Clients mostly read and approve, rather than edit.
+- The login count, with Gmail staff counted as clients, fits the plan you can afford.
+
+**Pick Noloco if any of these is true:**
+
+- More than 5 clients log in and you do not need Softr's larger record allowances.
+- Staff need the pipeline, projects or invoices in the same app that clients use.
+- You need field-level permissions or enforced edit rules without paying for Softr Business.
+
+**Pick neither yet** if no client needs to log in to see status, files or invoices. Come back when you answer the same client question for the third time in a week.
+
+<div class="decision-actions">
+  <OfficialCta product="softr" to="pricing" label="See Softr pricing" placement="compare-decision" />
+  <OfficialCta product="noloco" to="pricing" label="See Noloco pricing" placement="compare-decision" />
+</div>
+
+Your data already lives in Airtable? There is a third route: Airtable's own Portals add-on. See [Airtable Portals vs Softr and Noloco](/compare/airtable-portals-vs-softr/).
+
+<NextSteps
+  items={[
+    { to: "/guides/portal-costs/", title: "Put your own numbers into the plan finder" },
+    { to: "/compare/airtable-portals-vs-softr/", title: "Or stay inside Airtable with Portals" },
+    { to: "/guides/build-noloco-client-portal/", title: "Build a Noloco client portal", product: "noloco" },
+    { to: "/guides/build-softr-client-portal/", title: "Build a Softr client portal", product: "softr" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrPortal",
+    "softrPricing",
+    "softrPlansDocs",
+    "softrRestrictions",
+    "softrData",
+    "softrForms",
+    "softrConditionalForms",
+    "softrUserSync",
+    "nolocoPortal",
+    "nolocoCrm",
+    "nolocoPricing",
+    "nolocoPricingGuide",
+    "nolocoLegacyPlans",
+    "nolocoRoles",
+    "nolocoRecordRules",
+    "nolocoAccess",
+    "nolocoForms",
+    "nolocoPublicForms",
+    "nolocoSync",
+    "nolocoExport",
+    "filloutPricing",
+    "filloutEmbed",
+    "zite",
+    "ziteHome",
+    "forumSoftrTeamClient",
+    "forumSoftrBusinessLimits",
+    "forumSoftrOrgFilter",
+    "forumSoftrSync",
+    "forumNolocoSeats",
+    "forumNolocoLookups",
+    "forumNolocoImport",
+    "forumSoftrExport",
+  ]}
+/>

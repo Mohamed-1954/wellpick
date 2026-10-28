@@ -1,0 +1,51 @@
+# Build, verify and deploy the static site to GitHub Pages.
+# PUBLIC_SITE_ENV and SITE_URL come from repository variables of the same
+# names; without them the site deploys as noindex "staging" on wellpickhq.com.
+# Switch PUBLIC_SITE_ENV to "production" only when the site should be indexed.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_SITE_ENV: ${{ vars.PUBLIC_SITE_ENV || 'staging' }}
+      SITE_URL: ${{ vars.SITE_URL || 'https://wellpickhq.com' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # astro build, then scripts/verify.mjs (links, media manifest, claims, disclosure)
+      - run: pnpm build
+      - run: node scripts/seo-check.mjs
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

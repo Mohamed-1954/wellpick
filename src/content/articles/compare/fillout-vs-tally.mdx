@@ -1,0 +1,178 @@
+---
+title: Fillout vs Tally for Airtable intake
+description: Tally creates Airtable records for free. Compare it with Fillout on record updates, respondent login, linked records and plan prices.
+type: comparison
+products: [fillout]
+publishedAt: 2026-09-27
+updatedAt: 2026-09-27
+order: 4
+---
+
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Use Tally if each client enquiry should become one new Airtable record. It
+    does that for free, with conditional logic, file uploads up to 10 MB,
+    Stripe payments and hidden fields.
+  </p>
+  <p>
+    Pay for Fillout when intake has to touch records that already exist: a
+    link that lets a client correct their own record, a form behind a login,
+    or answers that write to linked tables. Tally's documentation describes
+    none of those.
+  </p>
+</aside>
+
+This site covers Fillout and may earn a commission from it; it has no relationship with Tally. This comparison covers one job, getting a client's brief into Airtable, and works from each vendor's help center.
+
+## Where the two differ for intake
+
+<div class="table-scroll" role="region" aria-label="Fillout and Tally compared for client intake" tabIndex={0}>
+  <table>
+    <caption>Tally and Fillout by intake job</caption>
+    <thead>
+      <tr><th scope="col">Intake job</th><th scope="col">Tally</th><th scope="col">Fillout</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">New enquiry becomes an Airtable record</th>
+        <td>Free integration. Maps each block to a field; can backfill earlier responses; shows sync logs and emails you when a sync fails.</td>
+        <td>Native integration on every plan. Maps questions to fields in one base and table per form; a multi-table feature exists.</td>
+      </tr>
+      <tr>
+        <th scope="row">Client corrects an existing record</th>
+        <td>The Airtable integration guide describes sending responses, not updating records. Updates need an automation tool such as Zapier or Make, or an Airtable automation.</td>
+        <td>Update links: one URL per Airtable record that prefills and saves back to it. Anyone with the link can see every field unless “Restrict prefilled data” is on.</td>
+      </tr>
+      <tr>
+        <th scope="row">One brief, several linked records</th>
+        <td>Not documented in the Airtable integration guide.</td>
+        <td>Documents subforms and repeated sections that create multiple linked records.</td>
+      </tr>
+      <tr>
+        <th scope="row">Only the right person can open the form</th>
+        <td>A shared form password, free. Email verification on Business ($74/month yearly).</td>
+        <td>Login pages with email code, password or SSO, from Starter ($15/month yearly).</td>
+      </tr>
+      <tr>
+        <th scope="row">Conditional questions and branching</th>
+        <td>Conditional logic and calculations, free.</td>
+        <td>Conditional fields and page branching on every plan.</td>
+      </tr>
+      <tr>
+        <th scope="row">Largest file per upload</th>
+        <td>10 MB on Free; no limit on Pro.</td>
+        <td>20 MB on Free, Starter and Pro; 1 GB on Business.</td>
+      </tr>
+      <tr>
+        <th scope="row">Deposit in the form</th>
+        <td>Stripe, free. Tally adds no fee on top of Stripe's.</td>
+        <td>Stripe payment page on every plan, no Fillout fee.</td>
+      </tr>
+      <tr>
+        <th scope="row">Carry context in the link</th>
+        <td>Hidden fields from URL parameters; can prefill questions.</td>
+        <td>URL parameters, hidden fields and prefill; pre-fetching record data on Business.</td>
+      </tr>
+      <tr>
+        <th scope="row">Stop repeat submissions</th>
+        <td>“Prevent duplicate submissions” is on the free feature list. It works on the form, not on Airtable.</td>
+        <td>Airtable duplicate prevention on email or single-line fields, Business only.</td>
+      </tr>
+      <tr>
+        <th scope="row">Colleagues who edit forms</th>
+        <td>Team collaboration is a Pro feature.</td>
+        <td>Unlimited seats on every plan, including Free.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+“Not documented” means the vendor's guide does not describe the feature, not that the feature is missing. Check Tally's changelog before you rule it out.
+
+## Where Tally is enough
+
+A typical first-contact brief (who you are, what you need, budget, timeline, a file or two) creates one record and never needs changing by the client. Tally covers that completely on its free plan, with no response cap, provided you stay within its fair-use policy. If you already have an Airtable automation that routes new records, Tally slots into it without new costs.
+
+Tally also stores form data in the EU (it is a Belgian company). That can matter if your clients ask where their answers are held.
+
+## Where Fillout earns its fee
+
+People building client portals on Airtable keep asking Softr's community forum for the same three things ([updating a record from an embedded form](https://community.softr.io/t/9609), [passing the logged-in user into the form](https://community.softr.io/t/2614)). They want to pass the logged-in client into the form, update a record instead of creating a new one, and link the submission to the right company. These are the jobs Fillout documents and Tally's Airtable guide does not.
+
+- **Corrections without duplicates.** Send each client the update link for their own record. Before you do, move internal fields to a separate table or turn on “Restrict prefilled data”, because the link otherwise exposes the whole record.
+- **A form only signed-in clients can use.** Starter's login pages verify the respondent. Tally's password is shared by everyone who has it.
+- **One brief, several records.** An onboarding form that creates a company, two contacts and a project, already linked.
+
+If none of those apply, Fillout's extra cost buys you little for intake.
+
+## What each costs
+
+List prices in USD per month; “yearly” is the monthly equivalent of an annual bill.
+
+<div class="table-scroll" role="region" aria-label="Fillout and Tally plan prices" tabIndex={0}>
+  <table>
+    <caption>Paid plans and what each adds for intake</caption>
+    <thead>
+      <tr><th scope="col">Plan</th><th scope="col">Yearly / monthly</th><th scope="col">What it adds for intake</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">Tally Free</th><td>$0</td><td>Unlimited forms and responses under fair use; payments; 10 MB files.</td></tr>
+      <tr><th scope="row">Tally Pro</th><td>$24 / $29</td><td>Unlimited file size, custom domain, team collaboration, partial submissions, no branding.</td></tr>
+      <tr><th scope="row">Tally Business</th><td>$74 / $89</td><td>Respondent email verification, data retention controls.</td></tr>
+      <tr><th scope="row">Fillout Free</th><td>$0</td><td>1,000 responses a month, unlimited seats.</td></tr>
+      <tr><th scope="row">Fillout Starter</th><td>$15 / $19</td><td>Login pages, 2,000 responses a month.</td></tr>
+      <tr><th scope="row">Fillout Pro</th><td>$40 / $49</td><td>5,000 responses a month.</td></tr>
+      <tr><th scope="row">Fillout Business</th><td>$75 / $89</td><td>Unlimited responses, 1 GB files, Airtable duplicate prevention.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+Fillout's update links and page branching work on the free plan. You pay for Fillout when you pass 1,000 responses a month, need a login, or need large files.
+
+## The decision
+
+- **Choose Tally** when each enquiry is a new record, files are under 10 MB, and nobody needs to sign in.
+- **Choose Fillout** when clients must update their own records, sign in to the form, or create linked records in one submission.
+- **Choose Fillout Business** only if Airtable-level duplicate prevention or files over 20 MB are a requirement.
+- **Use neither** if your portal's own forms already do the job. Softr's standalone forms are free and unlimited, and Noloco views include forms that create records.
+
+Fillout's owner, Zite, now also sells an app and portal builder. That does not change how Fillout forms work.
+
+<NextSteps
+  items={[
+    { to: "/guides/fillout-intake-to-airtable/", title: "Build the Fillout intake form, step by step", product: "fillout" },
+    { to: "/compare/softr-forms-vs-fillout/", title: "Already on Softr? Compare its own forms", product: "softr" },
+    { to: "/fillout/", title: "The Fillout guide and plans", product: "fillout" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "tallyPricing",
+    "tallyPlans",
+    "tallyAirtable",
+    "tallyFiles",
+    "tallyPayments",
+    "tallyPassword",
+    "tallyBusiness",
+    "tallyHiddenFields",
+    "filloutPricing",
+    "filloutAirtable",
+    "filloutUpdate",
+    "filloutLinked",
+    "filloutLogin",
+    "filloutLogic",
+    "filloutPageLogic",
+    "filloutFiles",
+    "filloutPayments",
+    "filloutUrlParams",
+    "filloutPrefetch",
+    "filloutDuplicates",
+    "ziteHome",
+    "forumSoftrFillout",
+    "forumSoftrPrefill",
+  ]}
+/>

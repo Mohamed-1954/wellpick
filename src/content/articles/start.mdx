@@ -1,0 +1,118 @@
+---
+title: Which stack do you need?
+description: Decide whether you need a client portal, shortlist Softr or Noloco, and separate intake, access, and budget requirements before buying.
+type: page
+products: []
+publishedAt: 2026-09-18
+updatedAt: 2026-09-26
+---
+
+import StackMap from "../../components/StackMap.astro";
+import NextSteps from "../../components/NextSteps.astro";
+import Sources from "../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Start with one recurring client task, not a feature list. If briefs arrive
+    incomplete, fix intake with Fillout. If clients keep asking where their work
+    is, put a Softr portal on your existing records. If staff and clients need
+    the same records, look at Noloco.
+  </p>
+  <p>
+    A portal is not required at all if a shared folder and a reliable update
+    already do the job.
+  </p>
+</aside>
+
+<StackMap />
+
+## Do you need a portal at all?
+
+A portal earns its place when clients return to the same project information and need their own view of a shared system. An intake form solves an earlier problem, collecting the brief, and does not by itself control who can see the resulting records.
+
+- **Keep your current setup** if a shared folder and a clear weekly update already work. New software adds another thing to maintain.
+- **Fix intake first** if the main problem is incomplete briefs. Start with the [intake form guide](/guides/fillout-intake-to-airtable/), or check whether free [Tally is enough](/compare/fillout-vs-tally/).
+- **Evaluate a portal** if clients repeatedly need project status, deliverables, or a next action, and those records need per-client access rules.
+
+A portal will not fix stale information. Assign someone to own updates before you assign software to display them.
+
+Two routes sit outside this site's three tools. If your records already live in Airtable, its own Portals add-on may be enough: see [Airtable Portals vs Softr and Noloco](/compare/airtable-portals-vs-softr/). If you want proposals, contracts, invoicing and a portal in one subscription, all-in-one client tools such as SuiteDash are a different category, which this site does not cover.
+
+## Pick your path
+
+### Path 1: intake only, [Fillout](/fillout/)
+
+You are here if…
+
+- Briefs arrive with missing pieces and your team re-asks the same questions.
+- The brief should write straight into Airtable or another system of record.
+- Nobody is asking for a client-facing project view yet.
+
+Build guide: [Fillout intake form into Airtable](/guides/fillout-intake-to-airtable/).
+
+### Path 2: portal on existing records, [Softr](/softr/)
+
+You are here if…
+
+- Clients keep asking for status, deliverables, or what happens next.
+- Your project records already live in Airtable, Google Sheets, or a database you control.
+- One person can own the portal build and its upkeep.
+
+Build guide: [Build a Softr client portal](/guides/build-softr-client-portal/).
+
+### Path 3: portal plus team operations, [Noloco](/noloco/)
+
+You are here if…
+
+- Staff run CRM, projects, and tasks in one place and clients should see a slice of the same records.
+- You need record- and field-level permissions between the two audiences.
+- Your team is willing to maintain the data model behind it.
+
+Build guide: [Build a Noloco client portal](/guides/build-noloco-client-portal/). Not sure where the line between Softr and Noloco falls? Read [Softr vs Noloco](/compare/softr-vs-noloco/): the 6th client login is usually the tipping point.
+
+## Write a one-page requirement
+
+Use this deliberately small example as a starting point. It is a proposed workflow, not a customer case study:
+
+> A small studio wants each client to see their own projects, open the latest deliverable, and send feedback. Staff can update progress. Clients cannot see another company’s projects or internal notes.
+
+Then make the boundaries explicit: who maintains the portal, where the records live, which actions each side can take, how access is scoped to a company, and what happens when a project ends or a contact leaves.
+
+Do not use a client’s editable form answer as the authority for granting access to a company. Have an internal owner verify that relationship.
+
+## Set your stop conditions before a trial
+
+A short trial should answer a decision, not produce an attractive dashboard. Use two synthetic client companies and disqualify the setup if:
+
+- a client can retrieve another client’s record or file;
+- a required action cannot be restricted on an affordable plan;
+- staff must copy information between systems often enough to make it unreliable;
+- you cannot recover the records and relationships needed to leave.
+
+<NextSteps
+  items={[
+    {
+      to: "/compare/softr-vs-noloco/",
+      title: "Softr or Noloco: costs at six team sizes",
+      product: "softr",
+    },
+    {
+      to: "/compare/airtable-portals-vs-softr/",
+      title: "Already on Airtable? Price its own Portals",
+    },
+    {
+      to: "/guides/portal-costs/",
+      title: "Price the whole setup, not just the plan",
+    },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrPortal",
+    "softrRestrictions",
+    "nolocoPortal",
+    "nolocoRoles",
+    "filloutAirtable",
+  ]}
+/>

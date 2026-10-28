@@ -1,0 +1,12 @@
+[
+  { "id": "ours-home", "url": "http://localhost:4322/" },
+  { "id": "ours-softr", "url": "http://localhost:4322/softr/" },
+  { "id": "ours-noloco", "url": "http://localhost:4322/noloco/" },
+  { "id": "ours-fillout", "url": "http://localhost:4322/fillout/" },
+  { "id": "ours-softr-pricing", "url": "http://localhost:4322/softr/pricing/" },
+  { "id": "ours-guides", "url": "http://localhost:4322/guides/" },
+  { "id": "ours-article-costs", "url": "http://localhost:4322/guides/portal-costs/" },
+  { "id": "ours-compare", "url": "http://localhost:4322/compare/" },
+  { "id": "ours-vs", "url": "http://localhost:4322/compare/softr-vs-noloco/" },
+  { "id": "ours-start", "url": "http://localhost:4322/start/" }
+]

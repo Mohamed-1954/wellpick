@@ -1,0 +1,76 @@
+---
+title: "Client intake form questions: what to ask, what to cut, and what to ask later"
+seoTitle: "Client intake form questions: what to ask and cut"
+description: A practical question list for a service business intake form, sorted by what each answer decides. Includes the questions that belong on the call instead of the form.
+type: post
+topic: intake
+products: [fillout]
+sourceIds: [filloutLogic, filloutPageLogic, filloutFiles, filloutUrlParams]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Ask only what changes the price, the scope, the date or who does the work.
+    Everything else waits for the call. For most small studios that is about
+    eight questions, two of them conditional.
+  </p>
+</aside>
+
+An intake form has two readers. The client fills it in, and someone on your team turns it into a quote. Most forms are written for neither. They ask what a brand questionnaire asks, at a length nobody finishes, and the answers still need a call to make sense.
+
+A better test for every question is simple: **what does this answer decide?** If you cannot name the decision, the question can go.
+
+## The core questions
+
+These are the questions most service businesses need before they can reply with a price or a "not for us". Adjust the wording to your trade.
+
+| Question | Field type | What it decides |
+| --- | --- | --- |
+| Name and email | Text, email | Who to reply to |
+| Company or project name | Text | How the record is filed |
+| What do you need? | Single choice of your services | Which branch of the form, and who on the team reads it |
+| What does success look like in three months? | Short text | Whether you can deliver it |
+| Budget range | Single choice of your real ranges | Whether to quote, and which package |
+| Ideal start date | Date | Whether you have capacity |
+| Hard deadline, if any | Date, optional | Rush pricing or a polite no |
+| Existing material | File upload, optional | How much discovery the job needs |
+
+Eight questions. A client can finish them in a few minutes, and the record they create is enough for a first reply.
+
+## Two conditional branches that pay for themselves
+
+Use logic so each client only sees the questions for their job. Fillout documents two kinds: conditional fields that show or hide based on earlier answers, and page logic that sends the respondent to a different page.
+
+**Branch on the service.** A website project needs page count, platform and integrations. A brand project needs deliverables and usage. Put each set on its own page and route by the "What do you need?" answer.
+
+**Branch on the budget.** If the range is below your minimum, show a short, honest note: what you can do at that level, or who you would refer them to. It saves both sides a call.
+
+## Questions to move to the call
+
+These are good questions. They are just better asked by a person:
+
+- **"Tell us about your brand."** The answer is long, vague and different every time. Ask it live.
+- **"Who are your competitors?"** Useful for the work, not for the quote.
+- **"How did you hear about us?"** Capture it from the link instead with a [hidden field](/blog/hidden-fields-lead-source/).
+- **"What is your timeline?"** Replace with two date fields. "Soon" is not a timeline.
+- **"Anything else?"** Keep one optional box at the end. Do not make it required.
+
+## Questions that need care
+
+**Uploads.** Files are useful, but check the limits. Fillout lists 20 MB per file on Free, Starter and Pro, and 1 GB on Business and Team. A video brief will not fit on the lower plans. Ask for a link instead if you expect large files.
+
+**Personal or sensitive data.** If you do not need it to quote, do not collect it in the form. Less data in the record is less data to protect.
+
+**Legal or contract terms.** A form is not a contract. Link to your terms and keep the form about the job.
+
+## Check the brief, not the form
+
+When the form is ready, submit three fictional briefs: a perfect fit, a poor fit and a confusing one. Then read the records as your colleague would, without the form open.
+
+- Can you quote from the record alone?
+- Does the poor fit get a clear, kind answer from the form itself?
+- Did the confusing brief reveal a question that needs a choice instead of free text?
+
+If you are building in Fillout with Airtable, the [intake guide](/guides/fillout-intake-to-airtable/) shows the field mapping, and we keep a plain [intake brief template](/resources/client-intake-brief.txt) you can adapt.

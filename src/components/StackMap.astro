@@ -1,0 +1,231 @@
+---
+// Intake → portal → team as three adjoining chapter-colored bars, after
+// Customer.io's capability strip: full-height media-backed columns with no
+// gutter, a round badge and the label anchored bottom-left. Here the media is
+// a real vendor screen of each job on the lit chapter field (not stock
+// people), running off the bar's top and right edges. Each bar points into
+// the next (a chevron joint); the handoff is named inside the receiving bar,
+// so no caption floats between steps. Narrow containers stack the bars with
+// downward points.
+import Icon from './Icon.astro';
+import { vendorImage } from '../lib/media';
+
+const steps = [
+  {
+    id: 'fillout',
+    name: 'Fillout',
+    job: 'Collect the brief',
+    detail: 'Conditional intake forms that write straight into your records.',
+    media: { name: 'fillout-builder-card.png', alt: 'Fillout form builder: a question dragged into a registration form', position: '40% 30%' },
+  },
+  {
+    id: 'softr',
+    name: 'Softr',
+    job: 'Show clients their work',
+    from: 'From intake: answers become records',
+    detail: 'List and detail pages over your records, limited per client.',
+    media: { name: 'softr-uc-projects.webp', alt: 'A Softr portal page listing projects in progress and in review', position: '0% 10%' },
+  },
+  {
+    id: 'noloco',
+    name: 'Noloco',
+    job: 'Run the team behind it',
+    from: 'From the portal: the same records run the team',
+    detail: 'Portal plus CRM, projects and tasks on the same records.',
+    media: { name: 'noloco-project-canvas.png', alt: 'Noloco project tracker with project counts, budgets and statuses', position: '10% 0%' },
+  },
+].map((s) => ({ ...s, img: vendorImage(s.media.name) }));
+---
+
+<div class="stackmap">
+  <ol class="sm-bars">
+    {
+      steps.map((s, i) => (
+        <li class="sm-bar field" data-chapter={s.id}>
+          <div class="sm-media">
+            <img
+              src={s.img.src}
+              srcset={s.img.srcset}
+              sizes="(min-width: 64rem) 26rem, 90vw"
+              width={s.img.width}
+              height={s.img.height}
+              alt={s.media.alt}
+              loading="lazy"
+              decoding="async"
+              style={`object-position: ${s.media.position}`}
+            />
+          </div>
+          <span class="sm-badge num" aria-hidden="true">{i + 1}</span>
+          {s.from && <p class="sm-from">{s.from}</p>}
+          <div class="sm-foot">
+            <p class="sm-job">{s.job}</p>
+            <a class="sm-tool" href={`/${s.id}/`}>
+              {s.name} <Icon name="arrow-right-linear" size="1.125rem" />
+            </a>
+            <p class="sm-detail">{s.detail}</p>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="sm-bypass">
+    Or skip a layer: <a class="text-link" href="/noloco/">Noloco can be the portal and the operations tool at once</a>.
+  </p>
+</div>
+
+<style>
+  .stackmap {
+    container: stackmap / inline-size;
+    max-width: none;
+    margin-block: clamp(2rem, 1.5rem + 2vw, 3rem);
+  }
+  .sm-bars {
+    --point: 1rem;
+    --badge: 2.25rem;
+    --job-size: var(--step-3);
+    --job-lh: 1.08;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+
+  /* ---- Narrow: stacked bars, each pointing down into the next ---- */
+  .sm-bar {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--badge) minmax(0, 1fr);
+    grid-template-areas:
+      'media media'
+      'from from'
+      'badge job'
+      '. tool'
+      '. detail';
+    column-gap: 0.875rem;
+    align-items: start;
+    margin: 0;
+    padding: 1.5rem;
+    color: var(--on-chapter);
+    --focus: var(--on-chapter);
+  }
+  /* Media sits at the top of a bar, text at the foot: keep the light up top
+     at every width (the phone default moves it to the foot). */
+  .sm-bar.field { --field-at: 92% -8%; }
+  /* The job's real screen on the lit field, off the bar's top and right. */
+  .sm-media {
+    grid-area: media;
+    height: 10rem;
+    margin: -1.5rem -1.5rem 1.5rem 0;
+    padding-top: 1.25rem;
+    overflow: clip;
+  }
+  .sm-media img {
+    width: 118%;
+    max-width: none;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 10px 0 0 0;
+    box-shadow: 0 0 0 1px oklch(0.2 0.02 262 / 0.12), var(--lift-field);
+  }
+  .sm-bar:nth-child(1) { z-index: 3; border-radius: var(--r-block) var(--r-block) 0 0; }
+  .sm-bar:nth-child(2) { z-index: 2; }
+  .sm-bar:nth-child(3) { z-index: 1; border-radius: 0 0 var(--r-block) var(--r-block); }
+  .sm-bar:not(:last-child) {
+    padding-bottom: calc(1.5rem + var(--point));
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--point)), 50% 100%, 0 calc(100% - var(--point)));
+  }
+  .sm-bar + .sm-bar { margin-top: calc(var(--point) * -1); padding-top: 2.5rem; }
+  .sm-foot { display: contents; }
+
+  .sm-badge {
+    grid-area: badge;
+    display: grid;
+    place-items: center;
+    width: var(--badge);
+    height: var(--badge);
+    /* Centered on the job's first line. */
+    margin-top: calc((var(--job-size) * var(--job-lh) - var(--badge)) / 2);
+    border-radius: 50%;
+    background: var(--on-chapter);
+    color: var(--ch-deep);
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1;
+  }
+  .sm-from {
+    grid-area: from;
+    margin: 0 0 1rem;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--on-chapter-muted);
+  }
+  .sm-job {
+    grid-area: job;
+    margin: 0;
+    font-size: var(--job-size);
+    font-weight: 780;
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.025em;
+    line-height: var(--job-lh);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  .sm-tool {
+    grid-area: tool;
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    margin-top: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: var(--on-chapter);
+    text-decoration: underline transparent 1.5px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .sm-tool:hover { text-decoration-color: currentColor; }
+  .sm-tool:focus-visible { outline-color: var(--on-chapter); }
+  .sm-detail {
+    grid-area: detail;
+    margin: 0;
+    max-width: 32ch;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--on-chapter-muted);
+  }
+
+  /* ---- Wide: three adjoining columns, each pointing right into the next ---- */
+  @container stackmap (min-width: 48rem) {
+    .sm-bars { --point: 1.25rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .sm-bar {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 20rem;
+      padding: 1.75rem 2.25rem 2rem;
+    }
+    .sm-media { align-self: stretch; height: 13rem; margin: -1.75rem -2.25rem 1.5rem 0; padding-top: 1.75rem; }
+    .sm-bar + .sm-bar .sm-media { margin-left: -1.25rem; }
+    .sm-bar:nth-child(1) { border-radius: var(--r-block) 0 0 var(--r-block); }
+    .sm-bar:nth-child(3) { border-radius: 0 var(--r-block) var(--r-block) 0; }
+    .sm-bar:not(:last-child) {
+      padding-bottom: 2rem;
+      clip-path: polygon(0 0, calc(100% - var(--point)) 0, 100% 50%, calc(100% - var(--point)) 100%, 0 100%);
+    }
+    .sm-bar + .sm-bar { margin-top: 0; margin-left: calc(var(--point) * -1); padding-top: 1.75rem; padding-left: 3.5rem; }
+    .sm-badge { margin-top: 0; }
+    .sm-from { margin: 1rem 0 0; }
+    /* Badge and handoff at the top, the job and its tool anchored to the foot. */
+    .sm-foot { display: grid; justify-items: start; margin-top: auto; padding-top: var(--s-6); }
+    .sm-foot > * { grid-area: auto; }
+  }
+
+  .sm-bypass {
+    margin-top: 1.25rem;
+    font-size: 1rem;
+    color: var(--ink-2);
+  }
+</style>

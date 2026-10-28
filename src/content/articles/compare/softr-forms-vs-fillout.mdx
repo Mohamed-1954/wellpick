@@ -1,0 +1,204 @@
+---
+title: Softr Forms vs Fillout for client intake
+description: Compare standalone Softr Forms, the in-app Conditional Form Block, and Fillout for client intake, linked records, login, uploads, and ongoing maintenance.
+type: comparison
+products: [softr, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+order: 3
+---
+
+import FlowDiagram from "../../../components/FlowDiagram.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import OfficialCta from "../../../components/OfficialCta.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    If Softr is already your portal, start with its own forms: standalone
+    Softr Forms are free and unlimited, even on the Free plan. Add Fillout when
+    intake must update an existing Airtable record or create several linked
+    records from one submission. Neither is documented for Softr’s forms.
+  </p>
+  <p>
+    Conditional questions alone are not a reason to add Fillout: both products
+    document them.
+  </p>
+</aside>
+
+<FlowDiagram
+  title="Three intake routes"
+  description="A brief can arrive through standalone Softr Forms, the in-app Conditional Form Block, or Fillout writing to Airtable. All three need the same review step before a record becomes a project."
+  nodes={[
+    { label: "New brief", glyph: "client" },
+    { label: "Intake form", sub: "Softr standalone · in-app block · Fillout", glyph: "intake" },
+    { label: "Reviewed record", sub: "staff verify relationship", glyph: "records" },
+    { label: "Client project", product: "softr" },
+  ]}
+  arrowLabels={["answers", "approval", "handoff"]}
+/>
+
+## Decide where the form belongs first
+
+A public enquiry and a logged-in project update are different jobs. The first accepts information from a stranger; the second can expose and change an existing client record. Design the access boundary before comparing themes or field animations.
+
+There are actually three options: **standalone Softr Forms** (outside an app), the **Conditional Form Block** (inside an app), and **Fillout** (a separate service with a documented Softr embed path).
+
+## The documented differences
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Softr Forms and Fillout comparison"
+  tabIndex={0}
+>
+  <table>
+    <caption>Softr Forms and Fillout, question by question</caption>
+    <thead>
+      <tr>
+        <th scope="col">Question</th>
+        <th scope="col">Softr native options</th>
+        <th scope="col">Fillout</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Can it branch or hide questions?</th>
+        <td>
+          Standalone forms document multi-step conditional logic and validation.
+        </td>
+        <td>
+          Documents conditional fields using prior answers, URL parameters,
+          integration data, and dates.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Where does the data go?</th>
+        <td>
+          Softr Database by default for standalone forms, with integrations and
+          other destinations available.
+        </td>
+        <td>
+          Documents Airtable create/update mapping plus other integrations.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">What can I start with free?</th>
+        <td>
+          Standalone forms document unlimited forms and submissions, including
+          on Free. The in-app Conditional Form Block is a paid feature.
+        </td>
+        <td>
+          Pricing lists 1,000 monthly responses on Free, with unlimited forms
+          and seats. Starter costs $15/month billed yearly or $19/month billed
+          monthly.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">How does it live inside Softr?</th>
+        <td>
+          The Conditional Form Block is app-native. Its plan is contested: the
+          pricing page lists conditional form logic under Basic; the forms
+          docs say Professional and higher. Confirm with Softr.
+        </td>
+        <td>
+          The embedding guide uses a Custom code block and says a paid Softr
+          account is required.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">How do existing records get updated?</th>
+        <td>
+          Softr's own blocks can edit records in place for signed-in users.
+          Enforced create, edit and delete restrictions start on Business.
+        </td>
+        <td>
+          Documents Airtable update links and prefilling, with an explicit
+          warning about access to the record’s fields.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Can it create related records?</th>
+        <td>Softr's forms docs do not describe creating several linked records from one submission.</td>
+        <td>
+          Documents subforms, combined/repeated forms, and webhook routes for
+          multiple Airtable records.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+The table does not equate differently scoped features: a standalone form’s submission allowance is not a portal’s app-user allowance.
+
+## Match the route to the scenario
+
+- **A straightforward new-client brief:** use standalone Softr Forms if you already build in Softr. Fillout earns its place here only if your team already maintains its forms there or needs an integration Softr lacks.
+- **Several contacts or related items per submission:** this is where Fillout is documented and Softr’s forms are not (linked-record subforms, combined and repeated forms). Before paying, write down what should happen for one item, several items and a repeated submission.
+- **An existing client changes a brief:** start with the record-access model. Fillout warns that an Airtable update link can expose every field on the record, including fields not shown as questions; its mitigations are separate private tables or restricted prefilled data.
+- **A large upload or a specific login method:** Fillout lists 20 MB per file on Free, Starter and Pro, 1 GB on Business and Team, and 5 GB on Enterprise. Login pages are available on Starter, Pro, Business and Enterprise. These requirements can choose the plan before submission volume does. Starter costs $15/month billed yearly or $19/month billed monthly; Business costs $75 or $89.
+
+<details>
+  <summary>What embedding adds to the decision</summary>
+  <p>
+    Fillout’s Softr integration is documented: embed code goes into a Custom
+    code block, a paid Softr account is required, and logged-in user context can
+    be passed in. Several field types need at least 600 pixels of embed height, so test the real form on a phone.
+  </p>
+  <p>
+    Two systems still need checking: the standalone form URL and the embedded
+    version. Context values such as email or record ID personalize a form; they
+    do not prove identity or permission.
+  </p>
+</details>
+
+## Make the choice
+
+Write down the same five requirements for both options: the questions, the records created or updated, the identity requirement, the largest upload, and the next action. Build only that path in each option you are seriously considering.
+
+Choose the native option if it meets those needs and the maintainer understands it. Choose Fillout if it solves an unmet need at a cost you can justify. Keep your current form if neither creates a clear benefit.
+
+One case needs its own check. If you plan to rely on Softr’s in-app Conditional Form Block, confirm its plan with Softr before you buy. The pricing page and the docs give different answers. If the block turns out to need Pro, the gap between Softr Basic and Pro is $80 a month on yearly billing ($19 vs $99). Fillout’s conditional logic works on every plan, Free included, and its Softr embed needs a paid Softr account, which Basic is. So Softr Basic plus Fillout costs $19 a month with Fillout Free, or $34 with Starter’s login pages, against $99 for Softr Pro, as long as Basic’s 5 team and 5 client users are enough.
+
+<div class="decision-actions">
+  <OfficialCta product="softr" to="pricing" label="See Softr pricing" placement="compare-decision" />
+  <OfficialCta product="fillout" to="pricing" label="See Fillout pricing" placement="compare-decision" />
+</div>
+
+<NextSteps
+  items={[
+    {
+      to: "/guides/fillout-intake-to-airtable/",
+      title: "Build a Fillout intake form into Airtable",
+      product: "fillout",
+    },
+    {
+      to: "/compare/fillout-vs-tally/",
+      title: "Or is free Tally enough for intake?",
+      product: "fillout",
+    },
+    {
+      to: "/compare/softr-vs-noloco/",
+      title: "Could Noloco alone replace Softr plus Fillout?",
+      product: "noloco",
+    },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrForms",
+    "softrConditionalForms",
+    "softrPricing",
+    "softrRestrictions",
+    "filloutAirtable",
+    "filloutLogic",
+    "filloutLinked",
+    "filloutUpdate",
+    "filloutLogin",
+    "filloutFiles",
+    "filloutEmbed",
+    "filloutPricing",
+    "forumSoftrFillout",
+  ]}
+/>

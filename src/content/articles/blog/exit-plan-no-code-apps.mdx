@@ -1,0 +1,68 @@
+---
+title: "Can you leave? An exit plan for no-code client apps"
+description: "A no-code portal is easy to start and harder to move. What Noloco and Softr let you export, what stays behind, and a one-hour exit drill."
+type: post
+topic: operations
+products: [noloco, softr]
+sourceIds: [nolocoExport, forumSoftrExport, softrData, nolocoSync, nolocoCollections]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    You can take your records with you. You cannot take the app. Noloco
+    exports CSV files with linked-record IDs; a Softr app cannot be exported
+    as code, so your exit runs through the data source. Keep records where you
+    can export them, and run an exit drill once a year.
+  </p>
+</aside>
+
+Nobody chooses a tool planning to leave it. You leave because the price changes, a feature moves to a higher plan, the vendor changes direction, or your business outgrows it. When that happens, the question is not "can I export?" but "what do I have to rebuild?".
+
+## What an app is made of
+
+A client portal has four layers. Only the first one is easy to move.
+
+| Layer | Examples | Portable? |
+| --- | --- | --- |
+| Records | Projects, tasks, invoices, contacts | Yes, as files or by staying in your source |
+| Files | Uploads, deliverables, signed documents | Usually, with some effort |
+| Rules | User roles, record permissions, field visibility | No. Rebuild them by hand. |
+| Behavior | Pages, layouts, workflows, emails | No. Rebuild them by hand. |
+
+Every no-code tool works this way. The exit plan is about keeping the first two layers safe and the last two documented.
+
+## What each tool lets you take
+
+**Noloco.** Noloco documents CSV exports from a view or a whole table. Linked fields export both a display value and an ID, so you can rebuild relationships elsewhere. If your records live in Noloco's own tables, this export is your exit. If they sync from Airtable or another source, the source still holds them.
+
+**Softr.** Softr reads from a data source. If that source is Airtable, Google Sheets or another tool you control, your records are already outside Softr. If you used Softr Databases, they need their own export. Softr's community team confirmed in 2024 that a Softr app cannot be exported as code.
+
+In both cases, "export" means records. Rules and workflows stay behind.
+
+## The one-hour exit drill
+
+Run this once, before the portal is business-critical, and again each year.
+
+1. **Export three related tables,** for example companies, projects and tasks.
+2. **Open the files in a spreadsheet.** Can you tell which task belongs to which project from the export alone?
+3. **List every user role** and write its rule as one sentence. "Clients see projects where the company is theirs."
+4. **List every workflow** with its trigger and what it does.
+5. **Note where files live** and how you would download them in bulk.
+6. **Save all of it** in a folder outside the tool.
+
+The output is a short document and a few CSV files. It is enough for you, or someone you hire, to rebuild the portal elsewhere without guessing.
+
+## Choices that make leaving cheaper
+
+- **Keep the source of truth in a tool you can export from.** A portal on top of your own base is a layer you can replace.
+- **Use linked records, not typed names.** Exports keep IDs; names drift.
+- **Name fields plainly.** "Client approval date" survives a migration. "Field 7" does not.
+- **Write rules down when you set them.** Ten minutes now saves a day later.
+
+## When lock-in is fine
+
+Lock-in is a cost, not a sin. If a tool saves your team hours every week, a day of rebuild work in a few years may be a good trade. The point of an exit plan is to know the price, not to avoid every tool that has one.
+
+For how vendor changes can force the question, see [when your software vendor changes hands](/blog/when-your-software-vendor-changes-hands/). For setting up records so they travel well, see the [portal data model guide](/guides/portal-data-model/).

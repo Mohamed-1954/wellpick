@@ -1,0 +1,286 @@
+---
+// "How it fits your workflow" on the hubs (v12), after Mintlify's product
+// cards: a bundle of fine lines carries the records from their sources,
+// behind the product's real screen, to the access rules, where the bundle
+// narrows to the few lines that pass, and on to the people who see them.
+// The narrowing is the point: only allowed records get through. Under the
+// stage, one card per stop says what happens there. Wide screens only draw
+// the stage; phones read the cards, joined by a line.
+// Data: the hub's fit stops (data/hubs.ts). Before the focal stop = inputs,
+// after it = the gate (if any) and the outputs.
+import type { FitStop, FitItem } from '../data/hubs';
+import type { ProductId } from '../lib/site';
+import { vendorImage } from '../lib/media';
+import Glyph from './Glyph.astro';
+import SourceMark from './SourceMark.astro';
+
+interface Props {
+  product: ProductId;
+  stops: FitStop[];
+}
+const { product, stops } = Astro.props;
+const fi = stops.findIndex((s) => s.kind === 'focal');
+const focal = stops[fi];
+const inputs = stops.slice(0, fi).flatMap((s) => s.items);
+const after = stops.slice(fi + 1);
+const gate = after.find((s) => s.kind === 'gate');
+const outputs = after.filter((s) => s.kind !== 'gate');
+const outItems = outputs.flatMap((s) => s.items);
+const outUi = [...outputs].reverse().find((s) => s.ui)?.ui;
+const shot = focal?.shot ? vendorImage(focal.shot) : null;
+const outImg = outUi ? vendorImage(outUi.name) : null;
+const PRODUCT_NAME = { fillout: 'Fillout', softr: 'Softr', noloco: 'Noloco' } as const;
+
+// The line bundle in a 1200 × 520 box. Lines fan out of the inputs, run
+// behind the product panel, and either converge on the gate (where only
+// every third line continues) or fan out to the outputs.
+const N = 13;
+const W = 1200;
+const lines: { d: string; pass: boolean }[] = [];
+for (let k = 0; k < N; k++) {
+  const t = k / (N - 1);
+  const yIn = 120 + t * 280;
+  const yF = 205 + t * 110;
+  let d = `M 40 ${yIn.toFixed(1)} C 220 ${yIn.toFixed(1)}, 250 ${yF.toFixed(1)}, 390 ${yF.toFixed(1)} L 735 ${yF.toFixed(1)}`;
+  let pass = true;
+  if (gate) {
+    const yG = 255 + (t - 0.5) * 18;
+    pass = k % 3 === 0;
+    d += ` C 790 ${yF.toFixed(1)}, 800 ${yG.toFixed(1)}, 850 ${yG.toFixed(1)}`;
+    if (pass) {
+      const yO = 230 + (k / 3 / Math.floor((N - 1) / 3)) * 60;
+      d += ` C 905 ${yG.toFixed(1)}, 925 ${yO.toFixed(1)}, 980 ${yO.toFixed(1)}`;
+    }
+  } else {
+    const yO = 170 + t * 180;
+    d += ` C 820 ${yF.toFixed(1)}, 850 ${yO.toFixed(1)}, 960 ${yO.toFixed(1)}`;
+  }
+  lines.push({ d, pass });
+}
+const gid = `fs-g-${product}`;
+const icon = (it: FitItem) => it.marks?.length ? 'mark' : it.glyph ? 'glyph' : null;
+---
+
+<figure class="fs" data-chapter={product}>
+  <div class="fs-stage" aria-hidden="true" data-has-gate={gate ? '' : undefined}>
+    <svg class="fs-lines" viewBox={`0 0 ${W} 520`} preserveAspectRatio="none" focusable="false">
+      <defs>
+        <linearGradient id={gid} x1="0" y1="0" x2={W} y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" class="fs-stop-a" />
+          <stop offset="0.5" class="fs-stop-b" />
+          <stop offset="1" class="fs-stop-c" />
+        </linearGradient>
+      </defs>
+      <g class="fs-bundle" stroke={`url(#${gid})`}>
+        {lines.map((l) => <path d={l.d} class:list={{ 'is-stopped': !l.pass }} />)}
+      </g>
+      <g class="fs-pulse" stroke={`url(#${gid})`}>
+        {lines.filter((l) => l.pass).map((l, i) => <path d={l.d} pathLength="100" style={`--d: ${i * 0.9}s`} />)}
+      </g>
+    </svg>
+
+    <ul class="fs-in">
+      {
+        inputs.map((it) => (
+          <li class="fs-node" data-chapter={it.product}>
+            <span class="fs-icon">
+              {icon(it) === 'mark' ? <SourceMark name={it.marks![0]} size="1.5rem" /> : icon(it) === 'glyph' ? <Glyph name={it.glyph!} tone="canvas" size="2.25rem" /> : null}
+            </span>
+            <span class="fs-node-title">{it.title}</span>
+          </li>
+        ))
+      }
+    </ul>
+
+    <div class="fs-focal field">
+      <span class="fs-focal-name">{PRODUCT_NAME[product]}</span>
+      {
+        shot && (
+          <span class="fs-focal-plane plane">
+            <img src={shot.src} srcset={shot.srcset} sizes="(min-width: 64rem) 30rem, 1px" width={shot.width} height={shot.height} alt="" loading="lazy" decoding="async" />
+          </span>
+        )
+      }
+    </div>
+
+    {
+      gate && (
+        <div class="fs-gate">
+          <span class="fs-lock"><Glyph name="gate" tone="canvas" size="3rem" /></span>
+          <span class="fs-gate-label">Access rules</span>
+        </div>
+      )
+    }
+
+    <div class="fs-out">
+      {
+        outImg && (
+          <span class="fs-out-plane plane">
+            <img src={outImg.src} srcset={outImg.srcset} sizes="(min-width: 64rem) 14rem, 1px" width={outImg.width} height={outImg.height} alt="" loading="lazy" decoding="async" style={outUi?.position ? `object-position: ${outUi.position}` : undefined} />
+          </span>
+        )
+      }
+      <ul>
+        {
+          outItems.map((it) => (
+            <li class="fs-node" data-chapter={it.product}>
+              <span class="fs-icon">
+                {icon(it) === 'mark' ? <SourceMark name={it.marks![0]} size="1.5rem" /> : icon(it) === 'glyph' ? <Glyph name={it.glyph!} tone="canvas" size="2.25rem" /> : null}
+              </span>
+              <span class="fs-node-title">{it.title}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </div>
+
+  <ol class="fs-steps" style={`--fs-cols: ${stops.length}`}>
+    {
+      stops.map((s, i) => (
+        <li class:list={['fs-step', `is-${s.kind ?? 'node'}`]}>
+          <p class="fs-step-head">
+            <span class="fs-step-n num">{String(i + 1).padStart(2, '0')}</span>
+            <span class="fs-step-zone">{s.kind === 'focal' ? PRODUCT_NAME[product] : s.zone}</span>
+          </p>
+          {s.via && <p class="fs-via">Receives {s.via}</p>}
+          {s.items.map((it) => (
+            <div class="fs-item">
+              <p class="fs-item-title">{it.title}</p>
+              {it.detail && <p class="fs-item-detail">{it.detail}</p>}
+            </div>
+          ))}
+          {s.note && <p class="fs-item-detail">{s.note}</p>}
+          {
+            s.kind === 'focal' && shot && (
+              <span class="fs-step-shot plane" aria-hidden="true">
+                <img src={shot.src} srcset={shot.srcset} sizes="(min-width: 64rem) 1px, 90vw" width={shot.width} height={shot.height} alt="" loading="lazy" decoding="async" />
+              </span>
+            )
+          }
+        </li>
+      ))
+    }
+  </ol>
+</figure>
+
+<style>
+  .fs { margin: 0; display: grid; gap: var(--s-5); }
+
+  /* ---------- Stage (wide screens) ---------- */
+  .fs-stage { display: none; }
+  @media (min-width: 64rem) {
+    .fs-stage {
+      position: relative;
+      display: block;
+      aspect-ratio: 1200 / 520;
+      border-radius: var(--r-block);
+      overflow: clip;
+      background:
+        radial-gradient(45% 70% at 40% 50%, color-mix(in oklch, var(--ch) 16%, transparent), transparent 70%),
+        radial-gradient(30% 60% at 92% 50%, color-mix(in oklch, var(--ch) 9%, transparent), transparent 70%),
+        var(--surface);
+      box-shadow: 0 0 0 1px var(--line), 0 40px 90px -60px hsl(var(--shadow-tint) / 0.6);
+    }
+  }
+  .fs-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .fs-stop-a { stop-color: color-mix(in oklch, var(--ch) 35%, var(--surface)); }
+  .fs-stop-b { stop-color: var(--ch); }
+  .fs-stop-c { stop-color: color-mix(in oklch, var(--ch) 70%, white); }
+  :global([data-theme='dark']) .fs-stop-b { stop-color: color-mix(in oklch, var(--ch) 70%, white); }
+  .fs-bundle path { fill: none; stroke-width: 1.25; vector-effect: non-scaling-stroke; opacity: 0.55; }
+  .fs-bundle path.is-stopped { opacity: 0.3; }
+  /* A light travels along the lines that pass the gate. Motion only. */
+  .fs-pulse path { fill: none; stroke-width: 2.5; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-dasharray: 6 94; stroke-dashoffset: 100; opacity: 0; }
+  @media (prefers-reduced-motion: no-preference) {
+    .fs-pulse path { opacity: 0.95; animation: fs-pulse 5.5s linear infinite; animation-delay: var(--d, 0s); }
+  }
+  @keyframes fs-pulse { to { stroke-dashoffset: 0; } }
+
+  /* Nodes: white tiles with the source's mark, text beside. */
+  .fs-node { display: flex; align-items: center; gap: 0.75rem; }
+  .fs-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 12px;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line), 0 10px 22px -14px hsl(var(--shadow-tint) / 0.6);
+  }
+  .fs-icon :global(.glyph) { width: 2.75rem; height: 2.75rem; }
+  .fs-node-title { font-size: 0.9375rem; font-weight: 680; line-height: 1.25; color: var(--ink); }
+  .fs-in, .fs-out ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.9rem; }
+  .fs-in { position: absolute; left: 3%; top: 50%; translate: 0 -50%; width: 19%; }
+  .fs-in .fs-node { padding: 0.45rem 0.75rem 0.45rem 0.45rem; border-radius: 14px; background: color-mix(in oklab, var(--surface) 82%, transparent); backdrop-filter: blur(6px); }
+
+  /* The product: its lit field, name, and real screen. Lines run behind it. */
+  .fs-focal {
+    position: absolute;
+    left: 31%;
+    top: 11%;
+    width: 31%;
+    height: 78%;
+    border-radius: var(--r-card);
+    overflow: clip;
+    --field-at: 90% -10%;
+    box-shadow: 0 30px 70px -40px hsl(var(--shadow-tint) / 0.8);
+  }
+  .fs-focal-name { position: absolute; left: 1.1rem; top: 0.9rem; font-size: 1.0625rem; font-weight: 750; letter-spacing: -0.01em; }
+  .fs-focal-plane { position: absolute; left: 1.1rem; top: 3.4rem; width: 135%; border-radius: var(--r-frame) 0 0 0; }
+  .fs-focal-plane img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+
+  /* The gate: a lock on the narrowed bundle. */
+  .fs-gate { position: absolute; left: 70.8%; top: 50%; translate: -50% -50%; display: grid; justify-items: center; gap: 0.5rem; }
+  .fs-lock { display: grid; place-items: center; width: 4rem; height: 4rem; border-radius: 50%; background: var(--surface); box-shadow: 0 0 0 1px var(--line), 0 0 0 8px color-mix(in oklch, var(--ch) 12%, transparent), 0 14px 30px -14px hsl(var(--shadow-tint) / 0.7); }
+  .fs-gate-label { position: absolute; top: calc(100% + 0.5rem); white-space: nowrap; font-size: 0.8125rem; font-weight: 680; color: var(--ink-2); }
+
+  /* Who sees the result. */
+  .fs-out { position: absolute; left: 81%; top: 50%; translate: 0 -50%; width: 17%; display: grid; gap: 0.9rem; }
+  [data-has-gate] .fs-out { left: 82.5%; width: 15.5%; }
+  .fs-stage:not([data-has-gate]) .fs-out { left: 80%; }
+  .fs-out-plane { border-radius: var(--r-frame); }
+  .fs-out-plane img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: top left; }
+
+  /* ---------- Steps: one card per stop ---------- */
+  .fs-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-3); counter-reset: none; }
+  @media (min-width: 64rem) {
+    .fs-steps { grid-template-columns: repeat(var(--fs-cols, 4), minmax(0, 1fr)); gap: var(--s-4); }
+  }
+  .fs-step {
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.5rem;
+    padding: var(--s-4) var(--s-5) var(--s-5);
+    border-radius: var(--r-card);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line);
+  }
+  .fs-step.is-focal { background: color-mix(in oklch, var(--ch) 8%, var(--surface)); box-shadow: 0 0 0 1px color-mix(in oklch, var(--ch) 30%, var(--line)); }
+  .fs-step.is-gate { box-shadow: 0 0 0 1px var(--line-strong); }
+  .fs-step-head { display: flex; align-items: baseline; gap: 0.6rem; font-size: 0.8125rem; font-weight: 650; color: var(--muted); }
+  .fs-step-n { color: var(--ch); }
+  :global([data-theme='dark']) .fs-step-n { color: color-mix(in oklch, var(--ch) 60%, white); }
+  .fs-via { font-size: 0.8125rem; font-weight: 600; color: var(--ink-2); }
+  .fs-item + .fs-item { margin-top: 0.35rem; }
+  .fs-item-title { font-size: 1.0625rem; font-weight: 720; line-height: 1.3; color: var(--ink); }
+  .fs-item-detail { margin-top: 0.15rem; font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); }
+  .fs-step-shot { display: block; margin-top: var(--s-3); border-radius: var(--r-frame); }
+  .fs-step-shot img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+  @media (min-width: 64rem) { .fs-step-shot { display: none; } }
+  /* Phones: the cards are the diagram, joined by a line in the chapter color. */
+  @media (max-width: 63.99rem) {
+    .fs-steps { gap: var(--s-5); }
+    .fs-step + .fs-step::before {
+      content: "";
+      position: absolute;
+      left: 1.6rem;
+      top: calc(-1 * var(--s-5));
+      width: 2px;
+      height: var(--s-5);
+      background: var(--ch);
+    }
+  }
+</style>

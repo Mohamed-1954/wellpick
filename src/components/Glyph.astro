@@ -1,0 +1,118 @@
+---
+// The site's motif library, drawn in the Wellpick mark's language: one
+// rounded stroke weight, round caps, a soft tile, and a small tick (the
+// mark's rising last stroke) on the thing being picked. Decorative only
+// (aria-hidden); the text beside a glyph always names what it stands for.
+//
+//   intake  a form: three fields and a submit bar, ticked
+//   portal  a page: header, sidebar and a grid of records, ticked
+//   team    two people over shared rows
+//   records a table (a data source)
+//   gate    a lock: the access boundary
+//   client  one person who logs in, ticked
+//
+// tone="field": drawn on a chapter color (translucent tile, light lines).
+// tone="canvas": chapter-filled tile with light lines, for the page canvas.
+interface Props {
+  name: 'intake' | 'portal' | 'team' | 'records' | 'gate' | 'client';
+  tone?: 'field' | 'canvas';
+  size?: string;
+  class?: string;
+}
+const { name, tone = 'field', size = '4rem', class: cls } = Astro.props;
+const ticked = name === 'intake' || name === 'portal' || name === 'client';
+---
+
+<svg
+  class:list={['glyph', `glyph-${tone}`, cls]}
+  viewBox="0 0 64 64"
+  width={size}
+  height={size}
+  aria-hidden="true"
+  focusable="false"
+>
+  <g stroke-linecap="round" stroke-linejoin="round">
+    <rect class="g-slab" x="5" y="5" width="54" height="54" rx="15"></rect>
+    {
+      name === 'intake' && (
+        <>
+          <rect class="g-line" x="16" y="17" width="26" height="6" rx="3" />
+          <rect class="g-line" x="16" y="28" width="26" height="6" rx="3" />
+          <rect class="g-line" x="16" y="39" width="18" height="6" rx="3" />
+          <rect class="g-solid" x="37" y="39" width="11" height="6" rx="3" />
+        </>
+      )
+    }
+    {
+      name === 'portal' && (
+        <>
+          <path class="g-line" d="M15 20h34" />
+          <path class="g-line" d="M15 27v19" />
+          <rect class="g-line" x="22" y="27" width="11" height="8" rx="2.5" />
+          <rect class="g-solid" x="37" y="27" width="11" height="8" rx="2.5" />
+          <rect class="g-line" x="22" y="39" width="11" height="8" rx="2.5" />
+          <rect class="g-line" x="37" y="39" width="11" height="8" rx="2.5" />
+        </>
+      )
+    }
+    {
+      name === 'team' && (
+        <>
+          <circle class="g-line" cx="24" cy="21" r="5" />
+          <circle class="g-solid" cx="40" cy="21" r="5" />
+          <path class="g-line" d="M15 35c1.6-4.4 5-6.6 9-6.6s7.4 2.2 9 6.6" />
+          <path class="g-line" d="M31 35c1.6-4.4 5-6.6 9-6.6s7.4 2.2 9 6.6" />
+          <path class="g-line" d="M15 42h34M15 48h22" />
+        </>
+      )
+    }
+    {
+      name === 'records' && (
+        <>
+          <rect class="g-line" x="14" y="17" width="36" height="30" rx="5" />
+          <path class="g-line" d="M14 26h36M14 36.5h36M26 17v30" />
+          <rect class="g-solid" x="30" y="29.5" width="15" height="3.5" rx="1.75" />
+        </>
+      )
+    }
+    {
+      name === 'gate' && (
+        <>
+          <path class="g-line" d="M24 29v-5a8 8 0 0 1 16 0v5" />
+          <rect class="g-line" x="18" y="29" width="28" height="20" rx="5" />
+          <circle class="g-solid" cx="32" cy="37" r="2.6" />
+          <path class="g-line" d="M32 39.5v3.5" />
+        </>
+      )
+    }
+    {
+      name === 'client' && (
+        <>
+          <circle class="g-line" cx="29" cy="24" r="7" />
+          <path class="g-line" d="M16 47c2.2-7 7-10.5 13-10.5s10.8 3.5 13 10.5" />
+        </>
+      )
+    }
+    {ticked && <path class="g-tick" d="M44 14.5l3.2 4.4 6-9.4" />}
+  </g>
+</svg>
+
+<style>
+  .glyph { flex: none; overflow: visible; }
+  .glyph-field {
+    --g-slab: oklch(1 0 0 / 0.14);
+    --g-edge: oklch(1 0 0 / 0.42);
+    --g-ink: var(--on-chapter);
+    --g-tick: var(--on-chapter);
+  }
+  .glyph-canvas {
+    --g-slab: var(--ch, var(--ink));
+    --g-edge: var(--ch, var(--ink));
+    --g-ink: var(--on-chapter);
+    --g-tick: var(--on-chapter);
+  }
+  .glyph :global(.g-slab) { fill: var(--g-slab); stroke: var(--g-edge); stroke-width: 1.5; }
+  .glyph :global(.g-line) { fill: none; stroke: var(--g-ink); stroke-width: 3; }
+  .glyph :global(.g-solid) { fill: var(--g-ink); }
+  .glyph :global(.g-tick) { fill: none; stroke: var(--g-tick); stroke-width: 3.6; }
+</style>

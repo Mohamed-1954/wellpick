@@ -1,0 +1,54 @@
+---
+// "More like this" under a blog post (daily.dev's post end): three posts,
+// the same topic first, then the newest others. Covers are the drawn art.
+import PostArt from './PostArt.astro';
+import { TOPICS, type TopicId } from '../data/blog';
+import { getPosts, postSlug, readingMinutes } from '../lib/posts';
+
+interface Props {
+  current: string;
+  topic: TopicId;
+}
+const { current, topic } = Astro.props;
+const posts = (await getPosts()).filter((p) => p.id !== current);
+const picks = [...posts.filter((p) => p.data.topic === topic), ...posts.filter((p) => p.data.topic !== topic)].slice(0, 3);
+---
+
+<section class="more" aria-labelledby="more-title">
+  <div class="shell">
+    <div class="more-head">
+      <h2 id="more-title">More like this</h2>
+      <a class="text-link" href="/blog/">Every post</a>
+    </div>
+    <ul class="more-grid">
+      {
+        picks.map((p) => (
+          <li>
+            <a href={postSlug(p)}>
+              <PostArt topic={p.data.topic as TopicId} seed={p.id} />
+              <span class="more-meta">
+                <span class="topic-tag" data-topic={p.data.topic}>{TOPICS[p.data.topic as TopicId].label}</span>
+                <span class="num">{readingMinutes(p.body)} min read</span>
+              </span>
+              <span class="more-title">{p.data.title}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</section>
+
+<style>
+  .more { padding-block: clamp(3rem, 2rem + 3vw, 5rem) 0; }
+  .more > .shell { border-top: 1px solid var(--line-strong); padding-top: var(--s-6); }
+  .more-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: var(--s-3); }
+  .more-head h2 { font-size: var(--step-3); letter-spacing: -0.025em; }
+  .more-grid { list-style: none; margin: var(--s-6) 0 0; padding: 0; display: grid; gap: var(--s-7) var(--s-6); }
+  @media (min-width: 48rem) { .more-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+  .more-grid a { display: grid; align-content: start; gap: var(--s-3); color: var(--ink); text-decoration: none; }
+  .more-grid :global(.post-art) { margin-bottom: var(--s-2); }
+  .more-meta { display: flex; flex-wrap: wrap; gap: 0.25rem var(--s-4); font-size: 0.8125rem; font-weight: 560; color: var(--muted); }
+  .more-title { font-size: 1.1875rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; text-wrap: pretty; }
+  .more-grid a:hover .more-title { text-decoration: underline; text-underline-offset: 0.15em; }
+</style>

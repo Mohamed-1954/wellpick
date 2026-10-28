@@ -1,0 +1,106 @@
+---
+title: "AI app builders for client portals: what Softr, Noloco and Zite now generate"
+seoTitle: "AI app builders for client portals, compared"
+description: Three portal tools now build from a prompt. Here is what each one says the AI creates, what you still set by hand, and the test to run before a client logs in.
+type: post
+topic: ai
+featured: true
+products: [softr, noloco]
+sourceIds: [softrAiBuilder, nolocoHome, zite, ziteHome, filloutAiForms, softrRestrictions, nolocoRecordRules]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Softr, Noloco and Zite (the company behind Fillout) all sell an AI builder
+    that turns a prompt into an app. Each one says the result includes data,
+    logins and permissions, not only screens. That makes a first draft fast.
+    It does not make the access rules correct.
+  </p>
+  <p>
+    Treat the AI output as a draft you must audit. Sign in as two fictional
+    clients and try to reach each other's records before anyone real gets a
+    login.
+  </p>
+</aside>
+
+A year ago, building a client portal without code meant picking a template and wiring it to a table. Now the first screen of all three vendors asks you to describe the app instead. The pitch is the same everywhere: type "a portal where clients see their projects and invoices", and get pages, a database and user roles back.
+
+That is a real change for a small studio. It also moves the hard part. The slow work used to be layout. Now the slow work is checking what the machine decided on your behalf.
+
+We have not built a production portal with any of these AI builders. This post reads what each vendor publishes about its AI builder as of 27 October 2026, and sets it against the parts of a portal that go wrong in practice.
+
+## What each vendor says the AI builds
+
+| Vendor | Name on the site | What the vendor says it generates |
+| --- | --- | --- |
+| Softr | AI Co-Builder | "the pages, database, permissions and workflows for a secure app" from a prompt |
+| Noloco | Nola, "your AI app builder" | A client portal, a project dashboard "or something completely different", built from a description |
+| Zite | Zite apps | Apps and portals built with AI by non-engineers; Fillout stays a separate product under Zite |
+
+Softr is the most specific. Its AI app builder page lists four layers: design and UI, database, business logic, and security with login and user groups. It also says there is "no generated code" and that you can "refine with AI or edit visually" and switch back at any time.
+
+Noloco's homepage leads with the same idea in fewer words: "Build with Nola, your AI app builder." Next to it, the page makes a pointed claim about the competition: "AI-generated demos look impressive, until you try to actually run your business on one." Noloco's answer is that Nola builds inside its normal visual editor, with its normal permission system.
+
+Zite is the newest of the three in this market. Fillout's parent company renamed itself Zite in March 2026. Its announcement opens with a question, "Could AI help non-engineers build software that businesses can actually rely on?", and says Fillout "remains its own product under the Zite umbrella."
+
+## The part the prompt cannot know
+
+A prompt describes the app you imagine. A client portal depends on facts the prompt usually leaves out:
+
+- **Which field decides who sees a record.** Is it the client's email, their company, or a project they were invited to?
+- **What happens when a contact changes company.** Does their old access go with them?
+- **Which fields are internal.** Margins, internal notes, the reason a deal was lost.
+- **Who may edit, not just view.** Approving a quote is different from reading it.
+
+An AI builder will pick an answer for each of these, because an app cannot run without one. The pick may be sensible. It may also be the most permissive option that makes the demo work.
+
+The permission systems underneath have not changed. Softr's global data restrictions still decide what a user group can view, create, edit and delete; view rules work on every plan, while create, edit and delete rules need Business. Noloco still applies record-level rules on the server, such as `Company` equals `User's Company`. The AI writes settings into those systems. You still have to read them.
+
+## A twenty-minute audit for an AI-built portal
+
+Run this before you invite a real client, whichever builder made the app.
+
+1. **List the tables the AI created.** Delete any you did not ask for. Note which table holds users and how it links to companies or projects.
+2. **Read every user group or role.** For each one, write one sentence: "A client can see records where ___." If you cannot finish the sentence from the settings, the rule is unclear.
+3. **Make two fictional clients.** Use different email addresses and different companies. Give each one a project with an obvious name, like "Northline rebrand" and "Harbor website".
+4. **Sign in as the first client in a private window.** Open every list, search for the other client's project name, and paste a direct link to the other client's record.
+5. **Check the quiet places.** Comments, file attachments, dropdown pickers and exports. These leak more often than the main list.
+6. **Ask the AI to explain its rule, then check the setting yourself.** The explanation is a summary. The setting is the truth.
+
+Our [two-client launch test](/guides/client-portal-launch/) covers the same checks in more depth, with a table you can copy.
+
+## Where AI building helps most
+
+The fastest gains are in the parts that were tedious and low-risk:
+
+- **A first data model.** A prompt gets you a sensible set of tables for projects, tasks and invoices in seconds. Then you rename fields to match how your team talks.
+- **Layouts and empty states.** List pages, detail pages and dashboards with reasonable defaults.
+- **Variations.** "Add a page where clients upload signed contracts" is quicker to ask than to build.
+
+The same is true of forms. Fillout's AI form builder says you can "describe what you need in plain words" or upload a PDF, and the AI picks field types and adds conditional logic. For an intake form, that is a good start. We wrote a separate note on [AI-generated intake forms](/blog/ai-form-generators-intake/).
+
+## Where it does not change the decision
+
+An AI builder does not change which tool fits your job. The usual differences still decide it:
+
+- **Who logs in and how they are billed.** Softr splits app users into team and client users by email domain. Noloco counts a seat once a user logs in. Read [who counts as a user](/blog/who-counts-as-a-user/) before you price either one.
+- **Where the records live.** Softr reads your data source. Noloco syncs external data into its app, live for Airtable and on a schedule for Google Sheets.
+- **Whether staff work in the same app.** Noloco is built for staff and clients on one set of records. Softr is mostly the client-facing layer.
+
+If those answers point to one tool, its AI builder is a faster way into it. If they do not, a better prompt will not fix the fit. [Softr vs Noloco](/compare/softr-vs-noloco/) walks through the choice.
+
+## Questions
+
+### Is an AI-built portal safe to give to clients?
+
+It can be, once you have checked it. The AI configures the same permission system you would configure by hand. Safety depends on the rules it chose, so test them with two fictional clients first.
+
+### Does the AI write code I have to maintain?
+
+Softr says its builder produces "no generated code": you edit the result in the visual editor. Noloco's Nola works inside the Noloco editor too. Neither gives you a codebase to host.
+
+### Should I start with AI or with a template?
+
+Start with whichever gets you to a reviewable draft faster. The audit is the same either way.

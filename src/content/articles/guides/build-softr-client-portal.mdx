@@ -1,0 +1,157 @@
+---
+title: Build a Softr client portal, step by step
+description: Plan and configure a small Softr portal from data and templates to client pages, forms, permissions, user invitations, and a controlled launch.
+type: guide
+products: [softr, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-26
+stage: build
+order: 1
+cover:
+  name: softr-portal.webp
+  alt: "Softr's published client-portal demo: a welcome screen with active project cards marked In Progress, Pending Approval and Completed, a recent-invoices table, and a sidebar with Projects, Tasks, Invoices and Contracts"
+---
+
+import EntityDiagram from "../../../components/EntityDiagram.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Shot from "../../../components/Shot.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Build one useful client journey before building a complete client app: a
+    fictional studio gives each client a page to see their project, the current
+    deliverable, and the next action. Staff maintain the records.
+  </p>
+  <p>
+    Softr’s official tutorial starts from the Client Portal template and an
+    Airtable base. These steps turn that starting point into a controlled build.
+  </p>
+</aside>
+
+## What you are aiming for
+
+Two fictional companies, **Northline** and **Harbor**, each with their own contacts and projects. A Northline contact sees Northline’s work, not Harbor’s. Each project has an owner, a meaningful status, and a next action.
+
+Have an authorized test workspace, a chosen data source, and synthetic records. Write the requirement down: “A client contact can see the projects assigned to their company and find the next requested decision. Staff can maintain those projects.”
+
+## Step 1: establish the records and relationships
+
+Create or inspect four record types (**Companies, Contacts, Projects, Tasks**) and link them: a project belongs to a company, a task to a project. Keep a contact’s approved company link maintained internally, not supplied as free text.
+
+<EntityDiagram
+  title="From data source to client view"
+  description="A data source feeds list and detail pages; user groups decide which records a signed-in client reaches."
+  edges={[
+    { from: "Data source", to: "List & detail pages", label: "blocks" },
+    { from: "User groups", to: "Record restrictions", label: "access" },
+    { from: "Portal pages", to: "Client view", label: "login" },
+  ]}
+/>
+
+Use two projects per company with unmistakably different names, plus a staff-only field of harmless test text so a leak is obvious. **Checkpoint:** trace every project and task to its owning client before connecting any interface.
+
+## Step 2: start with the portal template
+
+Choose the Client Portal template and inspect the client and consultant views in its preview. After creating the app, check the sample records and users. Inherited pages, actions, and permissions are your responsibility. The documented template includes invoicing and task submission; drop what your first release does not need.
+
+**Checkpoint:** name every client-visible page and its job. If you cannot explain a page, leave it out.
+
+## Step 3: connect the source and map the blocks
+
+Connect only the source you chose and inspect the table and field mapping of every dynamic block. A project list reads Projects; a detail page resolves the selected project; related tasks belong to it. A correct-looking list can still be wired to a sample table. If you use Softr Databases instead of the tutorial’s Airtable source, inspect the same relationships; only the click sequence differs.
+
+<Shot
+  name="softr-crm.webp"
+  tone="softr"
+  alt="Softr's published CRM demo: a contact detail page with a profile card, Overview, Tasks and Conversations tabs, and fields such as role, email, account manager and status"
+/>
+
+**Checkpoint:** open each sample project and confirm status, owner, and tasks match the record. Check the detail page’s field mapping, not just the list above it.
+
+## Step 4: design the client’s first screen
+
+Put project name, current status, next action, and responsible person at the top. Use a small shared vocabulary (for example Preparing, In progress, Needs your review, Complete) and decide who may change each state. Keep internal shorthand and unresolved staff notes out of the client view.
+
+**Checkpoint:** someone unfamiliar with the build should identify the next action without your explanation.
+
+## Step 5: configure page visibility and record access
+
+Page visibility and record access are separate questions. Softr’s global data restrictions attach rules to tables and user groups. Global **view** restrictions are on all plans, including Free. Global **create/edit/delete** restrictions require Business or above. Repeat the analysis for related records. An earlier version of the same guide also listed an exception: global restrictions did not cover the Comments block. Confirm that the exception is still listed, and test comments separately.
+
+**Checkpoint:** sign in as each synthetic client; try the normal journey and a direct link to the other client’s project. Record results in the [permission-check log](/resources/portal-permission-checks.csv).
+
+## Step 6: choose the smallest useful form
+
+For a public enquiry, evaluate standalone Softr Forms. They are documented with unlimited forms and submissions, even on Free.
+
+For an in-app action, the Conditional Form Block is the native option, but its plan is unclear. The Softr pricing page lists “Conditional form logic” under Basic. The Softr forms docs say the block is on the Professional plan and higher. Ask Softr support, or test the block on the plan you intend to buy, before you depend on it.
+
+For a task linked to a project, the tutorial assigns a hidden record ID. Verify that the submitted ID is actually authorized in your setup. Add Fillout only if a requirement remains unmet. Fillout’s Softr embed uses a Custom code block and needs a paid Softr account. The [Fillout-to-Airtable guide](/guides/fillout-intake-to-airtable/) covers that route.
+
+**Checkpoint:** submit a sample request, confirm destination and project link, then try the missing-relationship case.
+
+## Step 7: set up users without inviting real clients yet
+
+Manage users in Softr or sync them from a source. The documented filtered mode lets only selected source records become users. Note the documented distinctions: deactivation retains the record and blocks login; unsyncing keeps the login but drops the source connection; deleting a source record can be undone by the next sync. Use separate test accounts for Northline and Harbor.
+
+Count the accounts before you create them. Softr Free allows 5 app users in total and up to 3 builders. Two client test users and one internal test user fit. On paid plans, Softr splits app users into team users (same business email domain as a builder) and client users. A test account on Gmail counts as a client user.
+
+**Checkpoint:** deactivate a test user and re-check login and previously opened links.
+
+## Step 8: preview, test, and plan publication
+
+Publish to the Softr subdomain or a custom domain for the authorized test; a domain purchase is not a prerequisite. Test on a narrow screen with realistic text: long project names, empty task lists, a missing deliverable, a completed project. Do not invite real clients until the [launch checklist](/guides/client-portal-launch/) is complete.
+
+<details>
+  <summary>Common problems to diagnose</summary>
+  <p>
+    <strong>The client sees the page but the wrong projects.</strong> Inspect
+    the user-to-company relationship and the table’s record rules. Page visibility answers a different question.
+  </p>
+  <p>
+    <strong>
+      The form submits but the request is not attached to a project.
+    </strong>{" "}
+    Check the destination table, field mapping, and the project identifier
+    supplied to the form; resubmit through the real path rather than moving the
+    record by hand.
+  </p>
+  <p>
+    <strong>A removed user comes back after syncing.</strong> Check two-way sync: deleting a user from the source does not necessarily delete the Softr
+    account and can add the user back.
+  </p>
+</details>
+
+<NextSteps
+  items={[
+    {
+      to: "/guides/client-portal-launch/",
+      title: "Run the launch checklist before inviting",
+      product: "softr",
+    },
+    {
+      to: "/guides/fillout-intake-to-airtable/",
+      title: "Add a Fillout intake form that writes to Airtable",
+      product: "fillout",
+    },
+    {
+      to: "/guides/build-noloco-client-portal/",
+      title: "Staff need the same records? Read the Noloco build",
+      product: "noloco",
+    },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrSetup",
+    "softrData",
+    "softrForms",
+    "softrPricing",
+    "softrPlansDocs",
+    "softrRestrictions",
+    "softrUserSync",
+    "filloutEmbed",
+  ]}
+/>

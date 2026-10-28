@@ -1,0 +1,72 @@
+---
+// A product screen in one frame: 12px radius, a hairline ring and one soft
+// tinted shadow. No mat, no caption. Every image in public/img/vendor/ is
+// published by the vendor; the section around the frame says so where needed.
+import { vendorImage } from '../lib/media';
+
+interface Props {
+  /** File in /img/vendor/, e.g. "softr-portal.webp" */
+  name: string;
+  alt: string;
+  /** Crop to a fixed ratio (top-left anchored) */
+  crop?: boolean;
+  ratio?: string;
+  loading?: 'lazy' | 'eager';
+  /** Accepted for callers; the frame no longer paints a chapter surface. */
+  tone?: 'softr' | 'noloco' | 'fillout' | 'ink';
+  sizes?: string;
+  /** Lay the frame back in a fixed 3D lean on wide screens (static, no scroll motion) */
+  tilt?: boolean;
+  /** Same single frame as the default; kept for callers */
+  bare?: boolean;
+}
+const {
+  name,
+  alt,
+  crop = false,
+  ratio = '16/10',
+  loading = 'lazy',
+  sizes = '(min-width: 72rem) 60rem, 92vw',
+  tilt = false,
+} = Astro.props;
+const img = vendorImage(name);
+---
+
+<figure
+  class:list={['shot', 'frame', { 'shot-crop': crop, 'shot-tilt': tilt }]}
+  style={`--native: ${img.width}px;${crop ? ` --shot-ratio: ${ratio};` : ''}`}
+>
+  <img
+    src={img.src}
+    srcset={img.srcset}
+    sizes={sizes}
+    width={img.width}
+    height={img.height}
+    alt={alt}
+    loading={loading}
+    decoding="async"
+    fetchpriority={loading === 'eager' ? 'high' : undefined}
+  />
+</figure>
+
+<style>
+  /* Never wider than the capture itself: small vendor screens stay sharp
+     instead of being upscaled. */
+  .shot {
+    margin: 0 auto;
+    width: 100%;
+    max-width: var(--native, none);
+  }
+  .shot img { width: 100%; }
+  .shot-crop img {
+    aspect-ratio: var(--shot-ratio, 16 / 10);
+    object-fit: cover;
+    object-position: top left;
+  }
+  @media (min-width: 48rem) {
+    .shot-tilt {
+      transform: perspective(2400px) rotateX(6deg);
+      transform-origin: 50% 100%;
+    }
+  }
+</style>

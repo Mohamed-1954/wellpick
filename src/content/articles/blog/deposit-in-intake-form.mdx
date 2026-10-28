@@ -1,0 +1,77 @@
+---
+title: "Should your intake form take a deposit? A short decision guide"
+seoTitle: "Taking a deposit in your client intake form"
+description: "A payment step filters casual enquiries and books the slot, but adds a refund rule and a harder first click. When it is worth it and how to set it up."
+type: post
+topic: intake
+products: [fillout]
+sourceIds: [filloutPayments, filloutPageLogic, tallyPayments, filloutPricing, tallyPricing]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Take a deposit in the form when the first step costs you real time, such as
+    a paid discovery session, a booked shoot day or a fixed-price audit. Do not
+    take one when you still need a call to scope the job. Fillout and Tally
+    both connect Stripe for a payment step on their free plans.
+  </p>
+</aside>
+
+Most service businesses take money after a proposal. Some take it before the first meeting. Photographers book dates with a retainer. Consultants sell a paid audit. Studios charge for a discovery workshop that becomes the first phase of the project.
+
+If that describes your first step, the intake form is a natural place to collect the payment. The client fills in the brief and pays in the same session, and you never send a separate invoice for a small amount.
+
+## When a deposit belongs in the form
+
+A payment step is a good fit when all three of these are true:
+
+1. **The first step has a fixed price.** You can name it before you talk to the client.
+2. **You commit something scarce when they book.** A date, a slot in your calendar, a workshop seat.
+3. **You would turn away people who will not pay.** The deposit is a filter, not an obstacle.
+
+It is a poor fit when the scope depends on the brief. If you need a call to quote, asking for money first will lose good clients who want to talk before they commit.
+
+## What the form tools support
+
+Both form builders we cover document a Stripe payment step:
+
+| | Fillout | Tally |
+| --- | --- | --- |
+| Payment step | A payment page with Stripe, on every plan | Stripe payment forms, on the free plan |
+| Extra fee from the form tool | None documented | None on top of Stripe's fee |
+| Route payers and non-payers differently | Page logic can branch before the payment page | Conditional logic |
+
+Stripe charges its own processing fees in both cases. Check Stripe's current rates for your country.
+
+The portal tools are different. Neither Softr nor Noloco documents a payment step inside a form, which is why a deposit is one of the clearest reasons to add a separate form tool to a portal setup.
+
+## Design the payment step so people finish it
+
+**Put the price before the form, not at the end.** A client who learns the cost on the last page feels tricked. State it on the first screen, then again on the payment page.
+
+**Ask for the payment last.** Collect the brief first, then the deposit. If someone drops at the payment step, you still have their answers and can follow up.
+
+**Branch around it when it does not apply.** With page logic, a returning client or a referral partner can skip the payment page. Only the people who should pay see it.
+
+**Say what happens next.** The confirmation should tell the client when they will hear from you and what the deposit covers.
+
+## Write the refund rule before you take the money
+
+A deposit raises a question the form cannot answer: what happens if either side cancels? Decide before you launch:
+
+- Is the deposit refundable, and until when?
+- Does it count toward the project price?
+- What happens if you are the one who cannot proceed?
+
+Put the answer in one or two sentences next to the payment step and in the confirmation email. This is a business decision, not a software setting, and local consumer rules may apply. Check them for your country.
+
+## A setup in four steps
+
+1. Connect Stripe to the form tool and run a test payment in Stripe's test mode.
+2. Add the payment page after the brief questions.
+3. Map the payment result to a field in your table so staff can see who paid.
+4. Send a test enquiry through every branch: one that pays, one that skips, one that abandons at the payment page.
+
+For the rest of the intake build, see [Fillout vs Tally](/compare/fillout-vs-tally/) for the free-plan differences and the [Fillout to Airtable guide](/guides/fillout-intake-to-airtable/) for the table side.

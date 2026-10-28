@@ -1,0 +1,67 @@
+---
+title: "Record-level permissions, explained without code"
+description: Hiding a page is not the same as protecting a record. A plain guide to the rules that decide what each client can see in Softr and Noloco, and how to test them.
+type: post
+topic: portals
+products: [softr, noloco]
+sourceIds: [softrRestrictions, nolocoRecordRules, nolocoAccess, nolocoRoles, nolocoLoggedInFilter, nolocoQuickStart]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    A permission decides what data a user can reach. Visibility decides what a
+    page shows. Only the first one protects a client's records. Set the rule on
+    the data, express it as one sentence, and prove it by signing in as two
+    fictional clients.
+  </p>
+</aside>
+
+Every client portal promises the same thing: each client sees only their own work. How the tool keeps that promise is a rule, usually two or three settings deep, that most builders set once and never read again.
+
+This post explains those rules in plain terms. No code, but some precise words, because the difference between two of them is where data leaks.
+
+## Three things that look alike
+
+Noloco's docs separate three ideas that are easy to confuse. The same split applies to any portal tool.
+
+| Idea | What it does | Does it protect data? |
+| --- | --- | --- |
+| **Visibility** | Shows or hides a page, a field or a button for some users | No. The data can still be reached another way. |
+| **Filter** | Narrows what one list shows, such as "my projects" | No, on its own. It shapes one view. |
+| **Permission** | Decides which records and fields a user can read or change, everywhere | Yes. This is the rule that counts. |
+
+A hidden page is like a door without a sign. A permission is a lock. Clients who never find the door are not the risk. The risk is the direct link, the search box, the dropdown picker and the export.
+
+## How the rule is usually written
+
+Almost every portal rule has the same shape:
+
+> A user can see a record when the record's **company** matches the user's **company**.
+
+Noloco writes record-level rules on a role, and its client-portal pattern is exactly that: `Company` equals `User's Company`. It enforces permissions on the server, so a client cannot get around them by changing the page. Noloco also has a "logged-in user" filter for lists, which is useful but is a filter, not a permission.
+
+Softr calls its rules global data restrictions, set per user group. A restriction can cover viewing, creating, editing and deleting separately. Softr's docs put view restrictions on every plan and create, edit and delete restrictions on Business.
+
+## Where rules go wrong
+
+**The link field does not exist.** The rule needs a real relationship: projects linked to companies, users linked to companies. A project that stores the company as typed text cannot be matched reliably.
+
+**Several roles add up.** In Noloco, permissions from several roles combine, so a user with two roles can see what either role allows. Two rules inside one role narrow instead: the record must match both. Test users with the real mix of roles your clients will have.
+
+**Some places are not covered.** An earlier version of Softr's docs said the restrictions do not apply to the Comments block. Whatever tool you use, test comments, files and exports on their own.
+
+**Fields leak, not just records.** A client may be allowed to see a project but not its internal margin. That is a field-level permission. In Noloco, field-level permissions need the Build plan.
+
+## Prove the rule in fifteen minutes
+
+1. Create two fictional companies and one user for each.
+2. Give each company a project with an obvious name.
+3. Sign in as the first user in a private window. Search for the other project's name. Paste the other project's direct link. Open every dropdown that lists projects or companies.
+4. Run any export the client can see and open the file.
+5. Repeat as the second user.
+
+Noloco has a **View as User** button that previews the app as a chosen user. Use it first, then repeat the important checks with a real sign-in, because a preview shows the interface and a real session tests the server rule.
+
+Our [launch test](/guides/client-portal-launch/) turns this into a full table, and [the data model guide](/guides/portal-data-model/) shows how to set up the links that make the rule possible.

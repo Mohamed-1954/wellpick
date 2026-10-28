@@ -1,0 +1,63 @@
+---
+// The buy decision as one joined, ruled comparison: the "choose" column is the
+// chapter color with white text, the "look elsewhere" column stays on the
+// canvas. One hairline frame, rules between reasons, no nested cards.
+import Icon from './Icon.astro';
+
+interface Props {
+  product: string;
+  choose: string[];
+  elsewhere: string[];
+}
+const { product, choose, elsewhere } = Astro.props;
+---
+
+<div class="verdict">
+  <div class="v-col v-choose">
+    <h3>Choose {product} when</h3>
+    <ul>{choose.map((c) => <li><Icon name="check-linear" class="v-icon" />{c}</li>)}</ul>
+  </div>
+  <div class="v-col v-else">
+    <h3>Look elsewhere when</h3>
+    <ul>{elsewhere.map((e) => <li><Icon name="close-linear" class="v-icon" />{e}</li>)}</ul>
+  </div>
+</div>
+
+<style>
+  .verdict {
+    display: grid;
+    border-radius: var(--r-card);
+    box-shadow: inset 0 0 0 1px var(--line);
+    overflow: hidden;
+  }
+  @media (min-width: 52rem) { .verdict { grid-template-columns: 1fr 1fr; } }
+  .v-col { padding: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem); }
+  .v-choose {
+    --v-rule: oklch(1 0 0 / 0.24);
+    background: var(--ch, var(--ink));
+    color: var(--on-chapter);
+  }
+  .v-else { --v-rule: var(--line); }
+  h3 {
+    font-size: var(--step-2);
+    font-weight: 740;
+    letter-spacing: -0.015em;
+    color: inherit;
+    padding-bottom: var(--s-4);
+  }
+  .v-else h3 { color: var(--ink); }
+  ul { margin: 0; padding: 0; list-style: none; }
+  li {
+    display: grid;
+    grid-template-columns: 1.25rem minmax(0, 1fr);
+    gap: var(--s-3);
+    padding-block: var(--s-4);
+    border-top: 1px solid var(--v-rule);
+    font-size: 1.0625rem;
+    line-height: 1.5;
+  }
+  li:last-child { padding-bottom: 0; }
+  .v-else li { color: var(--ink-2); }
+  li :global(.v-icon) { width: 1.25rem; height: 1.25rem; margin-top: 0.1rem; }
+  .v-else li :global(.v-icon) { color: var(--muted); }
+</style>

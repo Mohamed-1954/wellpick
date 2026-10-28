@@ -1,0 +1,75 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+
+const routes = [
+  { href: '/fillout/', label: 'Fillout', job: 'Intake forms', chapter: 'fillout' },
+  { href: '/softr/', label: 'Softr', job: 'Client portal', chapter: 'softr' },
+  { href: '/noloco/', label: 'Noloco', job: 'Portal and team', chapter: 'noloco' },
+  { href: '/guides/', label: 'Guides', job: 'Decide, build, launch' },
+];
+---
+
+<BaseLayout title="Page not found" description="This page does not exist. Start from one of the three tools or the guides.">
+  <section class="nf">
+    <div class="shell nf-grid">
+      <div class="nf-copy">
+        <h1>Nothing to pick on this page.</h1>
+        <p class="lead">It may have moved when the site was rebuilt. Start again from the home page, or find the setup that fits your client work.</p>
+        <div class="nf-actions">
+          <a class="btn" href="/">Go to the home page <Icon name="arrow-right-linear" class="btn-icon" /></a>
+          <a class="btn btn-ghost" href="/start/">Find your stack</a>
+        </div>
+      </div>
+      <nav class="nf-routes" aria-labelledby="nf-routes-title">
+        <p class="nf-routes-title" id="nf-routes-title">Or go straight to</p>
+        <ul>
+          {
+            routes.map((r) => (
+              <li data-chapter={r.chapter}>
+                <a href={r.href}>
+                  {r.chapter && <span class="chip-dot" aria-hidden="true" />}
+                  <span class="nf-name">{r.label}</span>
+                  <span class="nf-job">{r.job}</span>
+                  <Icon name="arrow-right-linear" class="nf-arrow" />
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .nf { padding-block: clamp(3rem, 2rem + 5vw, 7rem) var(--section); }
+  .nf-grid { display: grid; gap: var(--s-8); align-items: start; }
+  @media (min-width: 64rem) { .nf-grid { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: var(--s-9); } }
+  .nf-copy > * { min-width: 0; }
+  .nf h1 { font-size: var(--step-5); max-width: 14ch; }
+  .nf .lead { margin-top: var(--s-5); }
+  .nf-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-3); margin-top: var(--s-6); }
+
+  /* Destinations: flat ruled rows, swatch, name, job, arrow. */
+  .nf-routes-title { font-size: 0.875rem; font-weight: 650; line-height: 1.4; color: var(--ink); padding-bottom: var(--s-3); border-bottom: 1px solid var(--ink); }
+  .nf-routes ul { list-style: none; margin: 0; padding: 0; }
+  .nf-routes li { border-bottom: 1px solid var(--line); }
+  .nf-routes a {
+    display: grid;
+    grid-template-columns: 0.5rem minmax(0, 1fr) auto;
+    grid-template-areas: 'dot name arrow' '. job arrow';
+    align-items: center;
+    column-gap: var(--s-4);
+    row-gap: 0.1rem;
+    padding-block: var(--s-4);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .nf-routes a :global(.chip-dot) { grid-area: dot; }
+  .nf-name { grid-area: name; font-size: var(--step-1); font-weight: 720; letter-spacing: -0.01em; line-height: 1.25; }
+  .nf-job { grid-area: job; font-size: 0.9375rem; color: var(--muted); }
+  .nf-routes a :global(.nf-arrow) { grid-area: arrow; color: var(--ink-2); transition: transform var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out); }
+  .nf-routes a:hover .nf-name { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.18em; }
+  .nf-routes a:hover :global(.nf-arrow) { color: var(--ink); transform: translateX(3px); }
+</style>

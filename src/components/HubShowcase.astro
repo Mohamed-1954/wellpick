@@ -1,0 +1,239 @@
+---
+// Hub screen showcase (v12), after Airtable's tabbed product stage and
+// Customer.io's product tabs: a list of screens on the left (title + what to
+// look at), the chosen screen staged large on the product's lit field on the
+// right. Tabs advance on their own while the stage is in view, with a fill
+// line on the current tab, and stop for good once the reader picks one; no
+// auto-advance under reduced motion. Every screen is in the markup; without
+// JavaScript all panels show stacked.
+import { vendorImage } from '../lib/media';
+import type { ShowcaseShot } from '../data/hubs';
+import type { ProductId } from '../lib/site';
+
+interface Props {
+  product: ProductId;
+  shots: ShowcaseShot[];
+}
+const { product, shots } = Astro.props;
+const id = `sc-${product}`;
+const items = shots.map((s) => ({ ...s, img: vendorImage(s.name) }));
+---
+
+<div class="showcase" data-chapter={product} data-showcase>
+  <div class="sc-tabs" role="tablist" aria-label="Screens" aria-orientation="vertical">
+    {
+      items.map((s, i) => (
+        <button
+          type="button"
+          role="tab"
+          class="sc-tab"
+          id={`${id}-tab-${i}`}
+          aria-controls={`${id}-panel-${i}`}
+          aria-selected={i === 0 ? 'true' : 'false'}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          <span class="sc-n num">{String(i + 1).padStart(2, '0')}</span>
+          <span class="sc-title">{s.title}</span>
+          <span class="sc-note">{s.note}</span>
+          <span class="sc-fill" aria-hidden="true"><span></span></span>
+        </button>
+      ))
+    }
+  </div>
+  <div class="sc-stage field">
+    {
+      items.map((s, i) => (
+        <div
+          class:list={['sc-panel', { 'is-portrait': s.portrait }]}
+          role="tabpanel"
+          id={`${id}-panel-${i}`}
+          aria-labelledby={`${id}-tab-${i}`}
+          data-on={i === 0 ? '' : undefined}
+        >
+          <span class="plane sc-plane">
+            <img
+              src={s.img.src}
+              srcset={s.img.srcset}
+              sizes={s.portrait ? '(min-width: 64rem) 18rem, 50vw' : '(min-width: 64rem) 52rem, 96vw'}
+              width={s.img.width}
+              height={s.img.height}
+              alt={s.alt}
+              loading="lazy"
+              decoding="async"
+            />
+          </span>
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-showcase]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[role="tabpanel"]')];
+    root.classList.add('is-ready');
+    let at = 0;
+    const show = (i: number, focus = false) => {
+      at = (i + tabs.length) % tabs.length;
+      tabs.forEach((t, j) => {
+        t.setAttribute('aria-selected', String(j === at));
+        t.tabIndex = j === at ? 0 : -1;
+      });
+      panels.forEach((p, j) => p.toggleAttribute('data-on', j === at));
+      if (focus) tabs[at].focus();
+      restartFill();
+    };
+
+    // Auto-advance: only in view, never under reduced motion, never again
+    // after the reader chooses a tab.
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const STEP = 6500;
+    let timer = 0;
+    let chosen = false;
+    let inView = false;
+    let held = false;
+    const restartFill = () => {
+      root.style.setProperty('--sc-step', `${STEP}ms`);
+      root.classList.remove('is-filling');
+      void root.offsetWidth;
+      if (!chosen && inView && !held && !still.matches) root.classList.add('is-filling');
+    };
+    const run = () => {
+      window.clearInterval(timer);
+      root.classList.remove('is-filling');
+      if (chosen || !inView || held || still.matches || document.hidden) return;
+      restartFill();
+      timer = window.setInterval(() => show(at + 1), STEP);
+    };
+    const choose = (i: number, focus = false) => {
+      chosen = true;
+      window.clearInterval(timer);
+      show(i, focus);
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => choose(i));
+      t.addEventListener('keydown', (e) => {
+        const k = e.key;
+        if (k === 'ArrowDown' || k === 'ArrowRight') { e.preventDefault(); choose(at + 1, true); }
+        if (k === 'ArrowUp' || k === 'ArrowLeft') { e.preventDefault(); choose(at - 1, true); }
+        if (k === 'Home') { e.preventDefault(); choose(0, true); }
+        if (k === 'End') { e.preventDefault(); choose(tabs.length - 1, true); }
+      });
+    });
+    // Hidden panels never trigger lazy loading; load all once the stage is near.
+    let primed = false;
+    new IntersectionObserver(([e]) => {
+      inView = e.isIntersecting;
+      if (inView && !primed) {
+        primed = true;
+        root.querySelectorAll<HTMLImageElement>('img[loading="lazy"]').forEach((im) => (im.loading = 'eager'));
+      }
+      run();
+    }, { threshold: 0.4 }).observe(root);
+    root.addEventListener('pointerenter', () => { held = true; run(); });
+    root.addEventListener('pointerleave', () => { held = false; run(); });
+    root.addEventListener('focusin', () => { held = true; run(); });
+    root.addEventListener('focusout', () => { held = false; run(); });
+    document.addEventListener('visibilitychange', run);
+  });
+</script>
+
+<style>
+  .showcase { display: grid; gap: var(--s-5); }
+  @media (min-width: 64rem) {
+    .showcase { grid-template-columns: minmax(0, 0.9fr) minmax(0, 2fr); gap: var(--s-6); align-items: stretch; }
+  }
+
+  /* Tabs: a ruled list; the current one is ink with its note and a fill line. */
+  .sc-tabs { display: grid; align-content: start; border-top: 1px solid var(--line); }
+  .sc-tab {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-areas: 'n title' '. note';
+    align-items: baseline;
+    row-gap: 0.4rem;
+    width: 100%;
+    padding: 1.1rem 0 1.3rem;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    background: none;
+    font: inherit;
+    text-align: left;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .sc-tab:hover { color: var(--ink); }
+  .sc-tab:focus-visible { outline-offset: -2px; border-radius: 4px; }
+  .sc-n { grid-area: n; font-size: 0.8125rem; font-weight: 650; }
+  .sc-title { grid-area: title; font-size: 1.1875rem; font-weight: 720; letter-spacing: -0.012em; line-height: 1.25; }
+  .sc-note { grid-area: note; font-size: 0.9375rem; line-height: 1.5; color: var(--ink-2); }
+  .sc-tab[aria-selected='true'] { color: var(--ink); }
+  .sc-tab[aria-selected='true'] .sc-n { color: var(--ch); }
+  :global([data-theme='dark']) .sc-tab[aria-selected='true'] .sc-n { color: color-mix(in oklch, var(--ch) 60%, white); }
+  /* Notes show for the current tab only once the script runs. */
+  .is-ready .sc-tab[aria-selected='false'] .sc-note { display: none; }
+  .sc-fill { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; overflow: hidden; }
+  .sc-fill > span { display: block; height: 100%; background: var(--ch); transform: scaleX(0); transform-origin: left; }
+  .sc-tab[aria-selected='true'] .sc-fill > span { transform: scaleX(1); }
+  .is-filling .sc-tab[aria-selected='true'] .sc-fill > span { animation: sc-fill var(--sc-step, 6500ms) linear both; }
+  @keyframes sc-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+  /* Stage: the lit field; the screen bleeds off its right and bottom edges. */
+  .sc-stage {
+    position: relative;
+    min-width: 0;
+    width: 100%;
+    min-height: 22rem;
+    aspect-ratio: 16 / 10.5;
+    border-radius: var(--r-block);
+    overflow: clip;
+    --field-at: 92% -8%;
+  }
+  .sc-panel {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--t-slow) var(--ease-out), visibility 0s linear var(--t-slow);
+  }
+  .sc-panel[data-on] { opacity: 1; visibility: visible; transition-delay: 0s; }
+  .sc-plane {
+    position: absolute;
+    left: 7%;
+    top: 9%;
+    width: 104%;
+    border-radius: var(--r-frame) 0 0 0;
+    transform: translateY(1.25rem) scale(0.985);
+    transform-origin: top left;
+    transition: transform 1100ms var(--ease-out);
+  }
+  .sc-panel[data-on] .sc-plane { transform: none; }
+  .sc-plane img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+  /* Phone screens: centered, full height, in a rounded device edge. */
+  .is-portrait .sc-plane {
+    left: 50%;
+    top: 7%;
+    bottom: 7%;
+    width: auto;
+    aspect-ratio: auto;
+    translate: -50% 0;
+    border-radius: 28px;
+    box-shadow: 0 0 0 6px oklch(0.16 0.01 262), var(--lift-field);
+  }
+  .is-portrait .sc-plane img { height: 100%; width: auto; aspect-ratio: auto; object-fit: contain; }
+
+  /* Without the script every panel shows, stacked, so nothing is hidden. */
+  .showcase:not(.is-ready) .sc-stage { aspect-ratio: auto; display: grid; gap: var(--s-4); padding: var(--s-5); }
+  .showcase:not(.is-ready) .sc-panel { position: relative; opacity: 1; visibility: visible; }
+  .showcase:not(.is-ready) .sc-plane { position: relative; left: 0; top: 0; width: 100%; transform: none; border-radius: var(--r-frame); }
+  .showcase:not(.is-ready) .is-portrait .sc-plane { translate: none; height: 28rem; justify-self: center; }
+
+  @media (max-width: 63.99rem) {
+    .showcase { display: flex; flex-direction: column-reverse; }
+    .sc-stage { min-height: 0; aspect-ratio: 4 / 3.4; }
+    .sc-plane { left: 6%; top: 8%; width: 140%; }
+  }
+</style>

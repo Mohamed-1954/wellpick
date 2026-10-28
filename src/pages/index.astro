@@ -1,0 +1,1001 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import HeroStack from '../components/HeroStack.astro';
+import Scene from '../components/Scene.astro';
+import FactList from '../components/FactList.astro';
+import OfficialCta from '../components/OfficialCta.astro';
+import CompareList from '../components/CompareList.astro';
+import Icon from '../components/Icon.astro';
+import Glyph from '../components/Glyph.astro';
+import { getPricing } from '../lib/pricing';
+import { vendorImage } from '../lib/media';
+import { SITE } from '../lib/site';
+
+const [softr, noloco, fillout] = await Promise.all([getPricing('softr'), getPricing('noloco'), getPricing('fillout')]);
+const plan = (p: typeof softr, name: string) => {
+  const found = p.plans.find((x) => x.name === name);
+  if (!found) throw new Error(`Plan ${name} missing`);
+  return found;
+};
+const filloutStarter = plan(fillout, 'Starter');
+const softrBasic = plan(softr, 'Basic');
+const nolocoBuild = plan(noloco, 'Build');
+const annual = (...ps: { yearlyMonthly: number | null }[]) => ps.reduce((s, p) => s + (p.yearlyMonthly ?? 0), 0);
+const monthly = (...ps: { monthly: number | null }[]) => ps.reduce((s, p) => s + (p.monthly ?? 0), 0);
+const stackA = { annual: annual(filloutStarter, softrBasic), monthly: monthly(filloutStarter, softrBasic) };
+const stackB = { annual: annual(filloutStarter, nolocoBuild), monthly: monthly(filloutStarter, nolocoBuild) };
+
+const articles = await getCollection('articles', (a) => !a.data.draft);
+const guides = articles.filter((a) => a.data.type === 'guide' && a.data.stage);
+const stages = [
+  { id: 'decide', title: 'Decide', blurb: 'Before you pay for anything.' },
+  { id: 'build', title: 'Build', blurb: 'From records to a working portal.' },
+  { id: 'launch', title: 'Launch', blurb: 'Before the first client logs in.' },
+] as const;
+const byStage = (id: string) =>
+  guides.filter((g) => g.data.stage === id).sort((a, b) => a.data.order - b.data.order);
+const comparisons = articles.filter((a) => a.data.type === 'comparison').sort((a, b) => a.data.order - b.data.order);
+
+// Real vendor product images, one job each, for the horizontal screen
+// scroller (after Airtable's "High-impact workflows" row). Titles say what
+// the screen shows; they make no claim the linked guide does not support.
+const screens = [
+  { chapter: 'fillout', tool: 'Fillout', href: '/fillout/', name: 'fillout-builder-card.png', title: 'Build the intake form by dragging questions in', alt: 'Fillout form builder: a Short answer field dragged into a registration form' },
+  { chapter: 'fillout', tool: 'Fillout', href: '/fillout/', name: 'fillout-login-card.png', title: 'Put a form behind a login page', alt: 'A Fillout form behind a "Sign in to access" page with email and password fields' },
+  { chapter: 'fillout', tool: 'Fillout', href: '/guides/fillout-intake-to-airtable/', name: 'fillout-workflow-run.png', title: 'Watch each submission run its steps', alt: 'Fillout workflow run log: form submitted, AI action, send email, each with a time' },
+  { chapter: 'softr', tool: 'Softr', href: '/softr/', name: 'softr-uc-onboarding.webp', title: "A new client's first form, inside the portal", alt: 'Softr portal page asking a new client for their name, business and contact method' },
+  { chapter: 'softr', tool: 'Softr', href: '/softr/', name: 'softr-uc-billing.webp', title: 'Invoices the client can see and pay', alt: 'Softr portal invoices table with amounts, due dates, statuses and Pay buttons' },
+  { chapter: 'softr', tool: 'Softr', href: '/softr/', name: 'softr-uc-documents.webp', title: 'Files shared with one client', alt: 'Softr portal file list with contracts and deliverables, each with edit and delete actions' },
+  { chapter: 'noloco', tool: 'Noloco', href: '/noloco/', name: 'noloco-permissions.png', title: 'Roles decide who reads, edits and creates', alt: "Noloco's roles table with read, edit and create switches for each role", position: '0% 0%' },
+  { chapter: 'noloco', tool: 'Noloco', href: '/noloco/', name: 'noloco-invite.png', title: 'Invite a client without team access', alt: 'Noloco invite form: the client role, restricted by data permissions, cannot modify the app' },
+  { chapter: 'noloco', tool: 'Noloco', href: '/noloco/', name: 'noloco-overview.png', title: 'The team dashboard on the same records', alt: 'Noloco revenue dashboard with billables, collected revenue and hours per employee', position: '30% 0%' },
+].map((s) => ({ ...s, img: vendorImage(s.name) }));
+
+const chapters = [
+  {
+    id: 'fillout',
+    n: '01',
+    tab: 'Intake',
+    title: 'Collect a brief you can actually work from.',
+    tool: 'Fillout',
+    price: `From $${filloutStarter.yearlyMonthly}/mo`,
+    now: 'Answers land as records in your base.',
+    scene: {
+      layout: 'bleed' as const,
+      style: '--scene-ratio: 16 / 8; --my: 9%; --mw: 104%; --fx: auto; --fr: 4%; --fy: 0%; --fb: auto; --fw: 36%;',
+      main: { name: 'fillout-airtable-form.png', alt: "Fillout's lead form sending its answers to a new row in an Airtable base" },
+      float: { name: 'fillout-login-card.png', alt: 'A Fillout form behind a "Sign in to access" login page' },
+    },
+    facts: [
+      { text: 'Questions can show or hide based on earlier answers, URL parameters, integration data or dates, on every plan.', source: 'filloutLogic' },
+      { text: 'A form can create an Airtable record, or update one through a per-record link. That link exposes the whole record unless you restrict prefilled data.', source: 'filloutUpdate' },
+      { text: 'Login pages start on Starter. A prefilled email is context, not proof of identity.', source: 'filloutLogin' },
+    ],
+  },
+  {
+    id: 'softr',
+    n: '02',
+    tab: 'Portal',
+    title: 'Give clients a page with their work on it.',
+    tool: 'Softr',
+    price: `From $${softrBasic.yearlyMonthly}/mo`,
+    now: 'The same records, shown to each client.',
+    scene: {
+      layout: 'bleed' as const,
+      style: '--scene-ratio: 16 / 8.4; --my: 9%; --mx: 9%; --mw: 104%; --fw: 32%; --fy: 30%; --fb: auto; --fx: 2.5%;',
+      main: {
+        name: 'softr-ai-builder-poster.jpg',
+        video: 'softr-ai-builder.mp4',
+        alt: "Softr's own recording: its AI builder sets up a partner portal's sign-in, tables and home page",
+      },
+      float: { name: 'softr-uc-billing.webp', alt: 'A Softr client portal page listing invoices, each with a Pay button', ratio: '1 / 0.8' },
+    },
+    facts: [
+      { text: 'Builds list and detail pages over Airtable, Google Sheets or its own database, with user groups for each client.', source: 'softrPortal' },
+      { text: 'View restrictions work on every plan. Create, edit and delete restrictions need Business.', source: 'softrRestrictions' },
+      { text: 'Basic covers 5 team and 5 client users with no add-ons. The sixth client login means Pro.', source: 'softrPlansDocs' },
+    ],
+  },
+  {
+    id: 'noloco',
+    n: '03',
+    tab: 'Team',
+    title: 'Run the portal and the team on the same records.',
+    tool: 'Noloco',
+    price: `From $${nolocoBuild.yearlyMonthly}/mo`,
+    now: 'The same records run the team.',
+    scene: {
+      layout: 'angle' as const,
+      style: '--scene-ratio: 16 / 8.6; --mx: 14%; --my: 10%; --mw: 98%; --rx: 16deg; --ry: -20deg; --rz: 5deg; --fx: 2.5%; --fy: 26%; --fb: auto; --fw: 42%;',
+      main: { name: 'noloco-project-canvas.png', alt: 'Noloco project tracker with campaign budgets, progress and owners' },
+      float: { name: 'noloco-permissions.png', alt: "Noloco's roles table with read, edit and create switches for each role" },
+    },
+    facts: [
+      { text: 'Only permissions are enforced on the server. Visibility rules and filters shape the screen, not access.', source: 'nolocoAccess' },
+      { text: 'Roles add up: a second role can widen access, never narrow it.', source: 'nolocoRoles' },
+      { text: 'Build includes 10 team seats and 1,000 active clients. A seat counts once someone logs in.', source: 'nolocoPricingGuide' },
+    ],
+  },
+];
+
+const problems = [
+  { chapter: 'fillout', quote: 'Briefs arrive half empty, and work starts on guesses.', fix: 'Fix intake first', tool: 'Fillout' },
+  { chapter: 'softr', quote: 'Clients keep emailing to ask where their project stands.', fix: 'Give them a portal', tool: 'Softr' },
+  { chapter: 'noloco', quote: 'My team and my clients work from different spreadsheets.', fix: 'Share one set of records', tool: 'Noloco' },
+];
+
+const faqs = [
+  {
+    q: 'Do I need a client portal at all?',
+    a: 'Not always. A portal pays off when clients repeatedly need the same project information or need to act on it. If a shared folder and a weekly update solve the problem, keep the simpler system.',
+    link: { href: '/start/', label: 'Take the two-minute decision guide' },
+  },
+  {
+    q: 'Why not rank the three tools?',
+    a: 'They do different jobs. Fillout is intake. Softr and Noloco are portal candidates, and Noloco also runs internal operations. A single score would hide the decision you actually face.',
+  },
+  {
+    q: 'Can I try the stack before paying?',
+    a: 'Yes. Fillout Free takes 1,000 responses a month, Softr Free covers 5 app users, and Noloco Free covers 50 active clients, with a 14-day Build trial and no card. Prototype with fictional records, then pay for the plan your real users need.',
+    link: { href: '/guides/portal-costs/', label: 'Cost your whole stack' },
+  },
+];
+
+const jsonLd = [
+  { '@context': 'https://schema.org', '@type': 'WebSite', name: SITE.name, url: new URL('/', Astro.site ?? Astro.url).href },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+
+<BaseLayout
+  title="Intake, portals and team tools, priced"
+  description="Independent guides to Fillout, Softr and Noloco for small service businesses: what each tool does, what it costs, and when to buy nothing."
+  jsonLd={jsonLd}
+  closing
+>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="shell hero-grid">
+      <div class="hero-copy">
+        <h1 class="hero-title" data-split="now">Better briefs.<br /> Clearer portals.<br /> Calmer teams.</h1>
+        <p class="lead hero-lead" data-reveal style="--rd: 650ms">
+          Independent picks for client work: Fillout for the brief, Softr for the portal, Noloco for the team.
+          Real prices, real limits, and a straight answer when you need none of them.
+        </p>
+        <div class="hero-actions" data-reveal style="--rd: 820ms">
+          <a class="btn" href="/start/">Find your stack <Icon name="arrow-right-linear" class="btn-icon" /></a>
+          <a class="text-link" href="#cost">See what it costs</a>
+        </div>
+      </div>
+      <div class="hero-visual" data-reveal="media" style="--rd: 250ms">
+        <HeroStack />
+      </div>
+    </div>
+  </section>
+
+  <!-- Problems -->
+  <section class="problems section" aria-labelledby="problems-title">
+    <div class="shell">
+      <div class="section-head">
+        <h2 id="problems-title">Start with the job that is broken.</h2>
+        <p class="lead">Pick the sentence that sounds like your week. That is the tool to read about first.</p>
+      </div>
+      <ol class="problem-list">
+        {
+          problems.map((p) => (
+            <li data-chapter={p.chapter}>
+              <a href={`/${p.chapter}/`}>
+                <span class="pl-quote">“{p.quote}”</span>
+                <span class="pl-fix">
+                  {p.fix}
+                  <span class="pl-tool">
+                    <span class="chip-dot" aria-hidden="true" />
+                    {p.tool}
+                  </span>
+                </span>
+                <Icon name="arrow-right-linear" class="pl-arrow" size="1.5rem" />
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="problems-foot">
+        Two tools could do the portal job. <a class="text-link" href="/compare/softr-vs-noloco/">Compare Softr and Noloco on the same client work</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Chapters -->
+  <section class="chapters" aria-labelledby="chapters-title">
+    <div class="shell chapters-grid">
+      <div class="chapters-rail">
+        <h2 id="chapters-title" class="rail-title">Three jobs, <span class="tone-2">three tools.</span></h2>
+        <ol class="rail-tabs" aria-label="Chapters">
+          {
+            chapters.map((c, i) => (
+              <li data-chapter={c.id} style={`--i: ${i}`}>
+                <a href={`#chapter-${c.id}`} data-chapter-tab={i} aria-current={i === 0 ? 'true' : undefined}>
+                  <Glyph name={({ fillout: 'intake', softr: 'portal', noloco: 'team' } as const)[c.id as 'fillout']} tone="canvas" size="2.5rem" class="rail-glyph" />
+                  <span class="rail-n num">{c.n}</span>
+                  <span class="rail-tab">{c.tab}</span>
+                  <span class="rail-tool">{c.tool}</span>
+                  <span class="rail-bar" aria-hidden="true"><span></span></span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+        <div class="rail-now" aria-hidden="true">
+          {
+            chapters.map((c, i) => (
+              <p class="rail-now-item" data-chapter={c.id} data-rail-now={i} data-active={i === 0 ? '' : undefined}>
+                <span class="rn-tool">{c.tool}</span>
+                <span class="rn-line">{c.now}</span>
+              </p>
+            ))
+          }
+        </div>
+      </div>
+      <div class="chapter-stack">
+        {
+          chapters.map((c, i) => (
+            <article class="chapter field" id={`chapter-${c.id}`} data-chapter={c.id} data-chapter-panel={i}>
+              <header class="chapter-head">
+                <p class="chapter-badge">
+                  <span class="cb-n num">{c.n}</span>
+                  <span class="cb-tab">{c.tab}</span>
+                  <span class="cb-rule" aria-hidden="true" />
+                  <span class="cb-tool">{c.tool}</span>
+                </p>
+                <h3 class="chapter-title">{c.title}</h3>
+                <p class="chapter-meta">
+                  <span class="chapter-tool">{c.tool}</span>
+                  <span><span class="num">{c.price}</span> billed yearly</span>
+                </p>
+              </header>
+              <div class="chapter-body">
+                <FactList items={c.facts} />
+                <div class="chapter-actions">
+                  <a class="btn btn-light" href={`/${c.id}/`}>
+                    Read the {c.tool} guide <Icon name="arrow-right-linear" class="btn-icon" />
+                  </a>
+                  <OfficialCta product={c.id as 'fillout'} to="pricing" label={`${c.tool} pricing`} placement="home-chapter" onDark ghost />
+                </div>
+              </div>
+              <Scene
+                class="chapter-scene"
+                chapter={c.id as 'fillout'}
+                tone="none"
+                layout={c.scene.layout}
+                style={c.scene.style}
+                main={c.scene.main}
+                float={c.scene.float}
+                sizes="(min-width: 64rem) 58rem, 110vw"
+                floatSizes="(min-width: 64rem) 26rem, 48vw"
+              />
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Screens -->
+  <section class="screens section" aria-labelledby="screens-title">
+    <div class="shell screens-head" data-reveal>
+      <div class="section-head">
+        <h2 id="screens-title">What clients and your team <span class="tone-2">would look at.</span></h2>
+        <p class="lead">Screens from each vendor's own product images, one job per card.</p>
+      </div>
+      <div class="screens-controls">
+        <button type="button" class="icon-round" data-screens-prev aria-label="Previous screens" disabled>
+          <Icon name="arrow-left-linear" size="1.25rem" />
+        </button>
+        <button type="button" class="icon-round" data-screens-next aria-label="Next screens">
+          <Icon name="arrow-right-linear" size="1.25rem" />
+        </button>
+      </div>
+    </div>
+    <ul class="screens-track" data-screens-track tabindex="0" aria-label="Product screens" data-reveal-stagger="70">
+      {
+        screens.map((s) => (
+          <li class="screen-card" data-chapter={s.chapter} data-reveal>
+            <a href={s.href}>
+              <span class="screen-media field-wash">
+                <img
+                  src={s.img.src}
+                  srcset={s.img.srcset}
+                  sizes="(min-width: 64rem) 24rem, 80vw"
+                  width={s.img.width}
+                  height={s.img.height}
+                  alt={s.alt}
+                  loading="lazy"
+                  decoding="async"
+                  style={s.position ? `object-position: ${s.position}` : undefined}
+                />
+              </span>
+              <span class="screen-title">{s.title}</span>
+              <span class="screen-tool">
+                <span class="chip-dot" aria-hidden="true" />
+                {s.tool}
+              </span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="shell">
+      <div class="screens-progress" aria-hidden="true"><span data-screens-bar></span></div>
+    </div>
+  </section>
+
+  <!-- Cost -->
+  <section class="cost section" id="cost" aria-labelledby="cost-title">
+    <div class="shell">
+      <div class="section-head">
+        <h2 id="cost-title">What the stack costs.</h2>
+        <p class="lead">The cheapest published plan that covers each job, billed yearly. Monthly billing costs more.</p>
+      </div>
+      <div class="cost-frame">
+        <div class="total">
+          <p class="total-label">Fillout Starter + Softr Basic</p>
+          <p class="total-figure num">${stackA.annual}<span class="per">/mo</span></p>
+          <p class="total-note">${stackA.monthly}/mo on monthly billing. Up to 5 client logins.</p>
+        </div>
+        <div class="total">
+          <p class="total-label">Fillout Starter + Noloco Build</p>
+          <p class="total-figure num">${stackB.annual}<span class="per">/mo</span></p>
+          <p class="total-note">${stackB.monthly}/mo on monthly billing. Up to 1,000 active clients, 10 team seats.</p>
+        </div>
+        <ul class="cost-rows">
+          <li data-chapter="fillout">
+            <a href="/fillout/pricing/">
+              <span class="cr-job"><span class="chip-dot" aria-hidden="true" />Collect the brief</span>
+              <span class="cr-plan">Fillout Starter · {Number(filloutStarter.responses).toLocaleString('en-US')} responses a month, login forms</span>
+              <span class="cr-price num">${filloutStarter.yearlyMonthly}<span class="cr-per">/mo</span></span>
+            </a>
+          </li>
+          <li data-chapter="softr">
+            <a href="/softr/pricing/">
+              <span class="cr-job"><span class="chip-dot" aria-hidden="true" />Give clients a portal</span>
+              <span class="cr-plan">Softr Basic · {String(softrBasic.users)} users, no add-ons</span>
+              <span class="cr-price num">${softrBasic.yearlyMonthly}<span class="cr-per">/mo</span></span>
+            </a>
+          </li>
+          <li data-chapter="noloco">
+            <a href="/noloco/pricing/">
+              <span class="cr-job"><span class="chip-dot" aria-hidden="true" />Run the team behind it</span>
+              <span class="cr-plan">Noloco Build · 10 team seats, {Number(nolocoBuild.records).toLocaleString('en-US')} records</span>
+              <span class="cr-price num">${nolocoBuild.yearlyMonthly}<span class="cr-per">/mo</span></span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      <p class="cost-foot">
+        Seats, records and file limits change the bill more than the headline price.{" "}
+        <a class="text-link" href="/guides/portal-costs/">Cost your whole stack</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- Compare -->
+  <section class="compare section" aria-labelledby="compare-title">
+    <div class="shell">
+      <div class="section-head">
+        <h2 id="compare-title">Compare before you commit.</h2>
+        <p class="lead">Same client job, different tools. Documented differences, then a pick for each situation.</p>
+      </div>
+      <CompareList items={comparisons} />
+    </div>
+  </section>
+
+  <!-- Guides -->
+  <section class="guides section" aria-labelledby="guides-title">
+    <div class="shell">
+      <div class="section-head">
+        <h2 id="guides-title">Guides for every step of the job.</h2>
+        <p class="lead">Each guide ends with checks you can run yourself, with fictional data, before a client sees anything.</p>
+      </div>
+      <div class="stage-cols">
+        {
+          stages.map((s) => (
+            <div class="stage-col">
+              <h3>{s.title}</h3>
+              <p class="stage-blurb">{s.blurb}</p>
+              <ul>
+                {byStage(s.id).map((g) => (
+                  <li>
+                    <a href={`/${g.id}/`}>
+                      {g.data.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+      <p class="guides-foot"><a class="btn btn-ghost" href="/guides/">All guides <Icon name="arrow-right-linear" class="btn-icon" /></a></p>
+    </div>
+  </section>
+
+  <!-- Downloads -->
+  <section class="downloads" aria-labelledby="downloads-title">
+    <div class="shell downloads-inner">
+      <div>
+        <h2 id="downloads-title">Working files. No email gate.</h2>
+        <p class="lead">Plain files you can adapt. No account, no form, no newsletter.</p>
+      </div>
+      <ul class="dl-list">
+        <li>
+          <a href="/resources/client-intake-brief.txt" download>
+            <Icon name="document-text-linear" size="1.5rem" />
+            <span><strong>Client intake brief</strong><span>Scope, decision makers, materials and the first handoff. TXT</span></span>
+            <Icon name="download-minimalistic-linear" size="1.25rem" class="dl-icon" />
+          </a>
+        </li>
+        <li>
+          <a href="/resources/portal-permission-checks.csv" download>
+            <Icon name="shield-check-linear" size="1.5rem" />
+            <span><strong>Two-client permission log</strong><span>Expected and observed access, row by row. CSV</span></span>
+            <Icon name="download-minimalistic-linear" size="1.25rem" class="dl-icon" />
+          </a>
+        </li>
+        <li>
+          <a href="/resources/portal-cost-worksheet.csv" download>
+            <Icon name="calculator-linear" size="1.5rem" />
+            <span><strong>Whole-stack cost worksheet</strong><span>Plans, connected services and upkeep on one basis. CSV</span></span>
+            <Icon name="download-minimalistic-linear" size="1.25rem" class="dl-icon" />
+          </a>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq section" aria-labelledby="faq-title">
+    <div class="shell faq-grid">
+      <h2 id="faq-title">Straight answers.</h2>
+      <dl class="faq-list">
+        {
+          faqs.map((f) => (
+            <div class="faq-item">
+              <dt>{f.q}</dt>
+              <dd>
+                <p>{f.a}</p>
+                {f.link && <a class="text-link" href={f.link.href}>{f.link.label}</a>}
+              </dd>
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Chapter rail (after Airtable's sticky chapter column): the chapter in view
+  // is current, its line crossfades in under the tabs, and the spine fills in
+  // chapter colors as the panels scroll past. Progress is a CSS variable set
+  // once per frame; no layout reads outside that frame.
+  const tabs = [...document.querySelectorAll<HTMLAnchorElement>('[data-chapter-tab]')];
+  const panels = [...document.querySelectorAll<HTMLElement>('[data-chapter-panel]')];
+  const lines = [...document.querySelectorAll<HTMLElement>('[data-rail-now]')];
+  const rail = document.querySelector<HTMLElement>('.rail-tabs');
+  const stack = document.querySelector<HTMLElement>('.chapter-stack');
+  const setCurrent = (i: number) => {
+    tabs.forEach((t, j) => (j === i ? t.setAttribute('aria-current', 'true') : t.removeAttribute('aria-current')));
+    lines.forEach((l, j) => l.toggleAttribute('data-active', j === i));
+  };
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) if (e.isIntersecting) setCurrent(Number((e.target as HTMLElement).dataset.chapterPanel));
+    },
+    { rootMargin: '-45% 0px -50% 0px' },
+  );
+  panels.forEach((p) => io.observe(p));
+
+  if (rail && stack) {
+    let queued = false;
+    const update = () => {
+      queued = false;
+      const r = stack.getBoundingClientRect();
+      const p = (window.innerHeight * 0.5 - r.top) / r.height;
+      rail.style.setProperty('--p', String(Math.min(1, Math.max(0, p))));
+    };
+    const queue = () => {
+      if (!queued) (queued = true), requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', queue, { passive: true });
+    window.addEventListener('resize', queue, { passive: true });
+    update();
+  }
+
+  // Screen scroller: native horizontal scroll with snap; the arrows move one
+  // card width, the bar under it shows the position.
+  const track = document.querySelector<HTMLElement>('[data-screens-track]');
+  const prev = document.querySelector<HTMLButtonElement>('[data-screens-prev]');
+  const next = document.querySelector<HTMLButtonElement>('[data-screens-next]');
+  const bar = document.querySelector<HTMLElement>('[data-screens-bar]');
+  if (track && prev && next && bar) {
+    const step = () => (track.querySelector<HTMLElement>('.screen-card')?.offsetWidth ?? 320) + 20;
+    const sync = () => {
+      const max = track.scrollWidth - track.clientWidth;
+      const at = max > 0 ? track.scrollLeft / max : 1;
+      bar.style.setProperty('--at', String(at));
+      bar.style.setProperty('--size', String(max > 0 ? track.clientWidth / track.scrollWidth : 1));
+      prev.disabled = track.scrollLeft < 4;
+      next.disabled = track.scrollLeft > max - 4;
+    };
+    const smooth = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+    prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: smooth() }));
+    next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: smooth() }));
+    track.addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
+    window.addEventListener('resize', sync, { passive: true });
+    sync();
+  }
+</script>
+
+<style>
+  /* ---------- Hero ---------- */
+  .hero { padding-block: clamp(1rem, 0.25rem + 2.2vw, 2.75rem) clamp(3rem, 2rem + 4vw, 6rem); overflow-x: clip; }
+  .hero-grid { display: grid; gap: var(--s-7); align-items: center; }
+  @media (min-width: 64rem) {
+    .hero-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: var(--s-6); }
+  }
+  .hero-title { font-size: clamp(2.6rem, 0.9rem + 4.2vw, 4.75rem); font-variation-settings: "wdth" var(--display-wdth); }
+  /* A light field under the stack (after Unicorn Studio's lit hero scenes, in
+     CSS): three chapter lights that drift slowly, so the screens sit in a lit
+     space. Static under reduced motion. */
+  .hero-visual { position: relative; isolation: isolate; }
+  /* The tilted stack paints above its box; keep it clear of the header. */
+  @media (min-width: 64rem) { .hero-visual { padding-top: 2.5rem; } }
+  .hero-visual::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset: -2% -10% 14% -4%;
+    background:
+      radial-gradient(38% 42% at 24% 70%, color-mix(in oklch, var(--fillout) 46%, transparent), transparent 72%),
+      radial-gradient(42% 46% at 54% 48%, color-mix(in oklch, var(--softr) 40%, transparent), transparent 72%),
+      radial-gradient(42% 46% at 80% 26%, color-mix(in oklch, var(--noloco) 46%, transparent), transparent 72%);
+    filter: blur(34px);
+    pointer-events: none;
+    animation: hero-light 18s ease-in-out infinite alternate;
+  }
+  @keyframes hero-light {
+    from { transform: translate3d(-2%, 1%, 0) scale(1); }
+    to { transform: translate3d(3%, -2%, 0) scale(1.06); }
+  }
+  @media (prefers-reduced-motion: reduce) { .hero-visual::before { animation: none; } }
+  .hero-lead { margin-top: var(--s-5); max-width: 46ch; }
+  .hero-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-5); margin-top: var(--s-6); }
+  @media (max-width: 63.99rem) {
+    /* Small screens: the promise and the action come first, inside the first
+       screen; the product stack follows in its own bounded band. */
+    .hero-copy { display: contents; }
+    .hero-grid { gap: var(--s-4); }
+    .hero-title { order: 1; }
+    .hero-lead { order: 2; margin-top: 0; }
+    .hero-actions { order: 3; margin-top: var(--s-2); }
+    /* The tilted stack paints above its box; keep that clear of the buttons. */
+    .hero-visual { order: 4; margin-top: var(--s-8); }
+  }
+
+  /* ---------- Section heads ----------
+     Headline, then one supporting line under it. No split header. */
+  .section-head { display: grid; gap: var(--s-3); margin-bottom: 2.5rem; }
+  .section-head .lead { max-width: 52ch; }
+
+  /* ---------- Problems ---------- */
+  .problems { padding-top: clamp(3rem, 2rem + 3vw, 5rem); }
+  .problem-list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .problem-list li { border-bottom: 1px solid var(--line); }
+  .problem-list a {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas: 'quote arrow' 'fix arrow';
+    gap: 0.5rem var(--s-4);
+    align-items: center;
+    padding: clamp(1.25rem, 1rem + 1.5vw, 2.25rem) var(--s-3);
+    text-decoration: none;
+    isolation: isolate;
+    border-radius: var(--r-card);
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .problem-list a::before {
+    content: '';
+    position: absolute;
+    inset: 0.35rem 0;
+    z-index: -1;
+    border-radius: var(--r-card);
+    background: var(--ch);
+    transform: scaleY(0.2);
+    opacity: 0;
+    transition: transform var(--t-fast) var(--ease-out), opacity var(--t-fast) var(--ease-out);
+  }
+  .problem-list a:hover, .problem-list a:focus-visible { color: var(--on-chapter); }
+  .problem-list a:hover::before, .problem-list a:focus-visible::before { transform: none; opacity: 1; }
+  @media (min-width: 64rem) {
+    .problem-list a { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; grid-template-areas: 'quote fix arrow'; padding-inline: var(--s-5); }
+  }
+  .pl-quote { grid-area: quote; font-size: var(--step-3); font-weight: 720; font-variation-settings: "wdth" 106; letter-spacing: -0.02em; line-height: 1.12; }
+  .pl-fix { grid-area: fix; display: grid; gap: 0.25rem; font-weight: 620; }
+  .pl-tool { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.875rem; opacity: 0.8; font-weight: 560; }
+  .problem-list a:hover .chip-dot, .problem-list a:focus-visible .chip-dot { background: var(--on-chapter); }
+  .problem-list a:hover .pl-tool, .problem-list a:focus-visible .pl-tool { opacity: 1; }
+  .problem-list :global(.pl-arrow) { grid-area: arrow; transition: transform var(--t-fast) var(--ease-out); }
+  .problem-list a:hover :global(.pl-arrow) { transform: translateX(6px); }
+  .problems-foot { margin-top: var(--s-5); color: var(--ink-2); }
+
+  /* ---------- Chapters ---------- */
+  .chapters { padding-block: var(--s-4) var(--section); }
+  .chapters-grid { display: grid; gap: var(--s-6); }
+  @media (min-width: 64rem) {
+    .chapters-grid { grid-template-columns: 19rem minmax(0, 1fr); gap: var(--s-7); align-items: start; }
+    .chapters-rail { position: sticky; top: 7rem; }
+  }
+  /* Sized to sit in two lines in the rail ("Three jobs, / three tools.") and
+     never break a word per line on phones. */
+  .rail-title { font-size: clamp(2rem, 1.4rem + 1.2vw, 2.5rem); line-height: 1.02; }
+
+  /* The rail (v12, after Airtable's app-building rail): ruled rows instead of
+     a spine with rings. Each row is the chapter's glyph, number, job and tool;
+     the current row lifts onto a surface and its glyph takes full color. A
+     thin bar at the foot of each row fills with that chapter's share of the
+     scroll (--p, 0..1 over the whole stack, set by the page script), so the
+     three bars read as one segmented progress line. */
+  .rail-tabs { list-style: none; margin: var(--s-6) 0 0; padding: 0; display: none; gap: var(--s-1); }
+  @media (min-width: 64rem) { .rail-tabs { display: grid; } }
+  .rail-tabs li { --wire: var(--ch); }
+  :global([data-theme='dark']) .rail-tabs li { --wire: color-mix(in oklch, var(--ch) 68%, white); }
+  .rail-tabs a {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'g tab n'
+      'g tool n';
+    align-items: center;
+    column-gap: var(--s-4);
+    padding: 0.8rem 0.9rem 1.05rem;
+    border-radius: var(--r-card);
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--t-fast) var(--ease-out), background-color var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  }
+  .rail-tabs a :global(.rail-glyph) {
+    grid-area: g;
+    filter: grayscale(1);
+    opacity: 0.45;
+    transition: filter var(--t-med) var(--ease-out), opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out);
+  }
+  .rail-n { grid-area: n; align-self: start; padding-top: 0.2rem; font-size: 0.8125rem; font-weight: 620; color: var(--muted); }
+  .rail-tab { grid-area: tab; align-self: end; font-size: 1.25rem; font-weight: 720; line-height: 1.15; letter-spacing: -0.015em; }
+  .rail-tool { grid-area: tool; align-self: start; font-size: 0.875rem; font-weight: 560; color: var(--muted); }
+  .rail-bar {
+    position: absolute;
+    left: 0.9rem;
+    right: 0.9rem;
+    bottom: 0.45rem;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--line);
+    overflow: hidden;
+  }
+  .rail-bar > span {
+    display: block;
+    height: 100%;
+    background: var(--wire);
+    transform-origin: left;
+    transform: scaleX(clamp(0, calc(var(--p, 0) * 3 - var(--i)), 1));
+  }
+  .rail-tabs a:hover { color: var(--ink); }
+  .rail-tabs a:hover :global(.rail-glyph) { opacity: 0.8; }
+  .rail-tabs a[aria-current] {
+    color: var(--ink);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line), 0 18px 40px -26px hsl(var(--shadow-tint) / 0.5);
+  }
+  .rail-tabs a[aria-current] :global(.rail-glyph) { filter: none; opacity: 1; transform: scale(1.06); }
+  .rail-now { display: none; }
+  @media (min-width: 64rem) {
+    .rail-now { display: grid; margin-top: var(--s-5); padding-top: var(--s-5); border-top: 1px solid var(--line); }
+  }
+  .rail-now-item {
+    grid-area: 1 / 1;
+    display: grid;
+    gap: 0.4rem;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(0.5rem);
+    transition: opacity var(--t-med) var(--ease-out), transform var(--t-med) var(--ease-out), visibility 0s linear var(--t-med);
+  }
+  .rail-now-item[data-active] { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  /* Reduced motion: the line swaps at once, so two lines never overlap. */
+  @media (prefers-reduced-motion: reduce) { .rail-now-item { transition: none; } }
+  .rn-tool { font-size: 0.875rem; font-weight: 650; color: var(--muted); }
+  .rn-line { font-size: 1.375rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.015em; color: var(--ink); max-width: 16ch; }
+
+  /* Stacked chapter panels (Airtable): each panel is a lit chapter field and
+     its product scene bleeds off the panel's right edge. */
+  .chapter-stack { --chapter-pad: clamp(1.25rem, 0.8rem + 2.5vw, 3.5rem); display: grid; gap: var(--s-5); }
+  .chapter {
+    display: grid;
+    gap: var(--s-6);
+    padding: var(--chapter-pad);
+    border-radius: var(--r-block);
+    overflow: clip;
+    color: var(--on-chapter);
+    --ink: var(--on-chapter);
+    --ink-2: var(--on-chapter-muted);
+    --muted: var(--on-chapter-muted);
+    --line: oklch(1 0 0 / 0.2);
+    scroll-margin-top: 6rem;
+  }
+  .chapter :global(.chapter-scene) {
+    margin: var(--s-2) calc(-1 * var(--chapter-pad)) calc(-1 * var(--chapter-pad)) 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+  /* Phones: the plane runs larger and further off the edge so the product
+     reads at phone size (inline scene geometry is tuned for wide panels). */
+  @media (max-width: 40rem) {
+    .chapter :global(.chapter-scene) {
+      --scene-ratio: 5 / 4 !important;
+      --mx: 6% !important;
+      --my: 8% !important;
+      --mw: 170% !important;
+    }
+  }
+  /* Title first; the tool and its entry price are meta under it. The head's
+     1rem gap spaces the phone badge row from the title. */
+  .chapter-head { display: grid; gap: var(--s-4); }
+  /* Where the rail is hidden, each panel carries its own number, job and
+     tool on one line. */
+  .chapter-badge {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.2;
+  }
+  .cb-n {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--on-chapter);
+    color: var(--ch-deep);
+    font-weight: 700;
+  }
+  .cb-tab { font-weight: 650; color: var(--on-chapter); }
+  .cb-rule { width: 1px; height: 1.125rem; background: color-mix(in oklab, var(--on-chapter) 40%, transparent); }
+  .cb-tool { font-weight: 560; color: var(--on-chapter-muted); }
+  @media (min-width: 64rem) { .chapter-badge { display: none; } }
+  @media (max-width: 63.99rem) { .chapter-tool { display: none; } }
+
+  .chapter-title {
+    font-size: var(--step-4);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: var(--display-track);
+    line-height: 1.02;
+    color: inherit;
+    max-width: 16ch;
+    overflow-wrap: anywhere;
+  }
+  @media (max-width: 47.99rem) {
+    .chapter-title { font-size: 1.75rem; line-height: 1.1; max-width: none; }
+  }
+  .chapter-meta { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.85rem; font-size: 0.9375rem; color: var(--on-chapter-muted); }
+  .chapter-tool { padding-right: 0.85rem; border-right: 1px solid oklch(1 0 0 / 0.4); font-size: 1.125rem; font-weight: 700; color: var(--on-chapter); }
+  @media (max-width: 24rem) {
+    .chapter-meta { flex-direction: column; gap: 0.2rem; }
+    .chapter-tool { padding-right: 0; border-right: 0; }
+  }
+  .chapter-body { display: grid; gap: var(--s-6); }
+  .chapter-body > :global(*) { min-width: 0; }
+  /* Facts, then the actions under them on the left, where the eye already is
+     (they used to float alone at the panel's right edge). */
+  .chapter-actions { display: flex; flex-wrap: wrap; gap: var(--s-3); }
+  .chapter-actions > :global(*),
+  .chapter-actions :global(.btn) { min-width: 0; max-width: 100%; }
+  .chapter-actions :global(.btn-ghost) { --btn-fg: var(--on-chapter); border-color: oklch(1 0 0 / 0.5); }
+  .chapter-actions :global(.btn-ghost:hover) { background: oklch(1 0 0 / 0.14); color: var(--on-chapter); }
+
+
+  /* ---------- Screens ----------
+     A full-bleed horizontal scroller with edge peek (Airtable's "High-impact
+     workflows" row): the first card lines up with the shell, the last ones
+     run off the right edge. Each card: a vendor screen on its chapter wash,
+     bleeding off the tile's bottom right, then the job and the tool. */
+  .screens { overflow-x: clip; }
+  .screens-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: var(--s-5); margin-bottom: 2.5rem; }
+  .screens-head .section-head { margin-bottom: 0; }
+  .screens-controls { display: flex; gap: var(--s-2); }
+  .icon-round {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--surface);
+    color: var(--ink);
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+  }
+  .icon-round:hover:not(:disabled) { background: var(--ink); color: var(--on-ink); border-color: var(--ink); }
+  .icon-round:disabled { opacity: 0.4; cursor: default; }
+  .screens-track {
+    --inset: max(var(--gutter), calc((100% - var(--max)) / 2 + var(--gutter)));
+    display: flex;
+    gap: 1.25rem;
+    margin: 0;
+    padding: 0.25rem var(--inset) 0.75rem;
+    list-style: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--inset);
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .screens-track::-webkit-scrollbar { display: none; }
+  .screens-track:focus-visible { outline-offset: -3px; }
+  .screen-card { flex: 0 0 clamp(16.5rem, 13rem + 12vw, 23rem); scroll-snap-align: start; }
+  .screen-card a { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.75rem; text-decoration: none; }
+  .screen-media {
+    display: block;
+    aspect-ratio: 5 / 4;
+    padding: 1.5rem 0 0 1.5rem;
+    border-radius: var(--r-card);
+    overflow: clip;
+  }
+  .screen-media img {
+    width: 118%;
+    max-width: none;
+    height: 118%;
+    object-fit: cover;
+    object-position: top left;
+    border-radius: 10px 0 0 0;
+    box-shadow: 0 0 0 1px oklch(0.2 0.02 262 / 0.08), var(--lift-1);
+    transition: transform var(--t-med) var(--ease-out);
+    transform-origin: top left;
+  }
+  .screen-card a:hover .screen-media img { transform: translate(-0.5rem, -0.5rem); }
+  .screen-title { font-size: 1.125rem; font-weight: 680; line-height: 1.3; letter-spacing: -0.01em; text-wrap: balance; }
+  .screen-card a:hover .screen-title { text-decoration: underline; text-underline-offset: 0.2em; text-decoration-thickness: 1.5px; }
+  .screen-tool { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.875rem; font-weight: 560; color: var(--muted); }
+  .screens-progress { position: relative; height: 2px; margin-top: var(--s-5); background: var(--line); overflow: hidden; }
+  .screens-progress span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: calc(var(--size, 0.35) * 100%);
+    background: var(--ink);
+    transform: translateX(calc(var(--at, 0) * (1 / var(--size, 0.35) - 1) * 100%));
+  }
+  /* ---------- Cost ----------
+     One hairline frame on the canvas: the two stack totals as joined columns,
+     the three plans that make them up as ruled rows beneath. */
+  .cost-frame {
+    --pad: clamp(1.25rem, 0.9rem + 1.8vw, 2.5rem);
+    display: grid;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+  }
+  .total { display: grid; align-content: start; gap: var(--s-3); padding: var(--pad); }
+  .total + .total { border-top: 1px solid var(--line); }
+  @media (min-width: 48rem) {
+    .cost-frame { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .total + .total { border-top: 0; border-left: 1px solid var(--line); }
+  }
+  .total-label { font-size: 1rem; font-weight: 650; color: var(--ink); }
+  .total-figure {
+    font-size: var(--step-5);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: var(--display-track);
+    line-height: 1;
+  }
+  .per { margin-left: 0.12em; font-size: 0.32em; font-weight: 600; letter-spacing: 0; color: var(--muted); }
+  .total-note { font-size: 0.9375rem; color: var(--ink-2); }
+
+  .cost-rows { grid-column: 1 / -1; list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+  .cost-rows li + li { border-top: 1px solid var(--line); }
+  .cost-rows a {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'job price'
+      'plan plan';
+    gap: 0.3rem var(--s-4);
+    align-items: baseline;
+    padding: 1.1rem var(--pad);
+    text-decoration: none;
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  /* Wide: the plan column lines up with the second total's column. */
+  @media (min-width: 48rem) {
+    .cost-rows a {
+      grid-template-columns: calc(50% + var(--pad) - var(--s-4)) minmax(0, 1fr) auto;
+      grid-template-areas: 'job plan price';
+    }
+  }
+  .cost-rows a:hover { background: var(--surface); }
+  .cr-job { grid-area: job; display: inline-flex; align-items: center; gap: 0.6rem; font-size: 1.0625rem; font-weight: 700; }
+  .cr-plan { grid-area: plan; font-size: 0.9375rem; color: var(--ink-2); }
+  .cr-price { grid-area: price; justify-self: end; font-size: 1.25rem; font-weight: 700; }
+  .cr-per { margin-left: 0.1em; font-size: 0.875rem; font-weight: 560; color: var(--muted); }
+  .cost-rows a:hover .cr-job { text-decoration: underline; text-underline-offset: 0.2em; }
+  .cost-foot { margin-top: var(--s-5); color: var(--ink-2); }
+
+  /* ---------- Guides ---------- */
+  .stage-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-6); }
+  @media (min-width: 64rem) { .stage-cols { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--s-5); } }
+  .stage-col { padding-top: var(--s-4); border-top: 2px solid var(--ink); }
+  .stage-col h3 { font-size: var(--step-3); font-weight: var(--display-wght); font-variation-settings: "wdth" var(--display-wdth); overflow-wrap: anywhere; }
+  .stage-blurb { color: var(--muted); margin-top: 0.3rem; }
+  .stage-col ul { list-style: none; margin: var(--s-4) 0 0; padding: 0; display: grid; }
+  .stage-col a {
+    display: block;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--line);
+    font-weight: 620;
+    line-height: 1.35;
+    text-decoration: underline;
+    text-decoration-color: transparent;
+    text-underline-offset: 0.2em;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .stage-col a:hover { text-decoration-color: currentColor; }
+  .guides-foot { margin-top: var(--s-7); }
+
+  /* ---------- Downloads ---------- */
+  .downloads-inner {
+    display: grid;
+    gap: var(--s-6);
+    padding: clamp(1.5rem, 1rem + 3vw, 4rem);
+    border-radius: var(--r-block);
+    background: var(--surface-2);
+  }
+  @media (min-width: 64rem) { .downloads-inner { grid-template-columns: 1fr 1.2fr; align-items: center; } }
+  .downloads h2 { font-size: var(--step-4); }
+  .downloads .lead { margin-top: var(--s-3); }
+  /* Files are rows on the panel, not cards inside a card. */
+  .dl-list { list-style: none; margin: 0; padding: 0; display: grid; border-top: 2px solid var(--ink); }
+  .dl-list li + li { border-top: 1px solid var(--line-strong); }
+  .dl-list a {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: var(--s-4);
+    padding: 1rem 0.25rem;
+    text-decoration: none;
+  }
+  .dl-list a:hover strong { text-decoration: underline; text-underline-offset: 0.2em; }
+  .dl-list a :global(.dl-icon) { transition: transform var(--t-fast) var(--ease-out); }
+  .dl-list a:hover :global(.dl-icon) { transform: translateY(2px); }
+  .dl-list strong { display: block; }
+  .dl-list a span span { font-size: 0.875rem; color: var(--muted); }
+  .dl-list :global(.dl-icon) { color: var(--muted); }
+
+  /* ---------- FAQ ---------- */
+  .faq-grid { display: grid; gap: var(--s-6); }
+  @media (min-width: 64rem) { .faq-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.8fr); } .faq-grid h2 { position: sticky; top: 7rem; align-self: start; } }
+  .faq-list { margin: 0; display: grid; border-bottom: 1px solid var(--line); }
+  .faq-item { padding-block: var(--s-5); border-top: 1px solid var(--line); display: grid; gap: var(--s-3); }
+  @media (min-width: 48rem) { .faq-item { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); gap: var(--s-6); } }
+  .faq-item dt { font-weight: 720; font-size: var(--step-1); line-height: 1.3; }
+  .faq-item dd { margin: 0; display: grid; gap: var(--s-3); color: var(--ink-2); justify-items: start; }
+</style>

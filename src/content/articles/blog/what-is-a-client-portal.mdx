@@ -1,0 +1,75 @@
+---
+title: "What is a client portal? A plain answer for small service businesses"
+seoTitle: "What is a client portal? A plain answer"
+description: A client portal is a private page where each client signs in and sees their own work. Here is what it does, what it replaces, and the signs you do not need one yet.
+type: post
+topic: portals
+products: [softr, noloco]
+sourceIds: [softrPortal, nolocoPortal, airtablePortals, softrRestrictions, nolocoRecordRules]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    A client portal is a website behind a login where each client sees only
+    their own records: projects, files, invoices, approvals. It replaces the
+    status email and the shared folder. You need one when clients ask "where
+    is it?" more than once a week, or when they must act, not just read.
+  </p>
+</aside>
+
+## The short definition
+
+A client portal is a private web app for your clients. Each client signs in and sees the part of your business that belongs to them. Nothing else.
+
+In practice that means a few pages built on top of records you already keep:
+
+- **Projects** with a status, a next step and a date.
+- **Files** they sent you and files you delivered.
+- **Invoices** and what is still due.
+- **Approvals** waiting on them, such as a quote, a design or a contract.
+- **A form** to ask for something new.
+
+The key word is "own". A portal is not a page every client can see. It is the same page, filled with different records depending on who signed in.
+
+## What a portal replaces
+
+Most small businesses already do the job a portal does, by hand:
+
+| Today | With a portal |
+| --- | --- |
+| A weekly status email you write for each client | A status field the client reads when they want |
+| A shared folder per client, with its own link | A files list filtered to the signed-in client |
+| "Can you resend the invoice?" | An invoices page with the PDF and the amount due |
+| Approvals buried in an email thread | A button on the record, with a date stamp |
+
+The gain is not the software. It is that the client stops waiting for you to tell them something that already exists in your records.
+
+## How the "own records" part works
+
+Every portal tool needs a rule that connects a signed-in person to their records. The common pattern is a company link: each user belongs to a company, each project belongs to a company, and the rule says "show projects where the company matches the user's company".
+
+Softr calls these global data restrictions, set per user group. Noloco calls them record-level permissions, set per role, for example `Company` equals `User's Company`. Airtable's own Portals add-on shares Airtable interfaces with outside users who sign in to Airtable.
+
+The rule is the whole product. A portal with a wrong rule is worse than no portal, because it shows one client another client's work. We explain the rules in more detail in [record-level permissions without code](/blog/record-level-permissions-explained/).
+
+## Signs you do not need one yet
+
+A portal is a small software project. It needs setup, testing and someone to keep the records current. Skip it for now if:
+
+- **You have a handful of clients and they rarely ask for updates.** A short weekly email is cheaper.
+- **Your records are not up to date today.** A portal shows stale data faster, not better.
+- **Clients only need to receive files.** A shared folder with clear names does that job.
+- **You cannot name the action clients will take.** Reading a status is useful. Approving, uploading or paying is where portals earn their cost.
+
+## Signs you do
+
+- Clients ask where things are, and the answer is already in your records.
+- Several people at each client need the same information.
+- You chase approvals by email and lose track of who said yes.
+- Staff spend real time writing updates that repeat the project tracker.
+
+## Where to go next
+
+If you are leaning toward a portal, the next two questions are price and tool. Read [who counts as a user](/blog/who-counts-as-a-user/) before you compare plans, because that rule changes the bill more than the headline price. Then [Softr vs Noloco](/compare/softr-vs-noloco/) compares the two portal builders we cover on the same client job.

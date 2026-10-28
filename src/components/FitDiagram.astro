@@ -1,0 +1,393 @@
+---
+// The one workflow diagram, after Mintlify's hairline-framed product canvas:
+// one ruled column per stop, in flow order, on a dotted canvas. Nodes are
+// small UI blocks: a source's real mark (SourceMark) or a motif glyph (Glyph)
+// beside the title, and, where the stop has one, a real vendor screen of it
+// as a plane underneath. A product stop is a lit chapter field holding a
+// large crop of the product's real screen, bleeding off the column's edge.
+// The access boundary is a hatched column behind a 2px ink rule, with a lock
+// glyph. Arrows sit on the column boundaries with the handoff (`via`) named
+// above them. Narrow containers, and article diagrams (no crop) at every
+// width, turn the columns into rows with vertical arrows between them. One DOM
+// in reading order; the arrows are decorative SVG that draws once.
+import type { FitStop, FitItem } from '../data/hubs';
+import type { ProductId } from '../lib/site';
+import { vendorImage } from '../lib/media';
+import Glyph from './Glyph.astro';
+import SourceMark from './SourceMark.astro';
+
+interface Props {
+  stops: FitStop[];
+  /** Chapter of the diagram: node stops and arrows take its color */
+  product?: ProductId;
+  /** Diagram title, when the section heading does not already name it */
+  title?: string;
+  description?: string;
+  /** Number the stops: only where order is the point */
+  numbered?: boolean;
+}
+const { stops, product, title, description, numbered = false } = Astro.props;
+
+const fi = stops.findIndex((s) => s.kind === 'focal');
+// A crop makes the diagram a product canvas (hubs); without one it stays compact.
+const hasShot = stops.some((s) => s.shot);
+const cols = stops.map((s) => (s.kind === 'focal' ? 'minmax(0, 1.6fr)' : 'minmax(0, 1fr)')).join(' ');
+const pad = (i: number) => String(i + 1).padStart(2, '0');
+const id = title ? `dg-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}` : undefined;
+const hasIcon = (item: FitItem) => Boolean(item.marks?.length || item.glyph);
+// Article rows (no crop) carry their product's glyph in the focal head.
+const PRODUCT_GLYPH = { fillout: 'intake', softr: 'portal', noloco: 'team' } as const;
+---
+
+<figure class:list={['diagram-block', 'hf', { 'is-compact': !hasShot }]} data-chapter={product} aria-labelledby={id}>
+  {
+    title && (
+      <div class="dg-head">
+        <p class="dg-title" id={id}>{title}</p>
+        {description && <p class="dg-desc">{description}</p>}
+      </div>
+    )
+  }
+  <ol class="hf-canvas" style={`--cols: ${cols};`}>
+    {
+      stops.map((s, i) => {
+        const kind = s.kind ?? 'node';
+        const main = s.items[0];
+        const img = s.shot ? vendorImage(s.shot) : null;
+        const ui = s.ui ? { ...s.ui, img: vendorImage(s.ui.name) } : null;
+        const n = numbered ? <span class="hf-n num">{pad(i)}</span> : null;
+        // Groups bracket on the side the flow leaves (before the product) or arrives (after it).
+        const side = fi >= 0 && i < fi ? 'end' : 'start';
+        return (
+          <li class:list={['hf-stop', `is-${kind}`, { field: kind === 'focal' }]} data-chapter={s.product ?? product}>
+            {i > 0 && (
+              <div class="hf-join">
+                {s.via && <p class="hf-via">{s.via}</p>}
+                <svg class="hf-arrow hf-arrow-h" viewBox="0 0 56 12" aria-hidden="true" focusable="false" data-draw>
+                  <path class="hf-shaft" d="M0 6 H46" />
+                  <path class="hf-tip" d="M45 0 L56 6 L45 12 Z" />
+                </svg>
+                <svg class="hf-arrow hf-arrow-v" viewBox="0 0 12 40" aria-hidden="true" focusable="false" data-draw>
+                  <path class="hf-shaft" d="M6 0 V30" />
+                  <path class="hf-tip" d="M0 29 L6 40 L12 29 Z" />
+                </svg>
+              </div>
+            )}
+            {kind === 'focal' ? (
+              <p class="hf-head hf-focal-title">
+                {!hasShot && (s.product ?? product) && (
+                  <Glyph name={PRODUCT_GLYPH[(s.product ?? product) as ProductId]} size="2rem" class="hf-focal-glyph" />
+                )}
+                {n}{main.title}
+              </p>
+            ) : s.zone ? (
+              <p class="hf-head hf-zone">{s.zone}</p>
+            ) : (
+              <span class="hf-head hf-head-empty" aria-hidden="true" />
+            )}
+            <div class="hf-body">
+              {kind === 'focal' ? (
+                <>
+                  {main.detail && <p class="hf-focal-detail">{main.detail}</p>}
+                  {img && (
+                    <div class="hf-crop plane">
+                      <img src={img.src} srcset={img.srcset} sizes="(min-width: 80rem) 30rem, 90vw" width={img.width} height={img.height} alt="" loading="lazy" decoding="async" />
+                    </div>
+                  )}
+                </>
+              ) : kind === 'gate' ? (
+                <div class="hf-gate">
+                  <Glyph name="gate" tone="canvas" size="2.75rem" class="hf-gate-glyph" />
+                  <p class="hf-gate-title">{n}{main.title}</p>
+                  {main.detail && <p class="hf-detail">{main.detail}</p>}
+                </div>
+              ) : (
+                <ul class:list={['hf-items', { 'is-group': s.items.length > 1 }]} data-side={side}>
+                  {s.items.map((item, j) => (
+                    <li class:list={['hf-card', { 'has-icon': hasIcon(item) }]}>
+                      {hasIcon(item) && (
+                        <span class="hf-icon" data-chapter={item.product}>
+                          {item.marks?.length ? (
+                            item.marks.map((m) => <SourceMark name={m} size="1.375rem" />)
+                          ) : (
+                            item.glyph && <Glyph name={item.glyph} tone="canvas" size="2rem" />
+                          )}
+                        </span>
+                      )}
+                      <div class="hf-card-text">
+                        <p class="hf-title">{j === 0 && n}{item.title}</p>
+                        {item.detail && <p class="hf-detail">{item.detail}</p>}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {ui && (
+                <div class="hf-ui plane">
+                  <img
+                    src={ui.img.src}
+                    srcset={ui.img.srcset}
+                    sizes="(min-width: 80rem) 18rem, 80vw"
+                    width={ui.img.width}
+                    height={ui.img.height}
+                    alt={ui.alt}
+                    loading="lazy"
+                    decoding="async"
+                    style={ui.position ? `object-position: ${ui.position}` : undefined}
+                  />
+                </div>
+              )}
+              {s.note && <p class="hf-note">{s.note}</p>}
+            </div>
+          </li>
+        );
+      })
+    }
+  </ol>
+</figure>
+
+<style>
+  .hf {
+    --pad-x: 1.5rem;
+    margin: 0;
+  }
+  /* Only product canvases switch to columns; article diagrams stay rows. */
+  .hf:not(.is-compact) { container: hf / inline-size; }
+  .is-compact .hf-canvas { max-width: 44rem; }
+
+  .dg-head { display: grid; gap: 0.35rem; margin-bottom: var(--s-5); max-width: 64ch; }
+  .dg-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .dg-desc { font-size: 1rem; line-height: 1.5; color: var(--ink-2); }
+
+  /* A dotted canvas (the texture of the tools' own workflow editors) under a
+     hairline frame. */
+  .hf-canvas {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+    background-color: var(--bg);
+    background-image: radial-gradient(circle at 1px 1px, color-mix(in oklch, var(--line-strong) 70%, transparent) 1px, transparent 0);
+    background-size: 18px 18px;
+  }
+
+  /* ---------- Narrow: one row per stop, arrows between rows ---------- */
+  .hf-stop {
+    --wire: var(--ch, var(--ink));
+    position: relative;
+    display: grid;
+    margin: 0;
+  }
+  /* Chapter colors are fixed across themes; on the dark canvas arrows lift. */
+  :global([data-theme='dark']) .hf-stop { --wire: color-mix(in oklch, var(--ch, var(--ink)) 68%, white); }
+  .hf-stop + .hf-stop { border-top: 1px solid var(--line); }
+  /* The access boundary: a hatched band behind the ink rule. */
+  .hf-stop.is-gate {
+    border-top: 2px solid var(--ink);
+    background-color: var(--bg);
+    background-image: repeating-linear-gradient(135deg, color-mix(in oklch, var(--ink) 7%, transparent) 0 1.5px, transparent 1.5px 10px);
+  }
+  .hf-stop.is-focal { color: var(--on-chapter); }
+  .hf-stop.is-focal + .hf-stop.is-focal { border-top-color: color-mix(in oklab, var(--on-chapter) 28%, transparent); }
+  .hf-n { margin-right: 0.625rem; font-size: 0.875rem; font-weight: 650; color: var(--muted); }
+  .is-focal .hf-n { color: var(--on-chapter-muted); }
+
+  .hf-join {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 2.5rem;
+    margin-top: 0.75rem;
+    padding-left: calc(var(--pad-x) - 6px);
+  }
+  .hf-arrow { flex: none; overflow: visible; }
+  .hf-arrow-h { display: none; width: 3.5rem; height: 12px; }
+  .hf-arrow-v { order: -1; width: 12px; height: 100%; }
+  .hf-shaft { fill: none; stroke: var(--wire); stroke-width: 3px; }
+  .hf-tip { fill: var(--wire); stroke: none; }
+  .is-focal .hf-shaft { stroke: var(--on-chapter); }
+  .is-focal .hf-tip { fill: var(--on-chapter); }
+  .hf-via {
+    margin: 0;
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1.25;
+    color: var(--ink-2);
+  }
+  .is-focal .hf-via { color: var(--on-chapter); }
+
+  .hf-head {
+    margin: 0;
+    padding: 1rem var(--pad-x) 0;
+  }
+  .hf-head-empty { display: none; }
+  .hf-zone { font-size: 0.875rem; font-weight: 650; line-height: 1.3; color: var(--muted); }
+  .is-gate .hf-zone { color: var(--ink); font-weight: 700; }
+  .hf-focal-title {
+    font-size: 1.375rem;
+    font-weight: 750;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    color: var(--on-chapter);
+  }
+
+  .hf-body {
+    display: grid;
+    align-content: center;
+    gap: var(--s-3);
+    padding: 0.75rem var(--pad-x) 1.5rem;
+  }
+  .hf-stop:first-child .hf-head-empty + .hf-body { padding-top: 1.5rem; }
+  .is-focal .hf-body { padding-top: 0.375rem; }
+  .hf-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--s-4);
+  }
+  .hf-items > li { margin: 0; }
+  /* Each node is a small UI block: its mark or glyph beside the text. */
+  .hf-card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.875rem 1rem 1rem;
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line), var(--lift-1);
+  }
+  .hf-card.has-icon { grid-template-columns: auto minmax(0, 1fr); }
+  .hf-icon { display: flex; flex-wrap: wrap; gap: 0.35rem; padding-top: 0.15rem; }
+  .is-focal .hf-card { background: oklch(1 0 0 / 0.1); box-shadow: 0 0 0 1px oklch(1 0 0 / 0.22); }
+  .is-focal .hf-card .hf-title { color: var(--on-chapter); }
+  .is-focal .hf-card .hf-detail { color: var(--on-chapter); }
+  /* A group of parallel items is joined by a bracket in the chapter color. */
+  .hf-items.is-group {
+    position: relative;
+    padding-left: 1rem;
+    border-left: 2px solid var(--wire);
+  }
+  .hf-title { margin: 0; font-size: 1.25rem; font-weight: 700; line-height: 1.25; color: var(--ink); overflow-wrap: anywhere; }
+  .hf-gate-title { margin: 0; font-size: 1.125rem; font-weight: 700; line-height: 1.3; color: var(--ink); overflow-wrap: anywhere; }
+  .hf-detail {
+    margin: 0.25rem 0 0;
+    max-width: 24ch;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: var(--ink-2);
+  }
+  .hf-gate-title + .hf-detail { max-width: 30ch; }
+  .hf-gate { display: grid; gap: 0.5rem; justify-items: start; }
+  .hf-gate :global(.hf-gate-glyph) { margin-bottom: 0.25rem; }
+  .hf-note { margin: 0; font-size: 0.9375rem; line-height: 1.45; color: var(--muted); }
+
+  /* A real screen of the stop, as a plane under its text. */
+  .hf-ui { width: 100%; max-width: 22rem; box-shadow: 0 0 0 1px var(--line), var(--lift-2); }
+  .hf-ui img { aspect-ratio: 4 / 3; object-fit: cover; object-position: top left; }
+
+  /* The product's screen, large, stopping short of the column's right edge so
+     the outgoing handoff label never sits on top of it (v12). */
+  .hf-crop {
+    margin-right: calc(var(--pad-x) * 0.5);
+    border-radius: var(--r-frame);
+    max-height: 18rem;
+  }
+  .hf-crop img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    object-position: top left;
+  }
+  .hf-focal-detail {
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    /* Full on-chapter color: the lit field leaves no AA headroom for 90%. */
+    color: var(--on-chapter);
+  }
+
+  .hf-card .hf-title { font-size: 1.0625rem; line-height: 1.3; overflow-wrap: break-word; }
+  .hf-card .hf-detail { font-size: 0.875rem; }
+  .hf-focal-title { display: flex; align-items: center; flex-wrap: wrap; }
+  .hf-focal-title :global(.hf-focal-glyph) { margin-right: 0.75rem; }
+
+  /* ---------- Wide: one ruled column per stop ---------- */
+  @container hf (min-width: 60rem) {
+    .hf-canvas {
+      --head-h: 4.5rem;
+      display: grid;
+      grid-template-columns: var(--cols);
+    }
+    .hf-stop {
+      grid-template-rows: var(--head-h) minmax(28rem, 1fr);
+    }
+    .hf-stop + .hf-stop { border-top: 0; border-left: 1px solid var(--line); }
+    /* The access boundary: the rule the flow has to cross. */
+    .hf-stop.is-gate { border-top: 0; border-left: 2px solid var(--ink); }
+    .hf-stop.is-focal + .hf-stop:not(.is-gate) { border-left-color: transparent; }
+
+    .hf-head {
+      display: flex;
+      align-items: center;
+      padding: 0 var(--pad-x);
+      border-bottom: 1px solid var(--line);
+    }
+    .hf-head-empty { display: flex; }
+    .is-focal .hf-head { border-bottom-color: color-mix(in oklab, var(--on-chapter) 28%, transparent); }
+    /* Side padding leaves the boundary band free for the arrows. */
+    .hf-stop { --pad-x: 2.25rem; }
+    .hf-body { padding: 2rem var(--pad-x); }
+    .hf-stop:first-child .hf-head-empty + .hf-body { padding-top: 2rem; }
+
+    /* Arrow centered on the column boundary at the body's center, the handoff
+       named above it, both on a canvas knock-out so the flow reads across
+       rules and across the product's fill alike. */
+    .hf-join {
+      --knock: 0.5rem;
+      position: absolute;
+      z-index: 1;
+      left: 0;
+      top: calc(var(--head-h) + (100% - var(--head-h)) / 2);
+      display: grid;
+      justify-items: center;
+      gap: 0.25rem;
+      height: auto;
+      margin: 0;
+      padding: 0.375rem var(--knock) var(--knock);
+      border-radius: 6px;
+      background: var(--bg);
+      /* The arrow's midline lands on the anchor point. */
+      transform: translate(-50%, calc(-100% + 6px + var(--knock)));
+    }
+    .hf-arrow-v { display: none; }
+    .hf-arrow-h { display: block; }
+    /* One word per line keeps the knock-out narrower than the side padding. */
+    .hf-via {
+      width: min-content;
+      text-align: center;
+    }
+    .is-focal .hf-via { color: var(--ink-2); }
+    .is-focal .hf-shaft { stroke: var(--wire); }
+    .is-focal .hf-tip { fill: var(--wire); }
+
+    .hf-items.is-group[data-side='end'] {
+      padding-left: 0;
+      padding-right: 1rem;
+      border-left: 0;
+      border-right: 2px solid var(--wire);
+    }
+    .hf-crop { max-height: none; }
+  }
+</style>

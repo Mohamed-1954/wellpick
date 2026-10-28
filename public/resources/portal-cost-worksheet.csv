@@ -1,0 +1,15 @@
+candidate,scenario,cost_category,requirement,plan_or_provider,quantity,currency,billing_interval,recurring_amount,monthly_equivalent,upfront_cash,tax_and_fees,source_or_quote,checked_date,assumption_or_unknown
+Softr,Today,Portal subscription,Required actions and permissions,,,,,,,,,,,Unknown until verified; blank is not zero
+Softr,Today,People,Count internal users and each client login separately,,,,,,,,,,,Verify vendor user definitions
+Softr,Today,Data source,Required database and collaborator access,,,,,,,,,,,Verify source plan and billing
+Softr,Today,Intake,Native forms or separate Fillout plan,,,,,,,,,,,Add only if a defined gap exists
+Softr,Today,Files and automation,Storage and recurring workflow usage,,,,,,,,,,,Record busy-period and retry assumptions
+Softr,Today,Setup and upkeep,Internal hours and hourly value,,,,,,,,,,,Estimate separately from vendor quotes
+Softr,Today,Exit and renewal,Cancellation export and committed cash,,,,,,,,,,,Record terms rather than assuming monthly cancellation
+Noloco,Today,Portal subscription,Required actions and permissions,,,,,,,,,,,Unknown until verified; blank is not zero
+Noloco,Today,People,Count internal users and each client login separately,,,,,,,,,,,Verify vendor user definitions
+Noloco,Today,Data source,Required database and collaborator access,,,,,,,,,,,Verify source plan and billing
+Noloco,Today,Intake,Native forms or separate Fillout plan,,,,,,,,,,,Add only if a defined gap exists
+Noloco,Today,Files and automation,Storage and recurring workflow usage,,,,,,,,,,,Record busy-period and retry assumptions
+Noloco,Today,Setup and upkeep,Internal hours and hourly value,,,,,,,,,,,Estimate separately from vendor quotes
+Noloco,Today,Exit and renewal,Cancellation export and committed cash,,,,,,,,,,,Record terms rather than assuming monthly cancellation

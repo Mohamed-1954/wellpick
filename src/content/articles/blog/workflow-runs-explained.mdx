@@ -1,0 +1,78 @@
+---
+title: "Workflow runs: estimate them before your automation stops"
+seoTitle: "Noloco workflow runs: estimate before they stop"
+description: "Noloco Free includes 100 workflow runs a month and stops when they run out. How triggers become runs, a quick monthly estimate, and loops that burn runs."
+type: post
+topic: operations
+products: [noloco]
+sourceIds: [nolocoWorkflow, nolocoPricing]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    On Noloco Free, workflows stop after 100 runs a month. Build includes 3,000
+    and bills extra runs. Count how often each trigger fires in a normal week,
+    multiply by four and a bit, then check the usage page after the first
+    real week.
+  </p>
+</aside>
+
+Automation feels free until it stops. A status change should email the client, a new task should notify the owner, and one day in the third week of the month, neither happens.
+
+On Noloco, the limit is the number of workflow runs per month. Here is how to estimate yours before a client notices.
+
+## The limits
+
+Noloco's pricing lists workflow runs per plan:
+
+| Plan | Runs per month | When they run out |
+| --- | --- | --- |
+| Free | 100 | Workflows stop until the next month |
+| Build | 3,000 | Extra runs continue and are billed |
+
+The two plans fail in different ways. Free fails quietly: things stop happening. Build keeps going and costs more. Either way, an estimate helps.
+
+## What sets a workflow off
+
+Noloco's workflow guide says each workflow starts with a trigger. Triggers include a record being created, updated or deleted, a comment being added, and an action button pressed in the app. After the trigger, the workflow's actions run one after another: create, update or delete records, send an email or an invitation, deactivate a user, call a webhook, or use the built-in AI text actions.
+
+The guide does not spell out how runs are counted when one workflow has several actions. Our working assumption is one run per trigger, but test it: run one workflow once and check the usage figure in your workspace.
+
+## Estimate a month in four lines
+
+List every workflow and how often its trigger fires in a normal week:
+
+| Workflow | Trigger | Per week |
+| --- | --- | --- |
+| Tell the client their project moved | Project status updated | 15 |
+| Notify the owner of a new task | Task created | 25 |
+| Welcome a new client user | User created | 2 |
+| Log a comment for the account manager | Comment added | 10 |
+
+That is 52 a week, or about 225 a month at four and a third weeks. Already past Free's 100.
+
+## The trigger that fires more than you think
+
+**"Record updated" is the expensive one.** If the trigger is any update to a project, then every edit fires it: a typo fix, a new note, a date nudged by a day. Narrow it with a condition, such as "only when Status changes", if your setup allows it.
+
+**Imports and bulk edits fire too.** Updating 200 records at once can mean 200 triggers.
+
+**Workflows that update records can wake other workflows.** Noloco documents a guard here: when a workflow's action updates a record, other workflows that would trigger on that update do not run, to prevent loops. That protects you from runaway chains, but it also means a second workflow you expected may stay silent. Test chains on purpose.
+
+## Keep runs for what clients notice
+
+If you are near the limit, spend runs where a missed one would hurt:
+
+- Messages to clients about their work.
+- Handoffs between people on your team.
+- Anything tied to money or a deadline.
+
+Move the rest to a daily summary or a view your team checks. A list of "tasks created today" does the job of 25 notifications.
+
+## Check after a week
+
+Estimates are a start. After the first real week, open the workspace usage and compare. If the figure is double your estimate, find the workflow with the broad trigger and narrow it before the month runs out.
+
+The [Noloco portal guide](/guides/build-noloco-client-portal/) includes a step for testing one workflow end to end, and the [cost worksheet](/guides/portal-costs/) shows what Build costs if runs push you off Free.

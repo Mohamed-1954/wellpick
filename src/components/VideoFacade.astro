@@ -1,0 +1,76 @@
+---
+import type { ProductId } from '../lib/site';
+import Icon from './Icon.astro';
+
+interface Props {
+  provider: 'youtube';
+  id: string;
+  title: string;
+  product?: ProductId;
+  /** Accepted for callers; no caption renders. */
+  channelNote?: string;
+}
+const { id, title, product } = Astro.props;
+// No request to YouTube until the reader presses play (youtube-nocookie embed).
+const thumb = `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0`;
+---
+
+<figure class="video frame" data-chapter={product} data-video-facade>
+  <button class="v-button" type="button" data-embed={embed} aria-label={`Play video: ${title}`}>
+    <img src={thumb} alt="" loading="lazy" width="1280" height="720" />
+    <span class="v-play" aria-hidden="true"><Icon name="play-bold" size="1.5rem" /></span>
+  </button>
+  <noscript><p><a href={`https://www.youtube.com/watch?v=${id}`}>Watch on YouTube: {title}</a></p></noscript>
+</figure>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-video-facade]').forEach((root) => {
+    const btn = root.querySelector<HTMLButtonElement>('.v-button');
+    btn?.addEventListener('click', () => {
+      const src = btn.dataset.embed;
+      if (!src) return;
+      const iframe = document.createElement('iframe');
+      iframe.src = src;
+      iframe.title = btn.getAttribute('aria-label') ?? 'Video';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.className = 'v-frame';
+      btn.replaceWith(iframe);
+    });
+  });
+</script>
+
+<style>
+  .video { margin: 0; background: var(--ch-deep, oklch(0.19 0.016 262)); }
+  .v-button, .video :global(.v-frame) {
+    position: relative;
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: 0;
+    padding: 0;
+    background: none;
+    cursor: pointer;
+  }
+  .v-button:focus-visible { outline-offset: -4px; }
+  .v-button img { width: 100%; height: 100%; object-fit: cover; transition: transform var(--t-slow) var(--ease-out); }
+  .v-button:hover img { transform: scale(1.02); }
+  .v-play {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    display: grid;
+    place-items: center;
+    width: 4.5rem;
+    height: 4.5rem;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: var(--ch, oklch(0.19 0.016 262));
+    color: var(--on-chapter);
+    box-shadow: 0 10px 24px -10px oklch(0.1 0.02 262 / 0.6);
+    transition: scale var(--t-med) var(--ease-out);
+  }
+  .v-button:hover .v-play { scale: 1.06; }
+  noscript p { padding: var(--s-4); color: var(--on-chapter); }
+</style>

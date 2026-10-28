@@ -1,0 +1,73 @@
+---
+title: "Why portal invitations land in spam: SPF, DKIM and DMARC for small teams"
+seoTitle: "Portal invites in spam? SPF, DKIM and DMARC"
+description: A client who never sees the invitation never logs in. What Gmail's sender rules require, what each DNS record does, and how to check your domain in fifteen minutes.
+type: post
+topic: web
+sourceIds: [gmailSenders]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Since February 2024, Gmail requires every sender to use SPF or DKIM, and
+    senders of more than 5,000 messages a day to use SPF, DKIM and DMARC. If
+    your portal or form tool sends email from your domain, add the records it
+    gives you to your DNS, then send yourself a test and read the headers.
+  </p>
+</aside>
+
+You set up the portal, invited the client and heard nothing. Three days later they mention it was in spam. Or it never arrived.
+
+Portal invitations, password resets and form notifications are some of the most important emails a small business sends. They are also easy to get wrong, because they often come from a tool, on behalf of your domain.
+
+## What Gmail requires
+
+Google's email sender guidelines set requirements for anyone sending to personal Gmail accounts. Since 1 February 2024:
+
+**All senders must:**
+
+- Set up SPF or DKIM email authentication for their sending domains.
+- Have valid forward and reverse DNS for sending domains or IPs.
+- Use a TLS connection.
+- Keep spam rates reported in Postmaster Tools below 0.3%.
+
+**Senders of more than 5,000 messages a day to Gmail must also:**
+
+- Set up SPF **and** DKIM, and DMARC. The DMARC policy can be set to none.
+- Align the From domain with the SPF or DKIM domain.
+- Support one-click unsubscribe for marketing and subscribed messages.
+
+A small studio sends nowhere near 5,000 messages a day. Google still recommends that every domain set up all three, and doing so costs nothing.
+
+## The three records, without the jargon
+
+All three are text records you add in your domain's DNS settings, where your domain is registered or hosted.
+
+- **SPF** is a list of the services allowed to send email for your domain. If your portal tool sends as `you@yourstudio.com`, it needs to be on the list.
+- **DKIM** is a signature added to each message, checked against a key you publish. It proves the message really came through an approved service and was not changed. Google says sending to personal Gmail accounts needs a DKIM key of at least 1024 bits and recommends 2048.
+- **DMARC** tells receiving servers what to do with mail that fails SPF and DKIM, and where to send reports. Start with a policy of `none` to collect reports without blocking anything.
+
+## Where portal tools come in
+
+There are two common setups:
+
+1. **The tool sends from its own domain.** The invitation comes from something like `noreply@vendor.com`. The vendor handles authentication. The risk is that clients do not recognise the sender.
+2. **The tool sends from your domain.** The invitation comes from `hello@yourstudio.com`. It looks better, and it is your job to add the tool's SPF and DKIM records.
+
+If you use the second setup, the tool's settings will give you the records to add. Add them exactly as given. One domain should have one SPF record that lists all your senders, not one record per tool.
+
+## A fifteen-minute check
+
+1. List every service that sends email as your domain: your mailbox provider, your portal, your form tool, your invoicing app.
+2. Look up your domain's SPF, DKIM and DMARC records with any free DNS lookup tool.
+3. Send a portal invitation to a personal Gmail address you control.
+4. In Gmail, open the message, choose "Show original", and check that SPF, DKIM and DMARC say PASS.
+5. If anything fails, fix the record for that service and test again.
+
+## Help the client find the message
+
+Even with perfect records, tell clients to expect the email. One line in your last message before the invite: "You will get an invitation from hello@yourstudio.com in the next few minutes. Check spam if it does not arrive." It also stops the invitation from looking like phishing.
+
+For what else to put in that message, the [launch guide](/guides/client-portal-launch/) has a section on sending an invitation that sets expectations.

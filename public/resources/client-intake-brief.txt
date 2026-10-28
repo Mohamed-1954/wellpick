@@ -1,0 +1,47 @@
+CLIENT INTAKE BRIEF
+Client Portal Guide | Local planning resource | 18 September 2026
+
+Purpose: collect only the information needed to decide the next project action.
+This is an editable template, not a submitted form. No answers are sent anywhere.
+Do not include passwords, secret keys, payment card details, or sensitive files.
+Delete questions you do not need. Agree an approved sharing channel before use.
+
+CLIENT AND CONTACT
+Company or project name:
+Day-to-day contact and agreed contact channel:
+Person authorized to approve scope and deliverables:
+
+THE JOB
+What outcome do you need?
+What deliverable is included?
+What is explicitly outside the scope?
+How will you decide the work is ready for approval?
+
+TIMING
+Requested date:
+Is it a fixed constraint or a preference?
+What depends on that date?
+Who must provide materials or approval before work can begin?
+
+EXISTING MATERIALS
+What materials are needed to start?
+Where can they be shared through an approved channel?
+Who owns or can authorize use of those materials?
+Only for work on an existing site: current public site URL:
+
+INTERNAL REVIEW (STAFF ONLY; KEEP OUT OF THE CLIENT VIEW)
+Request identifier:
+Received date:
+Internal owner:
+Company relationship verified by:
+Missing decisions:
+Status: Received / Needs clarification / Ready for setup / Portal checked / Invited
+Existing project to update, or new project to create:
+Duplicate/correction decision and reason:
+Permission check evidence location:
+Invitation recipient verified by:
+Invitation outcome and date (not proof of first login):
+Next action and owner:
+
+Use with /guides/portal-data-model/ (intake states) and /guides/client-portal-launch/ (access checks).
+This template does not configure product permissions or establish legal compliance.

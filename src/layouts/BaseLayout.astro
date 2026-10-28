@@ -1,0 +1,120 @@
+---
+import '../styles/global.css';
+import archivoUrl from '@fontsource-variable/archivo/files/archivo-latin-wdth-normal.woff2?url';
+import SiteHeader from '../components/SiteHeader.astro';
+import SiteFooter from '../components/SiteFooter.astro';
+import { SITE, ROBOTS_DIRECTIVE, IS_LOCAL } from '../lib/site';
+
+interface Props {
+  title: string;
+  description: string;
+  /** JSON-LD objects for this page */
+  jsonLd?: object | object[];
+  /** Chapter tint for the page (product pages) */
+  chapter?: 'fillout' | 'softr' | 'noloco';
+  /** Show the footer's closing statement. Only pages without their own ending use it. */
+  closing?: boolean;
+}
+
+const { title, description, jsonLd, chapter, closing = false } = Astro.props;
+const canonical = new URL(Astro.url.pathname, Astro.site ?? SITE.url);
+const schemas = jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [];
+const fullTitle = Astro.url.pathname === '/' ? `${SITE.name}: ${title}` : `${title} | ${SITE.name}`;
+const orgSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  name: SITE.name,
+  url: new URL('/', Astro.site ?? SITE.url).href,
+  logo: new URL('/favicon.svg', Astro.site ?? SITE.url).href,
+  description: SITE.description,
+};
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="robots" content={ROBOTS_DIRECTIVE} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="preload" href={archivoUrl} as="font" type="font/woff2" crossorigin />
+    <meta name="theme-color" content="#f3f4f1" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#13171f" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:image" content={new URL('/og.jpg', Astro.site ?? SITE.url).href} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={`${SITE.name}: software picks for small service businesses`} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {[orgSchema, ...schemas].map((s) => <script type="application/ld+json" set:html={JSON.stringify(s)} is:inline />)}
+    <script is:inline>
+      (function () {
+        var d = document.documentElement;
+        var stored = null;
+        try {
+          stored = localStorage.getItem('theme') || localStorage.getItem('starlight-theme');
+        } catch (e) {}
+        if (stored !== 'dark' && stored !== 'light') stored = null;
+        var dark = stored ? stored === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        d.dataset.theme = dark ? 'dark' : 'light';
+        // Motion is opt-in per visitor preference; the static page is always complete.
+        if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+          d.classList.add('motion-ok');
+          setTimeout(function () {
+            if (!window.__motion) d.classList.remove('motion-ok');
+          }, 2500);
+        }
+      })();
+    </script>
+  </head>
+  <body data-chapter={chapter}>
+    <a href="#main" class="skip-link">Skip to content</a>
+    <SiteHeader />
+    <main id="main">
+      <slot />
+    </main>
+    <SiteFooter closing={closing} />
+    {IS_LOCAL && <div class="env-ribbon" aria-hidden="true">Local preview · noindex</div>}
+    <script>
+      import '../scripts/motion';
+    </script>
+  </body>
+</html>
+
+<style>
+  .skip-link {
+    position: absolute;
+    left: var(--s-3);
+    top: -4rem;
+    z-index: var(--z-toast);
+    padding: 0.7em 1.1em;
+    border-radius: var(--r-btn);
+    background: var(--ink);
+    color: var(--on-ink);
+    font-weight: 650;
+    transition: top var(--t-fast) var(--ease-out);
+  }
+  .skip-link:focus { top: var(--s-3); }
+  .env-ribbon {
+    position: fixed;
+    bottom: 0.75rem;
+    left: 0.75rem;
+    z-index: var(--z-toast);
+    font-size: 0.75rem;
+    font-weight: 620;
+    padding: 0.35em 0.75em;
+    border-radius: var(--r-pill);
+    background: var(--ink);
+    color: var(--on-ink);
+    opacity: 0.85;
+    pointer-events: none;
+  }
+</style>

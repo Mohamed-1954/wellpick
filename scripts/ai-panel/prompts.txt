@@ -1,0 +1,26 @@
+Do I need a client portal if I already share folders and weekly updates?
+Should I fix client intake before buying portal software?
+Which tool should collect a client's brief into Airtable?
+When is a portal on my existing records enough, and when do I need team operations too?
+How much does a client portal cost for three staff and five client contacts?
+How much does a client portal cost for three staff and six client contacts?
+How does a staff member using Gmail affect Softr's client-user limit?
+Which Softr plan fits eight staff and eighty client contacts?
+Does Noloco charge for invited clients who have never signed in?
+How do Softr and Noloco count builders, staff, and client users?
+Does Softr Basic allow extra app users?
+When do I need Softr Business for client edit restrictions?
+How does Noloco enforce that one client cannot see another client's projects?
+Can I use Noloco Free with an Airtable base?
+What happens when Noloco reaches its workflow-run limit?
+Is Airtable Portals enough if clients only read project status?
+What does Airtable Portals charge for read-only and commenting clients?
+What are the limits of one Airtable portal per base?
+How do I organize companies, contacts, projects, tasks, and intake requests for a client portal?
+Should I create one portal for all clients or a separate portal for each company?
+How do I test that a client cannot reach another client's records by direct link or export?
+How do I send a Fillout intake response to Airtable without creating duplicate records?
+Can a Fillout update link expose internal Airtable fields?
+When is Tally enough for a free client intake form instead of Fillout?
+Can Tally update an existing Airtable record through its native integration?
+Are Softr's standalone forms enough, or do I need Fillout embedded in the portal?

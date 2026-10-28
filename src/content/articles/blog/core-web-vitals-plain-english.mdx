@@ -1,0 +1,65 @@
+---
+title: "Core Web Vitals in plain English for service business websites"
+seoTitle: "Core Web Vitals explained for small business sites"
+description: "LCP, INP and CLS decide whether Google calls a page fast and stable. What each one measures, the thresholds, and common causes on small business sites."
+type: post
+topic: web
+sourceIds: [webVitals]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    LCP: the main content should appear within 2.5 seconds. INP: the page
+    should respond to a tap or click within 200 milliseconds. CLS: the layout
+    should not jump, with a score of 0.1 or less. Google measures them on real
+    visits, at the 75th percentile, on mobile and desktop separately.
+  </p>
+</aside>
+
+Your website is the first thing a new client sees, often on a phone, often on a weak connection. Google's Core Web Vitals turn that first impression into three numbers. You do not need to be a developer to understand them, and you should know them before you pay anyone to "speed up the site".
+
+## The three numbers
+
+Google's web.dev guide defines the current Core Web Vitals and their "good" thresholds:
+
+| Metric | What it measures | Good |
+| --- | --- | --- |
+| **LCP**, Largest Contentful Paint | Loading: when the biggest piece of content, usually the hero image or headline, appears | 2.5 seconds or less |
+| **INP**, Interaction to Next Paint | Responsiveness: how long the page takes to react visibly to a tap, click or key press | 200 milliseconds or less |
+| **CLS**, Cumulative Layout Shift | Visual stability: how much the layout jumps while it loads | 0.1 or less |
+
+The guide recommends judging a page at the **75th percentile** of real page loads, split by mobile and desktop. In plain terms: three out of four visits should meet the target. A fast laptop on office wifi does not count for much.
+
+INP replaced an older metric, First Input Delay. If an old report mentions FID, it predates the change.
+
+## What usually goes wrong on small business sites
+
+**Slow LCP: a heavy hero.** A full-width photo straight from a camera, a background video, or a slider that loads five images before the first one shows. Resize images to the size they display at, use a modern format, and make the first image load first.
+
+**Slow INP: too much script.** Chat widgets, cookie banners, tracking tags and page builders all run JavaScript. Each one makes the page slower to respond. Remove the ones you do not use. Ask whether each remaining one earns its place.
+
+**High CLS: things arriving late.** An image without a set size pushes text down when it loads. A banner appears at the top and moves everything. A web font swaps in and changes line lengths. Give images their dimensions and reserve space for anything that appears later.
+
+## How to check your own site
+
+- **PageSpeed Insights** shows field data from real Chrome users when your site has enough traffic, plus a lab test for any page.
+- **Search Console's Core Web Vitals report** groups your pages by status, if your site is verified there.
+- **Chrome DevTools** can measure all three while you use the page.
+
+Look at the mobile numbers first. That is where most service sites fail, and where many first visits happen.
+
+## What to ask a developer or agency
+
+If you hire help, ask for numbers, not adjectives:
+
+1. Which of the three metrics fails today, on mobile, at the 75th percentile?
+2. What is the cause on our site specifically?
+3. What will the number be after the fix, and how will we check it in a month?
+
+A good answer names the metric and the cause. "We will optimise everything" is not an answer.
+
+## How this site handles it
+
+This site is built as static pages, with images sized for each slot and served in modern formats, and no analytics or advertising scripts. We wrote up [how Wellpick is built](/blog/how-wellpick-is-built/), including the parts that cost performance on purpose, such as the 3D stack on the home page, and how they stay out of the way on phones.

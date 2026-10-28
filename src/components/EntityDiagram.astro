@@ -1,0 +1,240 @@
+---
+// Record relationships on the shared diagram system, grouped by the record
+// that holds the link: each group's links branch from one node, with the
+// relationship label set on the connector. Wide containers read left to
+// right; narrow ones hang the links off a vertical spine.
+interface Edge {
+  from: string;
+  to: string;
+  label?: string;
+}
+interface Props {
+  title: string;
+  description?: string;
+  edges: Edge[];
+}
+const { title, description, edges } = Astro.props;
+const id = `dg-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+
+const groups: { from: string; edges: Edge[] }[] = [];
+for (const e of edges) {
+  const g = groups.find((x) => x.from === e.from);
+  if (g) g.edges.push(e);
+  else groups.push({ from: e.from, edges: [e] });
+}
+---
+
+<figure class="diagram-block ent" aria-labelledby={id}>
+  <div class="dg-head">
+    <p class="dg-title" id={id}>{title}</p>
+    {description && <p class="dg-desc">{description}</p>}
+  </div>
+  <ul class="ent-list">
+    {
+      groups.map((g) => (
+        <li class="ent-group" style={`--k: ${g.edges.length};`}>
+          <p class="ent-from">{g.from}</p>
+          {g.edges.length > 1 && (
+            <span class="ent-trunk" aria-hidden="true">
+              <svg viewBox="0 0 2 100" preserveAspectRatio="none" focusable="false"><line x1="1" y1="0" x2="1" y2="100" data-draw></line></svg>
+            </span>
+          )}
+          <span class="ent-spine" aria-hidden="true">
+            <svg viewBox="0 0 2 100" preserveAspectRatio="none" focusable="false"><line x1="1" y1="0" x2="1" y2="100" data-draw></line></svg>
+          </span>
+          <ul class="ent-edges">
+            {g.edges.map((e) => (
+              <li class="ent-edge">
+                <span class="ent-link">
+                  <span class="ent-line" aria-hidden="true">
+                    <svg viewBox="0 0 100 2" preserveAspectRatio="none" focusable="false"><line x1="0" y1="1" x2="100" y2="1" data-draw></line></svg>
+                  </span>
+                  <span class="ent-via">{e.label ?? 'links to'}</span>
+                </span>
+                <p class="ent-to"><span class="sr-only">to </span>{e.to}</p>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+</figure>
+
+<style>
+  .ent {
+    --dg-bg: var(--bg);
+    --rail-c: var(--ch, var(--muted));
+    --spine: 2rem;
+    --dot: 12px;
+    --from-h: 1.75rem;
+    --via-h: 2.5rem;
+    --to-h: 1.75rem;
+    --row: 3.5rem;
+    container: ent / inline-size;
+    margin: 0;
+  }
+  :global([data-theme='dark']) .ent { --rail-c: color-mix(in oklab, var(--ch, var(--muted)) 72%, var(--ink)); }
+
+  .dg-head { display: grid; gap: 0.35rem; margin-bottom: var(--s-5); max-width: 64ch; }
+  .dg-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .dg-desc { font-size: 1rem; line-height: 1.5; color: var(--ink-2); }
+
+  .ent-list, .ent-edges { list-style: none; margin: 0; padding: 0; }
+  .ent-list { display: grid; max-width: 52rem; }
+  .ent-group, .ent-edge { margin: 0; }
+  .ent-group { padding-block: var(--s-5); border-top: 1px solid var(--line); }
+  .ent-group:last-child { border-bottom: 1px solid var(--line); }
+
+  .ent-from, .ent-to {
+    font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.3125rem);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .ent-via {
+    position: relative;
+    z-index: 1;
+    padding-block: 0.25rem;
+    background: var(--dg-bg);
+    font-size: 0.875rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+    color: var(--ink-2);
+    white-space: nowrap;
+  }
+  .ent-trunk, .ent-spine, .ent-line { position: relative; pointer-events: none; }
+  .ent-trunk svg, .ent-spine svg, .ent-line svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ent :is(.ent-trunk, .ent-spine, .ent-line) line { stroke: var(--rail-c); stroke-width: 2; fill: none; }
+
+  /* ---------- Narrow: the group's record on top, its links down a spine ---------- */
+  .ent-group {
+    display: grid;
+    grid-template-columns: var(--spine) minmax(0, 1fr);
+    column-gap: var(--s-3);
+  }
+  .ent-from { grid-column: 2; grid-row: 1; line-height: var(--from-h); }
+  .ent-trunk, .ent-line { display: none; }
+  .ent-spine {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    justify-self: center;
+    align-self: start;
+    width: 2px;
+    margin-top: calc(var(--from-h) / 2);
+    height: calc(var(--k) * (var(--via-h) + var(--to-h)));
+  }
+  .ent-edges { grid-column: 1 / -1; grid-row: 2; display: grid; grid-template-columns: subgrid; position: relative; z-index: 1; }
+  .ent-edge { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; }
+  /* Each link branches off the spine: a short tick to the target's node. */
+  .ent-link { grid-column: 2; display: flex; align-items: center; height: var(--via-h); padding-left: calc(var(--dot) + 0.625rem); }
+  .ent-to {
+    grid-column: 2;
+    padding-left: calc(var(--dot) + 0.625rem);
+    font-size: 1.125rem;
+    font-weight: 650;
+    line-height: var(--to-h);
+  }
+  .ent-from, .ent-to { position: relative; z-index: 1; }
+  .ent-from::before,
+  .ent-to::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--to-h) / 2 - var(--dot) / 2);
+    left: calc(-1 * (var(--s-3) + var(--spine) / 2 + var(--dot) / 2));
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    background: var(--dg-bg);
+    border: 2px solid var(--rail-c);
+  }
+  .ent-to::before { left: 0; }
+  .ent-to::after {
+    content: "";
+    position: absolute;
+    top: calc(var(--to-h) / 2 - 1px);
+    left: calc(-1 * (var(--s-3) + var(--spine) / 2));
+    width: calc(var(--s-3) + var(--spine) / 2);
+    height: 2px;
+    background: var(--rail-c);
+  }
+
+  /* ---------- Wide: record, then its links branching to their targets ---------- */
+  @container ent (min-width: 40rem) {
+    .ent-group {
+      grid-template-columns: minmax(0, 1fr) minmax(8rem, 1fr) minmax(0, 1.2fr);
+      grid-template-rows: repeat(var(--k), var(--row));
+      column-gap: 0;
+    }
+    .ent-spine { display: none; }
+    .ent-from {
+      grid-column: 1;
+      grid-row: 1;
+      align-self: center;
+      justify-self: end;
+      padding-right: var(--s-4);
+      text-align: right;
+      line-height: 1.2;
+    }
+    .ent-from::before { display: none; }
+    .ent-trunk {
+      display: block;
+      grid-column: 2;
+      grid-row: 1 / -1;
+      justify-self: start;
+      align-self: start;
+      width: 2px;
+      margin-left: calc(var(--dot) / 2 - 1px);
+      margin-top: calc(var(--row) / 2);
+      height: calc((var(--k) - 1) * var(--row));
+    }
+    .ent-edges { grid-column: 2 / -1; grid-row: 1 / -1; grid-template-rows: subgrid; }
+    .ent-edge { grid-row: auto; }
+    .ent-link {
+      grid-column: 1;
+      position: relative;
+      justify-content: center;
+      height: auto;
+      padding-left: 0;
+    }
+    .ent-line {
+      display: block;
+      position: absolute;
+      left: calc(var(--dot) / 2);
+      right: calc(var(--dot) / 2);
+      top: calc(50% - 1px);
+      height: 2px;
+    }
+    .ent-via { padding-inline: 0.5rem; }
+    .ent-link::before,
+    .ent-link::after {
+      content: "";
+      position: absolute;
+      top: calc(50% - var(--dot) / 2);
+      width: var(--dot);
+      height: var(--dot);
+      border-radius: 50%;
+      background: var(--dg-bg);
+      border: 2px solid var(--rail-c);
+      z-index: 1;
+    }
+    .ent-link::before { left: 0; }
+    .ent-link::after { right: 0; }
+    .ent-to {
+      grid-column: 2;
+      align-self: center;
+      padding-left: var(--s-4);
+      font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.3125rem);
+      font-weight: 700;
+      line-height: 1.2;
+    }
+    .ent-to::before, .ent-to::after { display: none; }
+  }
+</style>

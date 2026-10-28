@@ -1,0 +1,239 @@
+---
+title: "Portal data model: companies and contacts"
+description: "Five record types for a small client portal: link contacts to companies, choose one portal or one per client, and move each brief through five intake states."
+type: guide
+products: [softr, noloco, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+stage: decide
+order: 2
+cover:
+  name: softr-crm.webp
+  alt: "Softr's published CRM demo: a contact detail page showing a client's role, email, account manager, total revenue and status, with Overview, Tasks and Conversations tabs"
+---
+
+import EntityDiagram from "../../../components/EntityDiagram.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Five record types cover most small service portals: Company, Contact,
+    Project, Task, and Intake request. The relationship that matters most is the
+    one that says which work belongs to which client.
+  </p>
+  <p>If that link is ambiguous, a nicer interface will not fix it.</p>
+</aside>
+
+<EntityDiagram
+  title="Portal record relationships"
+  description="A company owns contacts and projects; a project owns tasks; an intake request links to a project only after staff review."
+  edges={[
+    { from: "Company", to: "Contact", label: "approved people" },
+    { from: "Company", to: "Project", label: "owns" },
+    { from: "Project", to: "Task", label: "contains" },
+    { from: "Intake request", to: "Project", label: "after review" },
+  ]}
+/>
+
+## Start with five record types
+
+A client-facing view and an internal view can share the same underlying project while exposing different fields. Noloco’s Agency OS demonstrates one company record appearing in CRM and client views. You do not need a separate table per screen.
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Example portal record model"
+  tabIndex={0}
+>
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Record type</th>
+        <th scope="col">Small useful field set</th>
+        <th scope="col">Relationship</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Company</th>
+        <td>Stable ID, display name, account owner, active status.</td>
+        <td>Owns projects; has approved contacts.</td>
+      </tr>
+      <tr>
+        <th scope="row">Contact</th>
+        <td>Stable ID, name, email, approved company link, access status.</td>
+        <td>Belongs to a company; may map to an app user.</td>
+      </tr>
+      <tr>
+        <th scope="row">Project</th>
+        <td>
+          Stable ID, name, company link, staff owner, status, next action.
+        </td>
+        <td>Belongs to one company; has tasks.</td>
+      </tr>
+      <tr>
+        <th scope="row">Task</th>
+        <td>Stable ID, project link, title, assignee, due date, status.</td>
+        <td>Belongs to one project.</td>
+      </tr>
+      <tr>
+        <th scope="row">Intake request</th>
+        <td>
+          Submission reference, contact details, requested outcome, review
+          status.
+        </td>
+        <td>Linked to an approved company/project after review.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Use the source’s stable record identifiers rather than duplicating them. Keep field meaning consistent across forms, portal pages, and exports.
+
+## Link records, not names
+
+Names change, get abbreviated, and collide. A link based on the text “Northline” is more fragile than a relationship to a Company record with a stable ID. Show readable names in the interface; keep stable links in the data.
+
+Email needs the same care. Softr’s user-sync documentation treats email as the user identifier and warns against changing it on the source side. Keep account identity separate from business relationships.
+
+Noloco makes the user link explicit. Noloco has a built-in User table, and its docs say you can extend it with custom fields. Record-level permissions need the target table to have a relationship to the User table or a related user table. The documented client-portal pattern is a rule like `Company` equals `User's Company`. If your projects link to companies and your users link to companies, that rule works. If a project only stores a typed company name, it does not.
+
+Softr works the same way once users are synced with your data source. A builder on Softr's forum found that the data restriction offered only the user's email and email domain. A Softr team member pointed out that fields from the synced Users table, such as a linked organization, appear once the sync is set up ([thread](https://community.softr.io/t/15970)).
+
+## One portal for every client, or one per client?
+
+Build one portal and scope it by company, unless something forces separate apps. One app means one set of pages to maintain, and a new client is a new Company record, not a new build.
+
+Separate apps or workspaces make sense in three cases:
+
+- **Each client pays for their own portal.** Noloco's team suggested a separate workspace per client business, each on its own plan, when billing must be separate ([thread](https://community.noloco.io/t/2137)).
+- **Clients need different layouts, not just different data.** Softr lets you vary visibility by user group, but past a handful of variations, separate apps are easier to reason about.
+- **You use Airtable Portals.** Airtable allows one portal per base, so separate branded portals mean separate bases. See [Airtable Portals vs Softr and Noloco](/compare/airtable-portals-vs-softr/).
+
+Watch the cost of separate apps on Softr. It counts a unique email once across all your apps, so the same contact in two apps costs one user. But the plan's user cap covers every app in the workspace.
+
+Staff who work across many clients have a different problem: seeing one client at a time. A pattern Noloco's team recommends is an “active project” field on the user record, with permissions keyed to it, so switching that field switches the whole app ([thread](https://community.noloco.io/t/2450)).
+
+## Count records before you choose a plan
+
+Your data model decides your plan as much as your user count does. Record caps:
+
+- **Softr:** the pricing page lists database records of 5,000 on Free, 50,000 on Basic, 500,000 on Pro and 1 million on Business. If your records stay in Airtable or another external source, ask Softr which limit applies to you.
+- **Noloco:** 2,000 records on Free. Build includes 25,000, and you can buy more in blocks of 25,000 up to 250,000. Beyond that, Noloco points you to Enterprise.
+
+Count every table, not just projects. Tasks, intake requests and contacts can outnumber projects many times over. **Checkpoint:** multiply your expected projects per year by your average tasks per project. Add contacts and intake requests. Compare the total to the cap on the plan you intend to buy.
+
+## Move a new brief through five states
+
+A public submission is a request, not proof of access rights. Keep **intake requests** in their own table, and link one to a company and project only after someone on your team has confirmed who sent it. A typed “Northline” in a company field is context for the reviewer. It should not grant access to Northline's records.
+
+1. **Received:** the brief arrived. No promise of acceptance or a start date.
+2. **Needs clarification:** a named person knows what is missing and who should answer.
+3. **Ready for setup:** scope, contact and approver are confirmed.
+4. **Portal checked:** the project exists and its client access has passed the [two-client test](/guides/client-portal-launch/).
+5. **Invited:** the right person received access instructions. That is an event, not proof they logged in.
+
+The ordinary failures each need a rule:
+
+- **Incomplete brief:** move it to Needs clarification with an owner and the missing decision. Do not send a portal invitation because the form was submitted.
+- **Duplicate submission:** decide whether it is a correction or a second project. Fillout's automatic Airtable duplicate prevention is on Business ($75 a month billed yearly) and matches only email or single-line fields. Rejecting every repeated email also rejects a genuine second project, so a review step may serve you better.
+- **Contact changes company:** review their access before giving a replacement contact access. An unchanged email address is not ongoing authorization.
+
+<a class="download-link" href="/resources/client-intake-brief.txt" download>
+  Download the editable intake brief (.txt) →
+</a>
+
+The brief is plain text with an internal review section that tracks these five states. Remove questions you cannot justify, and never ask clients for passwords or keys. To build the form itself, follow [Send a Fillout intake form into Airtable](/guides/fillout-intake-to-airtable/).
+
+## Decide which fields are client-facing
+
+For each field, ask three questions:
+
+1. Does the client need to read it?
+2. Does the client need to change it?
+3. Does any form, export, integration, or file link expose it another way?
+
+The third question catches a common false sense of safety. Fillout’s update-form documentation warns that an update link can expose fields not shown as questions. The vendor’s mitigations are separate private tables or restricted prefilled data. Noloco documents field permissions as distinct from interface visibility; Softr documents global record restrictions with a Comments-block exception. Do not assume a data design enforces access by itself.
+
+## Make status mean something
+
+Use a small set of states (for example Preparing, In progress, Needs client review, Complete), with one sentence each. Keep the **next action** separate: “In progress” is a state; “Please approve the homepage outline” is what someone should do. Assign an owner for anything blocking delivery.
+
+<details>
+  <summary>A small dataset that reveals mistakes</summary>
+  <p>
+    Use two fictional companies, Northline and Harbor, with two projects each
+    and a separate contact per company. Include one completed project, one
+    waiting on client review, and one with no tasks. Add a harmless
+    internal-only field and unmistakable synthetic text so a wrong result is
+    obvious.
+  </p>
+  <p>
+    The dataset gives you questions to test: does the Northline contact see only
+    Northline work, does an empty task list explain itself, does an export
+    contain only intended data? The dataset is not proof; the observed results
+    are.
+  </p>
+</details>
+
+<details>
+  <summary>Plan for changes, departures, and export</summary>
+  <p>
+    Decide what happens when a contact leaves a client company, a project ends
+    but access continues, or a project is archived. Do not delete a Company
+    record to remove a contact: Softr’s sync documentation shows account
+    removal needs its own procedure.
+  </p>
+  <p>
+    Export the synthetic records early and check the relationships. Noloco’s
+    export documentation describes linked-field exports with a display value and
+    an ID. That is useful, but a CSV is not a complete app backup. Keep a short field
+    dictionary: what each field means, who maintains it, who may see it.
+  </p>
+</details>
+
+<NextSteps
+  items={[
+    {
+      to: "/guides/build-softr-client-portal/",
+      title: "Turn the model into a Softr portal",
+      product: "softr",
+    },
+    {
+      to: "/guides/build-noloco-client-portal/",
+      title: "Or build it in Noloco, with company-scoped permissions",
+      product: "noloco",
+    },
+    {
+      to: "/guides/fillout-intake-to-airtable/",
+      title: "Feed intake requests into Airtable with Fillout",
+      product: "fillout",
+    },
+    {
+      to: "/guides/client-portal-launch/",
+      title: "Run the two-client test before launch",
+    },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrSetup",
+    "softrUserSync",
+    "softrRestrictions",
+    "softrPricing",
+    "nolocoSetup",
+    "nolocoRoles",
+    "nolocoUserTable",
+    "nolocoRecordRules",
+    "nolocoPricing",
+    "nolocoExport",
+    "filloutUpdate",
+    "filloutDuplicates",
+    "airtablePortals",
+    "forumSoftrOrgFilter",
+    "forumNolocoWorkspaces",
+    "forumNolocoActiveProject",
+  ]}
+/>

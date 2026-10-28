@@ -1,0 +1,76 @@
+---
+title: "How Wellpick is built: a static site, sourced facts and no trackers"
+seoTitle: "How Wellpick is built: static, sourced, no trackers"
+description: "The stack behind this publication: static Astro pages, dated data files for every price and source, and no trackers. What a small business site can borrow."
+type: post
+topic: web
+sourceIds: [astroDocs, webVitals]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Wellpick is a static site built with Astro: every page is a plain HTML
+    file made before anyone visits. Prices, limits and sources live in data
+    files with dates, and a build check fails if a claim or image has no
+    source. There is no analytics, no ad script and no tracking cookie.
+  </p>
+</aside>
+
+A publication that tells you to check what software does should be open about its own. This is how the site you are reading works, as of October 2026. Some of it may be useful if you are planning your own business site.
+
+## Static pages, made in advance
+
+Wellpick is built with [Astro](https://docs.astro.build/en/concepts/why-astro/), a web framework its docs describe as made "for building content-driven websites like blogs, marketing, and e-commerce." Astro turns our pages into plain HTML files during a build step. When you open a page, the server sends a finished file. Nothing is assembled on the fly and there is no database behind the page.
+
+For a site that changes a few times a week, that is the boring, reliable choice. There is less to break, less to secure and less to pay for.
+
+Pages are written in MDX, which is Markdown with the option to drop in components like a pricing table or a diagram. Styles use Tailwind CSS with a small set of design tokens: colors, spacing and type sizes defined once.
+
+## Facts live in data, not in sentences
+
+Every price, plan limit and vendor claim on the site starts as an entry in a data file with:
+
+- the statement itself,
+- the source pages it came from,
+- the date we checked it.
+
+Pages read from those files. When a vendor changes a price, we change it once and every page that mentions it updates on the next build. The source lists at the end of articles, including this blog, come from the same data.
+
+Vendor screenshots work the same way. Each image has an entry in a media manifest with its source URL, the page it came from and the date. A build check fails if an image ships without one.
+
+## No trackers, on purpose
+
+The site runs no analytics, no advertising tags, no session recording and no newsletter form. Our [privacy page](/privacy/) says so and explains the two exceptions to "nothing leaves your browser": the theme toggle stores your light or dark choice locally, and product videos load from YouTube's no-cookie domain only after you press play.
+
+That decision has a cost. We do not know which posts you read. We decided an affiliate publication that asks for trust should not watch its readers to earn it.
+
+## Where we spend speed on purpose
+
+Static pages are fast by default. We gave some of that back for design:
+
+- **The home page 3D stack.** On capable desktops, the hero is a WebGL scene. On phones, with reduced motion turned on, or without WebGL, it is a plain HTML and CSS version of the same three screens.
+- **Motion.** Sections and images ease in as you scroll, using GSAP and Lenis. With "reduce motion" set in your system, everything is shown at once and nothing animates.
+- **Fonts.** One variable font, Archivo, hosted with the site so no request goes to a font service.
+
+Images are resized into several widths in a modern format, and the browser picks the smallest one that fits. Google's [Core Web Vitals](/blog/core-web-vitals-plain-english/) are the yardstick we use for whether those trade-offs are acceptable.
+
+## The checks that run on every build
+
+- Every vendor image has a manifest entry and the file exists.
+- Every commercial page carries the affiliate disclosure link in the footer.
+- Type checks pass on the content schema, so a post without a topic or a date fails to build.
+
+None of this makes the content correct by itself. It makes it harder to publish something we cannot trace back to a source.
+
+## What a service business can borrow
+
+You probably do not need Astro. You might want the ideas:
+
+- **Keep facts you repeat in one place.** Prices, opening hours, service lists.
+- **Date your claims.** "Checked October 2026" is more honest than a timeless sentence.
+- **Remove scripts you do not use.** Each one slows the page.
+- **Decide what you track, and say it.** Visitors notice.
+
+How we decide what to recommend, and how we make money, is on the [methodology page](/methodology/) and the [affiliate disclosure](/disclosure/).

@@ -1,0 +1,74 @@
+---
+title: "Hidden fields: know where every enquiry came from without asking"
+seoTitle: "Hidden fields: track where every enquiry came from"
+description: "A hidden field fills itself from the link a client clicked, so every brief arrives tagged with its source or campaign. Setup in Fillout, and its limits."
+type: post
+topic: intake
+products: [fillout]
+sourceIds: [filloutUrlParams, filloutPrefill, filloutLogic, tallyHiddenFields, filloutUpdate]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Add <code>?source=newsletter</code> to the form link, register
+    <code>source</code> as a URL parameter, and put it in a hidden field. The
+    brief arrives tagged. Use it for context only: anyone can edit a URL, so a
+    hidden field never proves who sent the form.
+  </p>
+</aside>
+
+"How did you hear about us?" is one of the most common questions on an intake form. It is also one of the least reliable. People pick the first option, guess, or skip it. And it costs the client a click on a form you want them to finish.
+
+A hidden field answers the same question from the link itself.
+
+## How a hidden field works
+
+A link can carry extra information after a question mark. In `https://forms.example.com/brief?source=instagram`, the part after `?` is a URL parameter called `source` with the value `instagram`.
+
+A hidden field reads that value when the form opens and stores it with the answers. The client never sees it. When the brief lands in your table, it already says `instagram`.
+
+Both of the form tools we cover support this. Fillout's docs say to register the parameter in the form settings first, then: "To prefill a hidden field, set the parameter as the Default value, and `Hide always`." Tally documents hidden fields filled from URL parameters as well.
+
+## Setting it up in Fillout
+
+1. Open the form's **Settings → URL parameters** and add `source`.
+2. Add a hidden field to the form. Set its default value to the `source` parameter and set it to always hide.
+3. If the form writes into Airtable, map the hidden field to a column such as **Lead source**.
+4. Make one link per channel: `?source=newsletter`, `?source=instagram`, `?source=referral`.
+5. Submit a test from each link and check the column.
+
+Fillout lists URL parameters as one of several prefill sources, next to earlier answers, login information, calculations and database records. Its pricing page lists prefill and hidden fields on every plan, Free included.
+
+## Five tags worth carrying
+
+- **Source:** the channel, such as newsletter, instagram or podcast.
+- **Campaign:** the specific post, issue or talk, so you can tell which one worked.
+- **Referrer:** a partner or past client who sends work your way. Give each one their own link.
+- **Service page:** which page of your site the visitor came from, so you know what they were reading.
+- **Language or region:** if you run the same form for different markets.
+
+Keep the values short, lowercase and consistent. `Newsletter`, `newsletter` and `news-letter` become three different rows in a report.
+
+## What a hidden field cannot do
+
+A URL parameter is visible in the address bar and anyone can change it. That has two consequences.
+
+**It is not proof of identity.** A hidden `email` or `client_id` filled from the link tells you what the link said, not who opened it. If the form must only accept a real client, use a login. Fillout's login pages start on the Starter plan.
+
+**It should not carry private data.** Do not put client details, internal IDs that open other records, or anything confidential in a link. Links get forwarded, saved in browser history and pasted into chats.
+
+The same caution applies to Fillout's update links, which are a different feature: one link per record that opens the record for editing. We cover why those links are keys, not forms, in [update links and what clients can see](/blog/update-links-are-keys/).
+
+## Reading the results
+
+After a month, sort your briefs by the source column. Three questions are worth asking:
+
+- Which channel sends the most enquiries?
+- Which channel sends the enquiries you actually win?
+- Which channel sends briefs that need the most follow-up?
+
+The second question matters more than the first. A channel that sends fewer, better-fit clients is worth more of your time. You can only see that if every brief carries its source, which is the whole point of the hidden field.
+
+The full intake build, including hidden fields mapped into Airtable, is in our [Fillout to Airtable guide](/guides/fillout-intake-to-airtable/).

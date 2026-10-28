@@ -1,0 +1,74 @@
+---
+title: How this guide handles evidence
+description: How Wellpick sources facts, what a citation means, how it handles vendor pages that disagree, and what the site does not claim.
+type: page
+products: []
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+---
+
+import Sources from "../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Facts come from official vendor documentation and pricing pages, each linked
+    to its source. Recommendations are editorial interpretations of those documents, not product benchmarks.
+  </p>
+  <p>
+    This page is the one place the site explains what it does not claim, so the
+    guides do not repeat it.
+  </p>
+</aside>
+
+## What a citation means
+
+Every fact links to the vendor page it comes from. A citation means the vendor documents it. It does not mean the behavior was reproduced in a product account, and vendors change their pages, so confirm the price on the vendor’s own page before you pay.
+
+## How a claim is built
+
+Each substantive claim traces to a vendor document in the numbered source list at the end of the page. Where the site connects a documented capability to a scenario (“evaluate this first if…”), that is an editorial interpretation, a starting point rather than a verdict.
+
+Prices always carry their billing basis. A yearly-billing price shown “per month” is the yearly total divided by 12, paid upfront. The monthly-billing price is stated beside it.
+
+Proposed workflows and checklists are plans you run in your own authorized environment. They use fictional records, and an unrun check stays labeled NOT_RUN. Coverage comes from documentation, not hands-on portal evaluation, so the site claims no observed product results, ratings, benchmarks or client deployments.
+
+## When vendor sources disagree
+
+Vendors sometimes say different things on different pages. For example:
+
+- Softr’s pricing page lists conditional form logic under Basic. Softr’s forms docs say the in-app Conditional Form Block is on the Professional plan and higher.
+- Noloco’s affiliate page says 20% commission for 12 months. Its partner terms show a tier table with 10% in a second year.
+
+The site does not pick a side in those cases. It reports both statements, names both pages, and tells you how to confirm, usually by asking the vendor before you pay.
+
+## What forum threads are used for
+
+Some pages cite threads from the vendors' public community forums (community.softr.io and community.noloco.io). They are used for two things only. First, to show which questions real buyers and builders keep asking, such as who counts as a paid user. Second, to report problems users describe, such as data that took a long time to sync.
+
+A forum post is a user report, not a verified fact. Each one is linked, dated and attributed to "a forum user" or to the vendor's own staff when staff replied. A reply from vendor staff is treated as a vendor statement, with the same weight as the vendor's documentation. No thread is used to set a price, a limit or a plan boundary. Those come only from pricing pages and docs.
+
+## Comparisons with tools outside the three
+
+Two comparisons cover tools this site does not otherwise review: Airtable's Portals add-on and the Tally form builder. They are included because readers weigh them against Fillout, Softr and Noloco. The site has no affiliate relationship with either, and the same sourcing rules apply.
+
+## Diagrams and product images
+
+Every diagram is drawn from documented concepts: permission layers, record relationships, intake flows. Diagrams are conceptual. They do not depict a real account’s configuration or data.
+
+Product images are screens and illustrations that the vendors publish. Each is credited to its vendor in the text around it. None of them shows a build made by this site, and none is evidence that a feature works on a particular plan.
+
+## What the site does not claim
+
+- No numerical scores, rankings, awards, testimonials, or revenue figures.
+- No quote from a person the site has not linked to; forum quotes link to the public thread.
+- No claim that documentation-based coverage proves a product fastest, cheapest, or safest.
+- No invented prices: a number appears only with its source page and billing basis; the [cost guide](/guides/portal-costs/) arithmetic is labeled as an example.
+- No claim that an affiliate application exists or was approved; see the [disclosure](/disclosure/).
+
+## What triggers a revision
+
+A linked source changes, a plan boundary changes, a claim is challenged, or a new observation contradicts the page.
+
+<Sources
+  ids={["softrPricing", "softrForms", "nolocoAffiliate", "nolocoPartnerTerms"]}
+/>

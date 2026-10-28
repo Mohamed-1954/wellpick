@@ -1,0 +1,147 @@
+---
+title: Airtable Portals vs Softr and Noloco
+description: Airtable Portals bills only clients who edit or comment, from $120 a month. Its limits, its cost next to Softr and Noloco, and when each route wins.
+type: comparison
+products: [softr, noloco]
+publishedAt: 2026-09-27
+updatedAt: 2026-09-27
+order: 2
+---
+
+import LayerDiagram from "../../../components/LayerDiagram.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    If clients mostly <em>read</em> their records, Airtable Portals is the
+    simplest route: nothing leaves Airtable, and read-only portal users are not
+    billed. The add-on starts at $120 a month on the Team plan and covers 15
+    clients who edit or comment.
+  </p>
+  <p>
+    It is not the cheapest route. Softr costs less up to 5 client logins, and
+    Noloco Build ($65) undercuts the $120 pack at every size we priced. Choose
+    them when clients should not need an Airtable account, when you need more
+    than one portal per base, or when you want the lowest list price.
+  </p>
+</aside>
+
+Softr, Noloco and this site all benefit when you buy a portal builder, so this page also weighs the option where you buy nothing new. The Airtable facts come from Airtable's help center.
+
+## Three ways to put clients in front of Airtable records
+
+<LayerDiagram
+  title="Where each route sits"
+  description="Airtable Portals shares Airtable interfaces with outside users. Softr and Noloco are separate apps that read or sync the same base."
+  emphasis="none"
+  layers={[
+    { label: "Airtable Portals", detail: "Airtable interfaces shared with external users; clients sign in to Airtable" },
+    { label: "Softr", detail: "Separate app reading the base; clients sign in to your Softr app" },
+    { label: "Noloco", detail: "Separate app syncing the base live; staff can work there too" },
+  ]}
+/>
+
+- **Airtable Portals** is a paid add-on that lets you invite people outside your company to Airtable interfaces. They see a sign-in page, then an interface without Airtable's navigation or share buttons.
+- **Softr** builds a separate app over the base. Clients sign in to your app, on your domain on paid plans.
+- **Noloco** syncs the base into its own app, live for Airtable, and adds staff tools such as pipelines and invoices on the same records.
+
+## How Airtable bills clients
+
+This is the rule most Airtable Portals cost estimates get wrong. The Portals help article says:
+
+- **Read-only portal users are not billable.** Only portal users with editor or commenter access use a portal seat.
+- **Seats come in packs** of 15, 25, 50, 100 and 200. Airtable lists the 15-seat pack at $120 a month on Team and $150 a month on Business. It discounts larger packs but does not publish their prices. The article does not say whether $120 is a monthly or yearly-billing rate.
+- **Some access turns a client into a full seat.** That happens to a portal editor on more than one base in your workspace, and to anyone with editor access to the base itself. They are billed as an internal editor: $20 a month on Team billed yearly, $45 on Business.
+- **Commenting counts.** Interface-only commenters are billable, so a client who can only leave comments still uses a seat.
+- **Forms count too.** Creating records through a form inside an interface needs editor access.
+
+Your staff still pay normal Airtable seats. Airtable charges for everyone with edit permission on at least one base.
+
+## What it costs to add clients
+
+The table adds client access on top of an Airtable Team plan you already pay for. It assumes your staff keep working in Airtable and do not log into the portal app. List prices are shown as yearly-billing monthly equivalents.
+
+<div class="table-scroll" role="region" aria-label="Cost of adding client access to an existing Airtable base" tabIndex={0}>
+  <table>
+    <caption>Extra cost per month on top of existing Airtable seats</caption>
+    <thead>
+      <tr><th scope="col">Clients who log in</th><th scope="col">Airtable Portals (Team)</th><th scope="col">Softr</th><th scope="col">Noloco</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">5, read only</th><td>$120 (the smallest pack; readers not billed)</td><td>$0 on Free, or $19 on Basic</td><td>$65 on Build (Free cannot connect Airtable)</td></tr>
+      <tr><th scope="row">12, all comment or submit forms</th><td>$120 (12 of 15 seats)</td><td>$99 on Pro (Basic stops at 5 clients)</td><td>$65 on Build</td></tr>
+      <tr><th scope="row">60: 10 edit, 50 read only</th><td>$120 (10 of 15 seats)</td><td>$109 on Pro (50 included + 10 at $1)</td><td>$65 on Build</td></tr>
+      <tr><th scope="row">40, all edit</th><td>50-seat pack, price not published</td><td>$99 on Pro</td><td>$65 on Build</td></tr>
+      <tr><th scope="row">150, read only</th><td>$120</td><td>$199 on Pro (50 + 100 at $1)</td><td>$65 on Build</td></tr>
+    </tbody>
+  </table>
+</div>
+
+Read the table by who does what. Readers are free in Airtable's model, so a base with many clients who only check status stays at $120. Editors are where Airtable gets expensive, and the price above 15 editors is a sales conversation. Noloco's price does not depend on what clients do, up to 1,000 active clients. Softr's rises with every client past 50 on Pro.
+
+Two things are left out of the table. On Airtable's Business plan the pack costs $150 and adds a branded sign-in page. And if you want clients to do more than read, test the "commenter" and "form" rules above before trusting the $120 figure.
+
+## Limits that decide it
+
+These come from Airtable's own help articles and are easy to miss:
+
+- **One portal per base.** Enabling portal access creates a single portal in that base, and you can share any number of its interfaces. If each client needs a separate branded portal, you need a base per client or a different tool.
+- **Every client needs an Airtable account.** Interfaces can only be shared with users who have a verified Airtable account. Softr and Noloco create logins in your own app.
+- **Per-client records need a user field.** The "Viewer's records" filter shows a record only when the signed-in person is in a user field on that record, or in a user group on Business. You set the filter per interface page; it does not carry over to other pages. Softr and Noloco can match on a linked company instead, so one company link covers every contact at that client.
+- **Three levels deep.** Interface-only collaborators, including portal users, can open at most 3 nested record pages. A deeper path shows "record hidden".
+- **Records can vanish from the creator.** A record a client creates that does not match the page filter is still saved, but the client cannot see it.
+- **Mentions can fail silently.** When two external users on different domains @mention each other, Airtable drops the notification without an error. Two clients on Gmail cannot see each other in the mention list.
+- **Turning Portals off deletes the portal user list,** whether you disable it or downgrade.
+- **Team plan owners need a work email.** Personal addresses such as Gmail are not supported for Portals on Team.
+
+The user-field rule is the one that changes how you work. In Airtable Portals, a new contact at a client needs adding to the user field on that client's records. In Softr or Noloco, you link the contact to their company once.
+
+## When each route wins
+
+**Stay in Airtable with Portals when:**
+
+- Clients mostly read status, files and invoices.
+- One portal for all clients is acceptable.
+- Clients will accept an Airtable sign-in.
+- Someone on your team will keep the user fields accurate.
+
+**Choose Softr when:**
+
+- You want the portal on your own domain, with its own sign-in.
+- You have 5 or fewer client logins, so Free or Basic costs less than the Portals pack.
+- Your staff should keep working in Airtable, untouched.
+
+**Choose Noloco when:**
+
+- You want the lowest list price above 5 client logins, or more than 15 clients edit records.
+- Staff also want pipelines, projects and invoices in the portal app.
+- One company link should scope every contact at that client.
+
+**Stay with shared links when** nobody needs to log in. Airtable does not charge for form submissions or share links, but a share link is only as private as the settings you put on it.
+
+One ownership note: Bending Spoons completed its acquisition of Airtable on 4 September 2026. Confirm the Portals pricing before you commit and at every renewal.
+
+<NextSteps
+  items={[
+    { to: "/compare/softr-vs-noloco/", title: "If you leave Airtable's front end: Softr or Noloco?" },
+    { to: "/guides/portal-costs/", title: "Price your own team in the plan finder" },
+    { to: "/guides/portal-data-model/", title: "Link contacts to companies, not names" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "airtablePortals",
+    "airtableInterfacePerms",
+    "airtablePricing",
+    "bendingSpoonsAirtable",
+    "softrPricing",
+    "softrPlansDocs",
+    "softrData",
+    "nolocoPricing",
+    "nolocoPricingGuide",
+    "nolocoSync",
+    "nolocoRecordRules",
+  ]}
+/>

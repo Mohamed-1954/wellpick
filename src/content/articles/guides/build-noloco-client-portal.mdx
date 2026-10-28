@@ -1,0 +1,399 @@
+---
+title: Build a client portal in Noloco
+description: Build a Noloco portal on shared company records. Ten steps cover record rules, roles, plan limits and a two-client access test.
+type: guide
+products: [noloco, fillout]
+publishedAt: 2026-09-26
+updatedAt: 2026-09-26
+stage: build
+order: 2
+cover:
+  name: noloco-portal-canvas.png
+  alt: "Noloco's published client-portal template: a signed-in client's home page with the company name, two active projects with budget bars and one overdue invoice"
+---
+
+import EntityDiagram from "../../../components/EntityDiagram.astro";
+import LayerDiagram from "../../../components/LayerDiagram.astro";
+import Shot from "../../../components/Shot.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    The client boundary in Noloco is one record rule per table:
+    <code>Company</code> equals <code>User's Company</code>. You set it in
+    Data &amp; API, not in the page builder. Everything else is layout.
+  </p>
+  <p>
+    You can build and test the whole thing on the Free plan. You need Build if
+    you want to hide single fields from clients, add a third role, or keep your
+    data in Airtable or Google Sheets. Build costs $65/month billed yearly or
+    $79/month billed monthly.
+  </p>
+</aside>
+
+## What you are building
+
+This guide uses a fictional agency with two fictional clients, **Northline** and **Harbor**. A Northline contact signs in and sees Northline's projects, tasks and invoices. They do not see Harbor's. Staff sign in to the same app and work on all records.
+
+Write the requirement down before you start: "A client contact sees only the records linked to their company. Staff see and edit everything. Internal notes never reach a client."
+
+The steps follow Noloco's documentation. Where the docs describe intended behavior, the checkpoints tell you how to confirm it in your own app.
+
+Noloco's Agency OS template is a useful reference. Its documented client role sees four areas, each "filtered to their company": Portal Home, Projects, Tasks and Client Invoices. This guide builds that shape from the smallest parts, so you know which setting does what.
+
+## Check the plan limits first
+
+Noloco starts every new app on a 14-day trial of Build, with no credit card. The trial hides the Free limits. Decide now which plan you will run on after day 14.
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Noloco plan limits that affect a client portal"
+  tabIndex={0}
+>
+  <table>
+    <caption>Noloco plan limits that shape a portal</caption>
+    <thead>
+      <tr>
+        <th scope="col">Limit</th>
+        <th scope="col">Free ($0)</th>
+        <th scope="col">Build ($65/mo yearly, $79/mo monthly)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Team seats</th>
+        <td>Unlimited</td>
+        <td>10, then $5 (yearly) or $6 (monthly) per extra activated seat</td>
+      </tr>
+      <tr>
+        <th scope="row">Active clients</th>
+        <td>50</td>
+        <td>1,000 (contact sales above that)</td>
+      </tr>
+      <tr>
+        <th scope="row">Records</th>
+        <td>2,000</td>
+        <td>25,000, then $25 per extra 25,000, up to 250,000</td>
+      </tr>
+      <tr>
+        <th scope="row">User roles</th>
+        <td>2</td>
+        <td>Unlimited</td>
+      </tr>
+      <tr>
+        <th scope="row">Field permissions</th>
+        <td>No</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <th scope="row">Workflow runs per month</th>
+        <td>100; workflows stop when used up</td>
+        <td>3,000; extra runs billed as overage</td>
+      </tr>
+      <tr>
+        <th scope="row">Data sources</th>
+        <td>Noloco Tables, CSV import</td>
+        <td>Adds Airtable, Google Sheets, Xano, SmartSuite, Stripe, Postgres, Supabase, HubSpot, MySQL</td>
+      </tr>
+      <tr>
+        <th scope="row">Internal notes on records</th>
+        <td>No (client-visible comments only)</td>
+        <td>Yes</td>
+      </tr>
+      <tr>
+        <th scope="row">Branding and domain</th>
+        <td>"Powered by Noloco" badge</td>
+        <td>Custom domain</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Checkpoint:** count your clients, records and staff today and in twelve months. If any number passes a Free limit, plan for Build now. Full billing terms are on the [Noloco pricing page](/noloco/pricing/).
+
+## Step 1: choose where the data lives
+
+On Free, the data lives in Noloco Tables, or in a CSV you import into them. On Build, you can connect an external source instead.
+
+The sync type matters for a portal. Noloco documents **live** sync for Airtable, SmartSuite and Stripe, with limited live sync for HubSpot. It documents **scheduled** sync for Google Sheets, MySQL, PostgreSQL and Xano. Edits made in Noloco write back to the source instantly.
+
+A scheduled source means a client can see a status that staff changed at the source a while ago. That is fine for a weekly summary. It is not fine for a same-day approval.
+
+**Checkpoint:** write one line: "Records live in ___. Staff edit them in ___. A client may see a change after ___." If you cannot fill in the last blank, test the sync delay before you go further.
+
+## Step 2: build the data model
+
+You need five tables. Noloco's record rules have one hard prerequisite: the table you protect needs a relationship to the Noloco User table, or to a related table. The client-portal pattern links users to companies, and records to companies.
+
+<EntityDiagram
+  title="The five tables and their links"
+  description="Each user belongs to one company. Each client-facing record carries a Company link, so the same rule works on every table."
+  edges={[
+    { from: "Users", to: "Companies", label: "Company" },
+    { from: "Projects", to: "Companies", label: "Company" },
+    { from: "Tasks", to: "Projects", label: "Project" },
+    { from: "Tasks", to: "Companies", label: "Company" },
+    { from: "Client invoices", to: "Companies", label: "Company" },
+  ]}
+/>
+
+1. Create a **Companies** table if your app does not already have one.
+2. Add a **Company** relationship field to the **User** table. Noloco documents that the User table can be extended with custom fields, and that it drives permission and visibility rules.
+3. Create **Projects**, **Tasks** and **Client invoices**. Give each one its own **Company** link.
+4. Link each task to its project too, so staff can work from the project record.
+
+The direct Company link on Tasks and Invoices is a design choice, not a documented requirement. It lets you use the same documented rule on every table. The cost is upkeep: a task's Company must match its project's Company. Step 10 tests this.
+
+<Shot
+  name="noloco-workflows.png"
+  tone="noloco"
+  alt="A Noloco project record for 'Q1 Content & SEO Retainer' with a Tasks tab and an 'Add a Task' form that has a required Project field"
+/>
+
+Add two projects per company with names you cannot confuse, such as "Northline rebrand" and "Harbor website". Add one invoice per company. Add a staff-only field, such as "Internal margin", with harmless test text. A leak will then be obvious.
+
+**Checkpoint:** open every project, task and invoice. Each one names exactly one company. No record has an empty Company field.
+
+## Step 3: add users and know who costs a seat
+
+Create one staff account and one test contact per company. Link each contact to their company.
+
+Noloco splits users into two kinds for billing. A **team member** has the same email domain as the app creator, an app builder or anyone in the app's workspace, or holds a team member or data admin role. **Everyone else is a client user.** Client users count against the "active clients" limit.
+
+Seat rules from the pricing guide:
+
+- A user takes a seat once they log in to one of your apps.
+- An invited user who has never signed in does not count.
+- Deactivating a user releases the seat from the next billing cycle. Their records are kept.
+
+If your clients live in an external Users table, Noloco's **User Lists** can sync them from Airtable, SmartSuite, HubSpot, Google Sheets, Xano, Postgres or MySQL. Assigning roles by condition during that sync is a Build and Enterprise feature.
+
+**Checkpoint:** your test client accounts use an email domain that is not yours. Otherwise, under the rule above, Noloco counts them as team members, and your test does not match real use.
+
+## Step 4: assign roles
+
+Noloco has two built-in roles:
+
+- **Team Admin**: full access for internal team members.
+- **User**: the default role for external users, such as clients and partners.
+
+Give your staff account Team Admin. Leave both client contacts on User.
+
+The pricing page lists 2 user roles on Free. The roles guide lists unlimited custom roles on Build and above. Read together, Free leaves you with the two built-in roles. Confirm this in your app's role settings before you plan a third role, such as "Contractor".
+
+One rule decides how roles combine: **a user with several roles gets the sum of their permissions.** Access across roles is additive. A client who also holds a staff role sees what the staff role sees.
+
+**Checkpoint:** each test contact holds exactly one role, and it is User.
+
+## Step 5: add the record rule to every client-facing table
+
+Noloco offers three ways to limit what a user sees. Only one of them is a security boundary.
+
+<LayerDiagram
+  title="Three access controls in Noloco"
+  description="Filters and visibility rules change what the interface shows. Only permissions stop data at the server."
+  layers={[
+    {
+      label: "Filters",
+      detail: "View configuration. For display order only, not security",
+    },
+    {
+      label: "Visibility rules",
+      detail: "Build mode. Hide UI parts; data is still reachable by direct URL or API",
+    },
+    {
+      label: "Permissions",
+      detail: "Data & API tab. Filtered at the server; data never reaches the user",
+    },
+  ]}
+/>
+
+The documented setup path for a record rule:
+
+1. Go to the **Data &amp; API** tab.
+2. Hover over the table and click the **permissions** icon.
+3. Make sure the rule applies to the **User** role, not Team Admin.
+4. Turn off the **All Records** toggle.
+5. Choose **Logged in User** and set the condition: `Company` equals `User's Company`.
+6. Set create, read, update and delete for the role.
+
+Repeat this for Projects, Tasks and Client invoices. Keep the client role to read access at first. Add update rights later only where a client must change something.
+
+Watch for one trap. **Two rules for the same role intersect.** Noloco joins their filters, so only records that match both rules are accessible. If you add a second rule to the User role for a special case, clients may lose records. Field permissions work the other way: if any rule grants a field, the user gets it.
+
+Database permission rules also override any filters you set on views. A view filter cannot widen what a rule allows.
+
+**Checkpoint:** for each table, the User role shows exactly one rule, and it compares Company with the user's company.
+
+## Step 6: hide internal fields
+
+On Build, add a field permission to the User role on each table. Hide "Internal margin" and any internal notes. Noloco's client-portal pattern names exactly this: hide internal pricing and notes from the client role.
+
+On Free, field permissions are not available. Record permissions are. Move internal-only fields to a separate staff table. In Data &amp; API, set that table's permissions so the User role can read no records. Then confirm with the tests below that clients cannot read it.
+
+Check every table in Data &amp; API this way, including tables that no client page shows. A table missing from the menu is hidden, not protected.
+
+**Checkpoint:** as a client, the "Internal margin" text does not appear on any page, list, export or detail view.
+
+## Step 7: build the client pages
+
+Create four pages for the User role: Home, Projects, Tasks and Invoices. This matches the Agency OS client role.
+
+Now use visibility rules and filters for what they are good at. Hide staff pages from the User role. Sort tasks by due date. Filter a list to "open" tasks. None of this protects data. Step 5 already did that.
+
+If your source is external, the docs add one condition for logged-in-user filters: the table needs a relationship to the Noloco User table, or a User List that syncs from an external Users table.
+
+**Checkpoint:** as a client, every page loads, and no page is empty because a filter and a rule disagree.
+
+## Step 8: set up the staff side on the same records
+
+Staff do not need a second app. They sign in with Team Admin and see every company. Kanban, calendar and map views are on all plans. Timeline (Gantt) and pivot tables need Build.
+
+<Shot
+  name="noloco-dash-canvas.png"
+  tone="noloco"
+  alt="A Noloco Project Health Dashboard with remaining budget, active project counts and a workload breakdown of tasks by status, priority and person"
+/>
+
+Decide how staff and clients talk on a record. The Agency OS portal documents two comment types. A **Reply** is visible to the client. A **Note** is internal. The pricing page lists client-visible comments on all plans and internal notes on Build and above.
+
+**Checkpoint:** a staff member posts one Reply and one Note on a Northline project. Only the Reply appears for the Northline contact.
+
+## Step 9: add one workflow, and only one
+
+Start with one notification. For example: when a task's status changes to "Needs your review", email the company's contact.
+
+Noloco documents these triggers: record created, updated or deleted, On Demand, and Comment Added. Actions include sending an email, triggering a webhook, loops, "Only continue if", and creating, updating or deleting records.
+
+Know the chaining rule before you design more. **A record change made by one workflow does not trigger another workflow.** Noloco does this to prevent loops. If workflow A updates a task, workflow B's "task updated" trigger does not fire.
+
+Count runs too. Free includes 100 workflow runs a month, and workflows stop when they run out. Build includes 3,000, and extra runs are billed.
+
+**Checkpoint:** change one test task and confirm that exactly one email arrives. Then note your expected monthly runs.
+
+## Step 10: test with two clients
+
+First use **View as User**, the 👥 icon in the build toolbar. It shows the app as a chosen user sees it. Then repeat the key rows with real sign-ins in a private browser window. A preview shows the interface. The direct-link tests prove the server rule.
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Two-client permission test"
+  tabIndex={0}
+>
+  <table>
+    <caption>Expected results. Record what you actually observe.</caption>
+    <thead>
+      <tr>
+        <th scope="col">Test</th>
+        <th scope="col">Signed in as</th>
+        <th scope="col">Expected result</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Open the Projects page</th>
+        <td>Northline contact</td>
+        <td>Two Northline projects. No Harbor project.</td>
+      </tr>
+      <tr>
+        <th scope="row">Open the Projects page</th>
+        <td>Harbor contact</td>
+        <td>Two Harbor projects. No Northline project.</td>
+      </tr>
+      <tr>
+        <th scope="row">Paste the URL of a Harbor project (copied as staff)</th>
+        <td>Northline contact</td>
+        <td>No record data. This is the test visibility rules cannot pass.</td>
+      </tr>
+      <tr>
+        <th scope="row">Open Tasks and Invoices</th>
+        <td>Northline contact</td>
+        <td>Only Northline tasks and the Northline invoice.</td>
+      </tr>
+      <tr>
+        <th scope="row">Look for the "Internal margin" text on every page and detail view</th>
+        <td>Either contact</td>
+        <td>No match anywhere.</td>
+      </tr>
+      <tr>
+        <th scope="row">Read a project with one Reply and one Note</th>
+        <td>Northline contact</td>
+        <td>The Reply only.</td>
+      </tr>
+      <tr>
+        <th scope="row">Move a Northline task to a Harbor project, leave Company unchanged</th>
+        <td>Harbor contact</td>
+        <td>The task stays hidden. The rule follows Company, not Project. Fix the mismatch.</td>
+      </tr>
+      <tr>
+        <th scope="row">Open every page and every company</th>
+        <td>Staff (Team Admin)</td>
+        <td>All records, all companies, internal fields and Notes.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+Log each result in the [permission-check sheet](/resources/portal-permission-checks.csv). One wrong row is a stop. Do not invite a real client until every row matches. The [launch checklist](/guides/client-portal-launch/) has the full two-client test.
+
+## Where Fillout fits
+
+You may not need it. Each Noloco view comes with a form for creating records. Sections can have their own visibility rules. Validation rules need Build.
+
+Public forms are less clear. Noloco documents public forms that anyone can submit without logging in. The same page says you must enable Settings → Public Access, which the pricing table lists as Build and above. If you need a public intake form on Free, test it on your plan before you rely on it.
+
+Add Fillout when the intake itself is the hard part: page branching, a Stripe payment step, or a long brief. Fillout documents writing responses into Airtable, and Noloco reads Airtable with live sync on Build. This guide does not cover a direct Fillout connection to Noloco Tables. Fillout Free allows 1,000 responses a month. Starter costs $15/month billed yearly or $19 billed monthly. The [Fillout intake guide](/guides/fillout-intake-to-airtable/) covers the form side.
+
+## When Noloco is the wrong tool
+
+- **Clients only need to read one status page.** A shared document or a weekly email costs nothing. Buy nothing until clients ask for self-service.
+- **Your team works in Google Sheets and needs same-day updates.** Sheets sync is scheduled, not live. Move the data to Airtable or Noloco Tables, or choose a tool that reads the sheet directly.
+- **The job is mostly client-facing and staff work lives elsewhere.** Noloco's strength is staff and clients on the same records. If staff already run projects in another tool, compare [Softr vs Noloco](/compare/softr-vs-noloco/).
+- **Intake forms are the main job.** Noloco forms create records well. They do not replace a form builder. Read [Softr vs Noloco](/compare/softr-vs-noloco/), which covers when to add Fillout.
+- **You need more than 50 active clients on $0.** Free stops at 50 active clients and 2,000 records. Price Build honestly with the [cost worksheet](/guides/portal-costs/) before you commit.
+
+<NextSteps
+  items={[
+    {
+      to: "/guides/client-portal-launch/",
+      title: "Run the two-client launch test",
+      product: "noloco",
+    },
+    {
+      to: "/compare/softr-vs-noloco/",
+      title: "Softr or Noloco: costs at six team sizes",
+    },
+    {
+      to: "/guides/fillout-intake-to-airtable/",
+      title: "Build the intake form in Fillout",
+      product: "fillout",
+    },
+    { to: "/noloco/pricing/", title: "Check current Noloco pricing", product: "noloco" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "nolocoRoles",
+    "nolocoRecordRules",
+    "nolocoAccess",
+    "nolocoQuickStart",
+    "nolocoUserTable",
+    "nolocoUserLists",
+    "nolocoLoggedInFilter",
+    "nolocoSync",
+    "nolocoWorkflow",
+    "nolocoPortal",
+    "nolocoForms",
+    "nolocoPublicForms",
+    "nolocoPricing",
+    "nolocoPricingGuide",
+    "filloutAirtable",
+    "filloutPageLogic",
+    "filloutPayments",
+    "filloutPricing",
+  ]}
+/>

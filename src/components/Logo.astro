@@ -1,0 +1,58 @@
+---
+// Wellpick mark: one continuous stroke drawn as a W whose last stroke rises
+// past the others into a tick, "well picked". The stroke runs through the
+// three chapter colors in workflow order (intake, portal, team); tone="mono"
+// draws it in currentColor for small or single-color uses.
+// With `word`, the wordmark follows the mark. The link around it carries
+// the accessible name; the SVG is decorative.
+interface Props {
+  size?: number;
+  tone?: 'color' | 'mono';
+  word?: boolean;
+  class?: string;
+}
+const { size = 28, tone = 'color', word = false, class: cls } = Astro.props;
+const id = `wp-${Math.random().toString(36).slice(2, 8)}`;
+---
+
+<span class:list={['logo', cls]} style={`--logo-size: ${size}px`}>
+  <svg width={size} height={size} viewBox="0 0 32 32" aria-hidden="true" focusable="false" class="logo-mark">
+    {
+      tone === 'color' && (
+        <defs>
+          <linearGradient id={id} x1="3" y1="0" x2="29.5" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0" style="stop-color: var(--logo-1, var(--fillout))" />
+            <stop offset="0.52" style="stop-color: var(--logo-2, var(--softr))" />
+            <stop offset="1" style="stop-color: var(--logo-3, var(--noloco))" />
+          </linearGradient>
+        </defs>
+      )
+    }
+    <path
+      d="M3.6 10.4 9.4 24.2 16 13.4 22.4 24.2 29.2 5.2"
+      fill="none"
+      stroke={tone === 'color' ? `url(#${id})` : 'currentColor'}
+      stroke-width="4.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"></path>
+  </svg>
+  {word && <span class="logo-word">Wellpick</span>}
+</span>
+
+<style>
+  .logo {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--logo-size) * 0.3);
+    color: inherit;
+  }
+  .logo-mark { flex: none; overflow: visible; }
+  .logo-word {
+    font-size: calc(var(--logo-size) * 0.78);
+    font-weight: 800;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    white-space: nowrap;
+  }
+</style>

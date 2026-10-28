@@ -1,0 +1,276 @@
+---
+// The blog index (v13). Benchmarked in BLOG-BENCHMARK.md: a short hero after
+// daily.dev's blog head, a lead story with three latest beside it after
+// Customer.io's blog, topic tabs with counts after Mintlify's category bar
+// and Customer.io's topic counts, then every post as a dense ruled row after
+// daily.dev's list (topic, date, reading time, title, one line).
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostArt from '../../components/PostArt.astro';
+import Glyph from '../../components/Glyph.astro';
+import Icon from '../../components/Icon.astro';
+import { TOPICS, TOPIC_IDS, type TopicId } from '../../data/blog';
+import { getPosts, postSlug, readingMinutes } from '../../lib/posts';
+import { formatDate, isoDate } from '../../lib/format';
+import { SITE } from '../../lib/site';
+
+const posts = await getPosts();
+const lead = posts.find((p) => p.data.featured) ?? posts[0];
+const latest = posts.filter((p) => p !== lead).slice(0, 3);
+const topicOf = (p: (typeof posts)[number]) => p.data.topic as TopicId;
+const counts = Object.fromEntries(TOPIC_IDS.map((t) => [t, posts.filter((p) => p.data.topic === t).length]));
+const filters = [{ id: 'all', label: 'All posts', count: posts.length }, ...TOPIC_IDS.filter((t) => counts[t] > 0).map((t) => ({ id: t, label: TOPICS[t].label, count: counts[t] }))];
+
+const site = Astro.site ?? Astro.url;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  name: `${SITE.name} blog`,
+  url: new URL('/blog/', site).href,
+  blogPost: posts.map((p) => ({
+    '@type': 'BlogPosting',
+    headline: p.data.title,
+    url: new URL(postSlug(p), site).href,
+    datePublished: isoDate(p.data.publishedAt),
+  })),
+};
+---
+
+<BaseLayout
+  title="Blog: client work, software, AI and the web"
+  description="Sourced reads for small service businesses: client intake, portals, operations, AI builders, web basics and buying software without surprises."
+  jsonLd={jsonLd}
+>
+  <section class="b-hero">
+    <div class="shell">
+      <h1 data-reveal>Field notes for client work. <span class="tone-2">Forms, portals, AI and the web.</span></h1>
+      <p class="lead" data-reveal style="--rd: 120ms">
+        Short, sourced reads for small service businesses: how the tools behave, what they cost, and where AI and the web change the job.
+      </p>
+    </div>
+  </section>
+
+  <section class="b-top" aria-label="Latest posts">
+    <div class="shell b-top-grid">
+      <a class="b-lead" href={postSlug(lead)} data-reveal="media">
+        <PostArt topic={topicOf(lead)} seed={lead.id} size="lead" />
+        <span class="b-meta">
+          <span class="topic-tag" data-topic={topicOf(lead)}>{TOPICS[topicOf(lead)].label}</span>
+          <time datetime={isoDate(lead.data.publishedAt)}>{formatDate(lead.data.publishedAt)}</time>
+          <span class="num">{readingMinutes(lead.body)} min read</span>
+        </span>
+        <h2 class="b-lead-title">{lead.data.title}</h2>
+        <p class="b-lead-desc">{lead.data.description}</p>
+      </a>
+      <ul class="b-side" data-reveal-stagger="90">
+        {
+          latest.map((p) => (
+            <li data-reveal>
+              <a href={postSlug(p)}>
+                <PostArt topic={topicOf(p)} seed={p.id} class="b-side-art" />
+                <span class="b-side-text">
+                  <span class="b-meta">
+                    <span class="topic-tag" data-topic={topicOf(p)}>{TOPICS[topicOf(p)].label}</span>
+                    <span class="num">{readingMinutes(p.body)} min read</span>
+                  </span>
+                  <span class="b-side-title">{p.data.title}</span>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="b-all" aria-labelledby="b-all-title">
+    <div class="shell">
+      <div class="b-all-head">
+        <h2 id="b-all-title">Every post</h2>
+        <p class="b-blurb" aria-live="polite" data-blurb>Newest first. Pick a topic to narrow the list.</p>
+      </div>
+      <div class="b-filter" role="group" aria-label="Filter posts by topic">
+        {
+          filters.map((f, i) => (
+            <button
+              type="button"
+              data-filter={f.id}
+              data-blurb-text={f.id === 'all' ? 'Newest first. Pick a topic to narrow the list.' : TOPICS[f.id as TopicId].blurb}
+              aria-pressed={i === 0 ? 'true' : 'false'}
+            >
+              {f.label}
+              <span class="b-count num">{f.count}</span>
+            </button>
+          ))
+        }
+      </div>
+      <ol class="b-list">
+        {
+          posts.map((p) => (
+            <li data-topic={topicOf(p)}>
+              <a href={postSlug(p)}>
+                <span class="b-row-glyph" data-chapter={TOPICS[topicOf(p)].chapter ?? undefined} data-ink={TOPICS[topicOf(p)].chapter ? undefined : ''}>
+                  <Glyph name={TOPICS[topicOf(p)].glyph} tone="canvas" size="2.75rem" />
+                </span>
+                <span class="b-row-text">
+                  <span class="b-meta">
+                    <span class="topic-tag" data-topic={topicOf(p)}>{TOPICS[topicOf(p)].label}</span>
+                    <time datetime={isoDate(p.data.publishedAt)}>{formatDate(p.data.publishedAt)}</time>
+                    <span class="num">{readingMinutes(p.body)} min read</span>
+                  </span>
+                  <span class="b-row-title">{p.data.title}</span>
+                  <span class="b-row-desc">{p.data.description}</span>
+                </span>
+                <span class="b-row-arrow" aria-hidden="true"><Icon name="arrow-right-linear" size="1.25rem" /></span>
+              </a>
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  // Topic tabs: one pressed at a time; rows outside the topic hide. With
+  // JavaScript off every row stays visible and the tabs do nothing harmful.
+  const buttons = [...document.querySelectorAll<HTMLButtonElement>('.b-filter button')];
+  const rows = [...document.querySelectorAll<HTMLElement>('.b-list li')];
+  const blurb = document.querySelector<HTMLElement>('[data-blurb]');
+  for (const b of buttons) {
+    b.addEventListener('click', () => {
+      const f = b.dataset.filter ?? 'all';
+      buttons.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      rows.forEach((r) => (r.hidden = f !== 'all' && r.dataset.topic !== f));
+      if (blurb) blurb.textContent = b.dataset.blurbText ?? '';
+    });
+  }
+</script>
+
+<style>
+  .b-hero { padding-block: clamp(2rem, 1.5rem + 2.5vw, 4rem) clamp(1.5rem, 1rem + 2vw, 3rem); }
+  .b-hero h1 { font-size: clamp(2.4rem, 1.4rem + 4vw, 4.75rem); line-height: 0.98; max-width: 17ch; }
+  .b-hero .lead { margin-top: var(--s-5); max-width: 54ch; }
+
+  /* Lead story and three latest (Customer.io's blog head). */
+  .b-top-grid { display: grid; gap: var(--s-7); }
+  @media (min-width: 64rem) {
+    .b-top-grid { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: var(--s-8); align-items: start; }
+  }
+  .b-lead { display: grid; gap: var(--s-3); color: var(--ink); text-decoration: none; }
+  .b-lead :global(.post-art) { margin-bottom: var(--s-3); }
+  .b-lead-title {
+    font-size: clamp(1.6rem, 1.1rem + 1.9vw, 2.6rem);
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    max-width: 22ch;
+    text-wrap: balance;
+  }
+  .b-lead-desc { color: var(--ink-2); max-width: 56ch; font-size: 1.0625rem; line-height: 1.55; }
+  .b-lead:hover .b-lead-title { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 0.12em; }
+
+  .b-side { list-style: none; margin: 0; padding: 0; display: grid; }
+  .b-side li + li { border-top: 1px solid var(--line); }
+  .b-side li:first-child a { padding-top: 0; }
+  .b-side a {
+    display: grid;
+    /* A share of the row, not rems, so enlarged text never squeezes the title. */
+    grid-template-columns: minmax(0, 32%) minmax(0, 1fr);
+    gap: var(--s-5);
+    align-items: center;
+    padding-block: var(--s-5);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .b-side :global(.b-side-art) { border-radius: var(--r-frame); }
+  .b-side-title { font-size: 1.1875rem; font-weight: 700; line-height: 1.25; letter-spacing: -0.015em; text-wrap: pretty; overflow-wrap: anywhere; hyphens: auto; }
+  .b-side a:hover .b-side-title { text-decoration: underline; text-underline-offset: 0.15em; }
+  @media (max-width: 30rem) {
+    .b-side a { gap: var(--s-4); }
+    .b-side-title { font-size: 1.0625rem; }
+  }
+
+  /* Meta line: a topic tag (chapter swatch or ink square), date, minutes. */
+  .b-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem var(--s-4);
+    font-size: 0.8125rem;
+    font-weight: 560;
+    line-height: 1.4;
+    color: var(--muted);
+  }
+  /* Every post: daily.dev's dense list, on this site's ruled rows. */
+  .b-all { padding-block: clamp(3.5rem, 2.5rem + 4vw, 6.5rem) var(--section); }
+  .b-all-head { display: grid; gap: var(--s-2); }
+  .b-all-head h2 { font-size: var(--step-3); letter-spacing: -0.025em; }
+  .b-blurb { color: var(--ink-2); min-height: 1.6em; }
+  .b-filter {
+    display: flex;
+    gap: 0 var(--s-5);
+    margin-top: var(--s-5);
+    border-bottom: 1px solid var(--line);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .b-filter::-webkit-scrollbar { display: none; }
+  .b-filter button {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--muted);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out), border-color var(--t-fast) var(--ease-out);
+  }
+  .b-filter button:hover { color: var(--ink); }
+  .b-filter button[aria-pressed='true'] { color: var(--ink); border-bottom-color: var(--ink); }
+  .b-count {
+    min-width: 1.5rem;
+    padding: 0.05rem 0.4rem;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    font-size: 0.75rem;
+    font-weight: 650;
+    text-align: center;
+    color: var(--ink-2);
+  }
+
+  .b-list { list-style: none; margin: 0; padding: 0; }
+  .b-list li { border-bottom: 1px solid var(--line); }
+  .b-list li[hidden] { display: none; }
+  .b-list a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: var(--s-5);
+    align-items: start;
+    padding-block: var(--s-6);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  @media (min-width: 48rem) {
+    .b-list a { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; padding-inline: var(--s-3); }
+  }
+  .b-row-glyph { display: block; line-height: 0; }
+  /* Wider topics: the ink field's slate, a step lighter on the dark canvas
+     so the tile never turns into a white block (--ink flips with the theme). */
+  .b-row-glyph[data-ink] :global(.glyph) { --ch: oklch(0.26 0.03 262); }
+  :global([data-theme='dark']) .b-row-glyph[data-ink] :global(.glyph) { --ch: oklch(0.36 0.06 266); }
+  .b-row-text, .b-side-text { display: grid; gap: var(--s-2); min-width: 0; overflow-wrap: anywhere; }
+  .b-row-title { font-size: clamp(1.1875rem, 1rem + 0.6vw, 1.4375rem); font-weight: 720; line-height: 1.2; letter-spacing: -0.02em; text-wrap: pretty; }
+  .b-row-desc { color: var(--ink-2); max-width: 72ch; line-height: 1.5; }
+  .b-row-arrow { display: none; color: var(--muted); transition: translate var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out); }
+  @media (min-width: 48rem) { .b-row-arrow { display: block; } }
+  .b-list a { transition: background-color var(--t-fast) var(--ease-out); border-radius: var(--r-btn); }
+  .b-list a:hover { background: color-mix(in oklab, var(--surface-2) 55%, transparent); }
+  .b-list a:hover .b-row-arrow { translate: 4px 0; color: var(--ink); }
+  .b-list a:hover .b-row-title { text-decoration: underline; text-underline-offset: 0.15em; }
+</style>

@@ -1,0 +1,303 @@
+---
+// Every long-form page: guides, comparisons, editorial pages and blog posts.
+import type { MarkdownHeading } from 'astro';
+import BaseLayout from './BaseLayout.astro';
+import Icon from '../components/Icon.astro';
+import ProductTag from '../components/ProductTag.astro';
+import Shot from '../components/Shot.astro';
+import Cover from '../components/Cover.astro';
+import PostArt from '../components/PostArt.astro';
+import type { ProductId } from '../lib/site';
+import { TOPICS, type TopicId } from '../data/blog';
+import { formatDate, isoDate } from '../lib/format';
+
+interface Props {
+  title: string;
+  description: string;
+  kind: 'guide' | 'comparison' | 'page' | 'post';
+  breadcrumbs: { label: string; href?: string }[];
+  /** Guide stage shown in the meta line, e.g. "Build stage" */
+  stageLabel?: string;
+  headings?: MarkdownHeading[];
+  products?: ProductId[];
+  readingMinutes?: number;
+  cover?: { name: string; alt: string };
+  jsonLd?: object | object[];
+  /** Blog posts: topic, dates and the slug that seeds the cover art */
+  post?: { topic: TopicId; publishedAt: Date; updatedAt: Date; seed: string };
+  /** Shorter <title> for search results; the H1 keeps the full title */
+  seoTitle?: string;
+}
+const {
+  title,
+  description,
+  kind,
+  breadcrumbs,
+  stageLabel,
+  headings = [],
+  products = [],
+  readingMinutes,
+  cover,
+  jsonLd,
+  post,
+  seoTitle,
+} = Astro.props;
+const toc = headings.filter((h) => h.depth === 2);
+const hasToc = toc.length > 2;
+const chapter = products[0];
+const hasMeta = products.length > 0 || stageLabel || readingMinutes || post;
+const updated = post && isoDate(post.updatedAt) !== isoDate(post.publishedAt) ? post.updatedAt : undefined;
+// Comparisons have no single product cover; they get the card cover system
+// (both products' lit fields, glyphs and screens) beside the title on wide screens.
+const heroCover = !cover && kind === 'comparison' && products.length > 0;
+// No breadcrumb trail (the header is one glance away); nested pages get one
+// way back to the list they came from, after Mintlify's "All articles".
+const parent = breadcrumbs.length > 2 ? breadcrumbs[breadcrumbs.length - 2] : undefined;
+const back = parent && { href: parent.href, label: parent.label === 'Compare' ? 'Comparisons' : parent.label === 'Blog' ? 'Posts' : parent.label };
+---
+
+<BaseLayout title={seoTitle ?? title} description={description} chapter={chapter} jsonLd={jsonLd}>
+  <article class:list={['article', `article-${kind}`]} data-single-chapter={products.length === 1 ? '' : undefined}>
+    <header class="a-hero">
+      <div class:list={['shell', 'a-hero-inner', { 'has-cover': heroCover }]}>
+        {
+          back?.href && (
+            <a class="a-back" href={back.href}>
+              <span class="a-back-icon" aria-hidden="true"><Icon name="arrow-left-linear" size="1rem" /></span>
+              All {back.label.toLowerCase()}
+            </a>
+          )
+        }
+        <h1>{title}</h1>
+        <p class="lead a-lead">{description}</p>
+        {
+          hasMeta && (
+            <div class="a-meta">
+              {post && (
+                <span class="topic-tag" data-topic={post.topic}>{TOPICS[post.topic].label}</span>
+              )}
+              {post && (
+                <span class="a-date">
+                  <time datetime={isoDate(post.publishedAt)}>{formatDate(post.publishedAt)}</time>
+                  {updated && <> · Updated <time datetime={isoDate(updated)}>{formatDate(updated)}</time></>}
+                </span>
+              )}
+              {products.length > 0 && (
+                <span class="a-tags">
+                  {products.map((p) => (
+                    <ProductTag product={p} link />
+                  ))}
+                </span>
+              )}
+              {stageLabel && <span class="a-stage">{stageLabel}</span>}
+              {readingMinutes && <span class="a-time num">{readingMinutes} min read</span>}
+            </div>
+          )
+        }
+        {heroCover && (
+          <div class="a-hero-cover">
+            <Cover products={products.slice(0, 2)} sizes="(min-width: 64rem) 34rem, 92vw" />
+          </div>
+        )}
+      </div>
+      {
+        cover && (
+          <div class="shell a-cover">
+            <Shot name={cover.name} alt={cover.alt} loading="eager" sizes="(min-width: 82rem) 70rem, 94vw" />
+          </div>
+        )
+      }
+      {
+        post && (
+          <div class="shell a-cover">
+            <PostArt topic={post.topic} seed={post.seed} size="lead" class="a-post-art" />
+          </div>
+        )
+      }
+    </header>
+
+    <div class:list={['shell', 'a-body', { 'has-toc': hasToc }]}>
+      {
+        hasToc && (
+          <aside class="toc" aria-label="On this page">
+            <details class="toc-row">
+              <summary>On this page</summary>
+              <ol>
+                {toc.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </details>
+            <div class="toc-list">
+              <p class="toc-label">On this page</p>
+              <ol>
+                {toc.map((h) => (
+                  <li>
+                    <a href={`#${h.slug}`}>{h.text}</a>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </aside>
+        )
+      }
+      <div class="prose">
+        <slot />
+      </div>
+    </div>
+    <slot name="after" />
+  </article>
+</BaseLayout>
+
+<script>
+  // Table of contents: mark the section in view (both the phone row and the desktop list).
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('.toc a')];
+  const targets = [...new Set(links.map((a) => decodeURIComponent(a.hash.slice(1))))]
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+  const io = new IntersectionObserver(
+    (entries) => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        links.forEach((a) => a.toggleAttribute('aria-current', decodeURIComponent(a.hash.slice(1)) === e.target.id));
+      }
+    },
+    { rootMargin: '-20% 0px -70% 0px' },
+  );
+  targets.forEach((t) => io.observe(t));
+  // Choosing a section on a phone closes the row so the heading is not hidden under it.
+  const row = document.querySelector<HTMLDetailsElement>('.toc-row');
+  row?.addEventListener('click', (e) => {
+    if ((e.target as Element).closest('a')) row.open = false;
+  });
+</script>
+
+<style>
+  /* Reading progress lives on the site header's lower edge (SiteHeader). */
+
+  /* Header: trail, title, one line of lead, then a quiet meta line. */
+  .a-hero { padding-block: clamp(1.75rem, 1.2rem + 2.6vw, 4rem) clamp(2rem, 1.5rem + 2vw, 3.5rem); }
+  .a-hero-inner { display: grid; justify-items: start; }
+  .a-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 2.75rem;
+    margin-bottom: clamp(1rem, 0.8rem + 1vw, 1.75rem);
+    font-size: 0.9375rem;
+    font-weight: 620;
+    color: var(--ink-2);
+    text-decoration: none;
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .a-back-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background: var(--ink);
+    color: var(--on-ink);
+    transition: translate var(--t-fast) var(--ease-out);
+  }
+  .a-back:hover { color: var(--ink); }
+  .a-back:hover .a-back-icon { translate: -3px 0; }
+  /* Article titles run 25 to 45 characters: two lines at desktop, never more
+     than three, and at 390px no line holds a single word. */
+  .a-hero h1 {
+    font-size: clamp(2rem, 1.4rem + 3.2vw, 4rem);
+    line-height: 1;
+    max-width: 22ch;
+  }
+  .a-lead { max-width: 52ch; margin-top: var(--s-5); }
+  .a-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2) var(--s-5);
+    margin-top: var(--s-5);
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+  .a-tags { display: inline-flex; flex-wrap: wrap; gap: var(--s-2) var(--s-5); }
+  .a-stage { color: var(--ink); font-weight: 600; }
+  .a-time, .a-date { color: var(--muted); }
+  .a-cover { margin-top: clamp(2rem, 1.5rem + 2vw, 3rem); }
+  /* Blog posts: the drawn cover runs the shell width at a banner ratio
+     (daily.dev's post hero), shorter on wide screens so the prose arrives. */
+  .a-cover :global(.a-post-art) { aspect-ratio: 16 / 9; }
+  @media (min-width: 64rem) { .a-cover :global(.a-post-art) { aspect-ratio: 21 / 8; } }
+  @media (min-width: 64rem) {
+    .a-hero-inner.has-cover { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); column-gap: var(--s-8); align-items: start; }
+    .a-hero-inner.has-cover > :not(.a-hero-cover) { grid-column: 1; }
+    .a-hero-cover { grid-column: 2; grid-row: 1 / span 4; align-self: center; }
+  }
+  .a-hero-cover { width: 100%; margin-top: var(--s-6); }
+  @media (min-width: 64rem) { .a-hero-cover { margin-top: 0; } }
+
+  /* The reading column is wider than the measure: prose keeps ~66ch while
+     tables, figures and the calculator use the full column beside the contents. */
+  .a-body { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s-6); padding-bottom: var(--s-8); }
+  .a-body > * { min-width: 0; }
+  .a-body .prose { max-width: 60rem; }
+  @media (min-width: 64rem) {
+    .a-body.has-toc { grid-template-columns: 14rem minmax(0, 1fr); gap: clamp(2.5rem, 1rem + 3vw, 4.5rem); }
+    .toc { position: sticky; top: calc(var(--header-h) + 2.5rem); align-self: start; max-height: calc(100dvh - var(--header-h) - 4rem); overflow: auto; }
+  }
+
+  /* Contents. Phones: one full-width ruled row that opens the list.
+     Desktop: a sticky ruled list; the section in view turns ink and bolder. */
+  .toc ol { list-style: none; margin: 0; padding: 0; }
+  .toc a {
+    display: block;
+    padding-block: 0.6rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color var(--t-fast) var(--ease-out);
+  }
+  .toc a:hover { color: var(--ink); }
+  .toc a[aria-current] { color: var(--ink); font-weight: 650; }
+  .toc li + li { border-top: 1px solid var(--line); }
+
+  .toc-row { border-block: 1px solid var(--line); }
+  .toc-row summary {
+    position: relative;
+    display: block;
+    min-height: 2.75rem;
+    padding: 0.8rem 2rem 0.8rem 0;
+    cursor: pointer;
+    list-style: none;
+    font-size: 0.9375rem;
+    font-weight: 650;
+    line-height: 1.4;
+    color: var(--ink);
+  }
+  .toc-row summary::-webkit-details-marker { display: none; }
+  .toc-row summary::before,
+  .toc-row summary::after {
+    content: '';
+    position: absolute;
+    right: 0.25rem;
+    top: 50%;
+    width: 0.75rem;
+    height: 1.5px;
+    margin-top: -0.75px;
+    background: currentColor;
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  .toc-row summary::after { transform: rotate(90deg); }
+  .toc-row[open] summary::after { transform: rotate(0deg); }
+  .toc-row ol { border-top: 1px solid var(--line); padding-bottom: 0.25rem; }
+  .toc-row a { font-size: 0.9375rem; padding-block: 0.75rem; }
+  .toc-list { display: none; }
+  @media (min-width: 64rem) {
+    .toc-row { display: none; }
+    .toc-list { display: block; }
+    .toc-label { font-size: 0.875rem; font-weight: 650; line-height: 1.4; color: var(--ink); padding-bottom: 0.6rem; border-bottom: 1px solid var(--ink); }
+  }
+</style>

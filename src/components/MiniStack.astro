@@ -1,0 +1,51 @@
+---
+// Three vendor screens fanned in CSS 3D. Decorative companion for index-page
+// heroes (the same screens appear with full alt text elsewhere), desktop only.
+import { vendorImage } from '../lib/media';
+
+interface Props {
+  items: { name: string; chapter: 'fillout' | 'softr' | 'noloco' }[];
+}
+const { items } = Astro.props;
+const layers = items.map((i) => ({ ...i, img: vendorImage(i.name) }));
+---
+
+<div class="mini" aria-hidden="true">
+  <div class="mini-inner">
+    {
+      layers.map((l, i) => (
+        <div class="mini-layer" data-chapter={l.chapter} style={`--i:${i}`}>
+          <img src={l.img.src} width={l.img.width} height={l.img.height} alt="" loading="eager" decoding="async" />
+        </div>
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  /* The slabs are placed so that, after the 3D turn and at full hover lift,
+     they stay inside the box: the top padding is the clearance above the
+     nearest slab, so it never meets the header or the section edge. */
+  .mini { display: none; perspective: 1600px; padding-top: calc(10% + 1.25rem); }
+  @media (min-width: 64rem) { .mini { display: block; } }
+  .mini-inner {
+    position: relative;
+    aspect-ratio: 1.3;
+    transform-style: preserve-3d;
+    transform: rotateX(24deg) rotateY(-26deg) rotateZ(5deg);
+  }
+  .mini-layer {
+    position: absolute;
+    left: calc(8.5% + var(--i) * 12%);
+    top: calc(44% - var(--i) * 19%);
+    width: 64%;
+    padding: 1.6%;
+    border-radius: 13px;
+    background: var(--ch);
+    transform: translateZ(calc(var(--i) * 50px));
+    box-shadow: 0 30px 60px -30px oklch(0.15 0.03 262 / 0.55);
+    transition: transform var(--t-fast) var(--ease-out);
+  }
+  .mini:hover .mini-layer { transform: translateZ(calc(var(--i) * 65px)); }
+  .mini-layer img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; border-radius: 9px; background: oklch(0.97 0.004 262); }
+</style>

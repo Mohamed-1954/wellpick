@@ -1,0 +1,110 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { breadcrumbSchema } from '../../lib/breadcrumbSchema';
+import CompareList from '../../components/CompareList.astro';
+import MiniStack from '../../components/MiniStack.astro';
+import { getPricing } from '../../lib/pricing';
+
+const comparisons = (await getCollection('articles', (a) => a.data.type === 'comparison' && !a.data.draft)).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+const pricing = await Promise.all((['fillout', 'softr', 'noloco'] as const).map(async (id) => ({ id, ...(await getPricing(id)) })));
+const rows = [
+  { label: 'Main job', fillout: 'Collect the brief', softr: 'Client portal', noloco: 'Portal plus team operations' },
+  { label: 'Paid plans from (billed yearly)', fillout: '', softr: '', noloco: '' },
+  { label: 'Free plan', fillout: '1,000 responses a month', softr: '5 app users in total', noloco: '50 clients, Noloco Tables only' },
+  { label: 'Client logins', fillout: 'Login forms from Starter', softr: '5 on Basic, 50 on Pro', noloco: '1,000 active clients on Build' },
+  { label: 'Access control', fillout: 'Login pages; update links expose the whole record', softr: 'User groups; write restrictions on Business', noloco: 'Server-side record and field permissions' },
+  { label: 'Forms', fillout: 'Page logic, payments, update links', softr: 'Unlimited standalone forms', noloco: 'Forms on views and public forms' },
+];
+for (const p of pricing) {
+  const first = p.plans.find((x) => (x.yearlyMonthly ?? 0) > 0);
+  rows[1][p.id] = first ? `$${first.yearlyMonthly}/mo (${first.name})` : 'n/a';
+}
+const site = Astro.site ?? Astro.url;
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Same job. Different tools.',
+    url: Astro.url.href,
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: comparisons.map((comparison, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: comparison.data.title,
+        url: new URL(`/${comparison.id}/`, site).href,
+      })),
+    },
+  },
+  breadcrumbSchema([{ label: 'Home', href: '/' }, { label: 'Compare' }], site),
+];
+---
+
+<BaseLayout
+  title="Compare Fillout, Softr and Noloco"
+  description="Head-to-head comparisons for small service businesses: the same client job, different tools, documented differences and a pick for each situation."
+  jsonLd={jsonLd}
+  closing
+>
+  <section class="c-hero">
+    <div class="shell c-hero-grid">
+      <div class="c-hero-copy">
+        <h1>Same job. Different tools.</h1>
+        <p class="lead">Each comparison puts two setups on the same client work, lists the documented differences, then makes a pick for each situation, including buying nothing.</p>
+      </div>
+      <MiniStack items={[{ name: 'fillout-airtable-sync.png', chapter: 'fillout' }, { name: 'softr-crm.webp', chapter: 'softr' }, { name: 'noloco-crm-canvas.png', chapter: 'noloco' }]} />
+    </div>
+  </section>
+
+  <section class="c-list-band" aria-label="Comparisons">
+    <div class="shell">
+      <CompareList items={comparisons} />
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="glance-title">
+    <div class="shell">
+      <h2 id="glance-title">The three tools at a glance.</h2>
+      <p class="lead glance-lead">The documented facts side by side. Each tool’s guide links them to their sources.</p>
+      <div class="table-scroll" role="region" aria-label="Fillout, Softr and Noloco at a glance" tabindex="0">
+        <table class="data-table glance" data-stack role="table">
+          <thead role="rowgroup">
+            <tr role="row">
+              <th scope="col" role="columnheader"><span class="sr-only">Attribute</span></th>
+              <th scope="col" role="columnheader" data-chapter="fillout"><a href="/fillout/">Fillout</a></th>
+              <th scope="col" role="columnheader" data-chapter="softr"><a href="/softr/">Softr</a></th>
+              <th scope="col" role="columnheader" data-chapter="noloco"><a href="/noloco/">Noloco</a></th>
+            </tr>
+          </thead>
+          <tbody role="rowgroup">
+            {rows.map((r) => (
+              <tr role="row">
+                <th scope="row" role="rowheader">{r.label}</th>
+                <td role="cell" data-label="Fillout" data-chapter="fillout">{r.fillout}</td>
+                <td role="cell" data-label="Softr" data-chapter="softr">{r.softr}</td>
+                <td role="cell" data-label="Noloco" data-chapter="noloco">{r.noloco}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .c-hero { padding-block: clamp(2rem, 1.5rem + 3vw, 4.5rem) var(--s-7); }
+  .c-hero-grid { display: grid; gap: var(--s-6); align-items: center; }
+  @media (min-width: 64rem) { .c-hero-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
+  .c-hero-copy { display: grid; gap: var(--s-4); justify-items: start; }
+  .c-hero h1 { font-size: var(--step-5); max-width: 12ch; margin-top: var(--s-3); }
+  .c-list-band { padding-bottom: var(--s-4); }
+  .glance-lead { margin-block: var(--s-4) var(--s-6); max-width: 56ch; }
+  .glance { min-width: 44rem; }
+  @media (max-width: 40rem) { .glance { min-width: 0; } }
+  .glance thead th a { color: var(--ink); font-size: 1rem; text-decoration: none; }
+  .glance tbody th { width: 14rem; }
+</style>

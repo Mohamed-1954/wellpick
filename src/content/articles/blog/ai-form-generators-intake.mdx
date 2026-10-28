@@ -1,0 +1,87 @@
+---
+title: "AI form generators make a fast first draft. Your intake form needs a second one"
+seoTitle: "AI form generators for client intake forms"
+description: "An AI form builder writes questions, field types and logic in seconds. Five edits turn that draft into an intake form that produces usable briefs."
+type: post
+topic: ai
+products: [fillout]
+sourceIds: [filloutAiForms, filloutLogic, filloutPageLogic, filloutUrlParams, filloutAirtable]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Use the AI draft for structure: field types, page breaks and a theme. Then
+    edit by hand for the things only you know: which answers decide the price,
+    which ones route the work, and which ones nobody on your team reads.
+  </p>
+</aside>
+
+Fillout's AI form builder page puts the promise plainly: "Describe what you need in plain words." You can also paste your questions, upload a PDF or import an existing form. The page says the AI "writes clear questions, picks the right field types, adds conditional logic and applies a theme", and that nothing goes live until you publish.
+
+For a client intake form, that removes the blank page. It does not remove the thinking. A generator knows what intake forms usually ask. It does not know what your studio needs to quote a job.
+
+Here is how we would edit an AI draft, in order.
+
+## 1. Delete every question nobody reads
+
+AI drafts are generous. Ask for "a client intake form for a web design studio" and you will get questions about goals, audience, competitors, inspiration, brand values and timeline.
+
+Go through each one and name the person who reads the answer and what they do with it. If the answer is "nobody" or "we ask again on the call anyway", delete it. Every question you cut makes the form shorter for the client and the brief shorter for you.
+
+A useful rule: if a question does not change the price, the scope, the schedule or who does the work, it belongs on the kick-off call, not the form.
+
+## 2. Turn open questions into choices where you can
+
+Generators like long-text fields because they are safe. "Tell us about your project" never gets a wrong answer. It also never gets a sortable one.
+
+Look for open questions that have a small set of real answers:
+
+- **Budget:** a few ranges you actually quote in, not a free number.
+- **Service type:** the services you sell, as a single choice.
+- **Start date:** a date field, not "when would you like to start?".
+
+Choices make filtering possible later. When the form writes into a table, a single-select field becomes a column you can sort and count.
+
+## 3. Make the logic follow your pricing, not the generator's guess
+
+Fillout's docs describe two kinds of logic. Conditional fields show or hide a question based on earlier answers, URL parameters, integration data or dates. Page logic sends the respondent to a different page.
+
+An AI draft adds logic where it seems natural, such as asking for a current website URL only if the client has one. Keep those. Then add the logic that matches how you price:
+
+- A "Website" answer goes to a page about page count and integrations.
+- A "Brand identity" answer skips that page and asks about deliverables instead.
+- A budget below your minimum shows a short note about what you can and cannot do at that level.
+
+Test every branch yourself before you share the link.
+
+## 4. Capture context without asking for it
+
+Some facts should never be a question. Where did this enquiry come from? Which page or campaign sent it?
+
+Fillout supports URL parameters and hidden fields. You register a parameter such as `source`, add a hidden field with that parameter as its default value, and share links like `?source=newsletter`. The answer arrives with the brief and the client never sees the question. Our post on [hidden fields](/blog/hidden-fields-lead-source/) explains the setup and its limits.
+
+## 5. Map every answer to a field before you publish
+
+If the form writes into Airtable, map each question to a field and check the types match: email to email, budget range to single select, files to attachments. Fillout's Airtable docs cover creating or updating records from a submission.
+
+Then submit three test briefs with fictional data and look at the table, not the form. Are the rows readable? Could a colleague quote the job from the row alone? If not, the form still needs work, however good it looked in the editor.
+
+The [Fillout to Airtable guide](/guides/fillout-intake-to-airtable/) walks through the whole build, including the update link a client can use to correct a brief.
+
+## Where AI editing still helps
+
+After the first draft, the AI is useful for small, boring changes. Fillout says you can "ask the AI for changes or edit any question yourself." Requests like "make phone optional", "add a file upload for the current logo" or "move budget to page two" are quicker to type than to click through.
+
+Keep the judgment calls for yourself: what to ask, what to cut and what each answer is for.
+
+## Questions
+
+### Is an AI-made form worse than a template?
+
+No. Both are a starting point. The AI draft is closer to your wording because you described it. Edit it the same way you would edit a template.
+
+### Does the AI form builder cost extra?
+
+Fillout's AI form builder page says you can start with a free account and no credit card. Check the current pricing page for limits before you rely on it.

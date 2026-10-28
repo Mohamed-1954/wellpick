@@ -1,0 +1,290 @@
+---
+// Product pages (hub and pricing): a full-bleed chapter band with the headline
+// on the left and the plan list on the right, both starting at the same line.
+// On hubs the product screen sits on the shell grid and the band's lower edge
+// crosses it at 40% of its height.
+import BaseLayout from './BaseLayout.astro';
+import Shot from '../components/Shot.astro';
+import OfficialCta from '../components/OfficialCta.astro';
+import Icon from '../components/Icon.astro';
+import { getProduct, type ProductId } from '../lib/site';
+import { getPricing, entryPrice } from '../lib/pricing';
+import type { ShotRef } from '../data/hubs';
+
+interface Props {
+  product: ProductId;
+  title: string;
+  description: string;
+  headline: string;
+  lead: string;
+  heroShot?: ShotRef;
+  secondary: { href: string; label: string };
+  isPricing?: boolean;
+  jsonLd?: object | object[];
+}
+const { product, title, description, headline, lead, heroShot, secondary, isPricing = false, jsonLd } = Astro.props;
+const p = await getProduct(product);
+const { plans } = await getPricing(product);
+const entry = entryPrice(plans);
+const plansLink = isPricing
+  ? { href: '#ladder-title', label: 'Compare every plan' }
+  : { href: `/${product}/pricing/`, label: 'Compare every plan and limit' };
+---
+
+<BaseLayout title={title} description={description} chapter={product} jsonLd={jsonLd}>
+  <section class:list={['p-hero', { 'has-shot': heroShot }]} data-chapter={product}>
+    <div class="shell p-grid">
+      <h1 class="p-title">{headline}</h1>
+      <p class="p-lead">{lead}</p>
+      <aside class="p-plans" aria-labelledby="p-plans-title">
+        <div class="pl-head">
+          <p id="p-plans-title" class="pl-title">{p.name} plans</p>
+          <p class="pl-basis">Per month, billed yearly</p>
+        </div>
+        <ol class="pl-list">
+          {
+            plans.map((plan) => {
+              const isEntry = plan.name === entry?.name;
+              const free = plan.yearlyMonthly === 0;
+              return (
+                <li class:list={['pl-row', { 'is-entry': isEntry }]}>
+                  <p class="pl-name">
+                    <strong>{plan.name}</strong>
+                    {isEntry && <span class="pl-start">Start here</span>}
+                  </p>
+                  <p class="pl-price num">
+                    {plan.yearlyMonthly === null ? (
+                      <span class="pl-amt"><span class="pl-fig">Custom</span></span>
+                    ) : (
+                      <span class="pl-amt">
+                        <span class="pl-fig">${plan.yearlyMonthly}</span><span class="pl-per">/mo</span>
+                      </span>
+                    )}
+                    {!free && plan.monthly != null && <span class="pl-monthly">${plan.monthly} if billed monthly</span>}
+                  </p>
+                </li>
+              );
+            })
+          }
+        </ol>
+        <div class="pl-actions">
+          <OfficialCta product={product} to="pricing" label={`See ${p.name} pricing`} placement={isPricing ? 'pricing-hero' : 'hub-hero'} onDark />
+          <a class="pl-link" href={plansLink.href}>
+            {plansLink.label} <Icon name="arrow-right-linear" />
+          </a>
+        </div>
+      </aside>
+      <a class="p-secondary" href={secondary.href}>
+        {secondary.label} <Icon name="arrow-right-linear" />
+      </a>
+    </div>
+    {
+      heroShot && (
+        <div class="shell p-shot">
+          <Shot name={heroShot.name} alt={heroShot.alt} loading="eager" sizes="(min-width: 82rem) 77rem, 92vw" />
+        </div>
+      )
+    }
+  </section>
+
+  <slot />
+</BaseLayout>
+
+<style>
+  /* The band is painted by a layer behind the content. With a hero shot, the
+     shot's own layer repaints the canvas from 40% of its height down, so the
+     band edge always crosses the screen at the same point whatever its size. */
+  .p-hero {
+    position: relative;
+    isolation: isolate;
+    padding-top: clamp(2.5rem, 1.5rem + 3.5vw, 5rem);
+    padding-bottom: clamp(3rem, 2rem + 3.5vw, 5.5rem);
+    color: var(--on-chapter);
+    --focus: var(--on-chapter);
+  }
+  /* The band is a lit chapter field like the home panels (v12): light from
+     the top right over the plan panel, depth bottom left under the headline,
+     the shared grain blended over both. AA re-measured on rendered pixels. */
+  .p-hero::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background:
+      var(--grain),
+      radial-gradient(70% 90% at 92% -10%, color-mix(in oklab, var(--ch) var(--band-lift, 90%), oklch(0.94 0.03 90)) 0%, transparent 60%),
+      radial-gradient(70% 90% at -6% 100%, var(--ch-deep) 0%, transparent 62%),
+      var(--band-base, var(--ch));
+    background-size: 160px, auto, auto, auto;
+    background-blend-mode: soft-light, normal, normal, normal;
+  }
+  /* Measured on rendered pixels: white small text on ember has no headroom,
+     so the Fillout band keeps no light and a slightly deeper base (≥ 4.5:1
+     at the 2nd-percentile pixel, grain included). */
+  .p-hero[data-chapter='fillout'] { --band-lift: 100%; --band-base: color-mix(in oklab, var(--ch) 86%, var(--ch-deep)); }
+  .p-hero.has-shot { padding-bottom: 0; }
+
+  /* Phones and tablets: headline, lead, the plan list, then the guide link. */
+  .p-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'title'
+      'lead'
+      'plans'
+      'link';
+    align-items: start;
+  }
+  .p-title { grid-area: title; }
+  .p-lead { grid-area: lead; }
+  .p-plans { grid-area: plans; }
+  .p-secondary { grid-area: link; }
+
+  /* After ClickUp's compare hero: 60px at 1440, a ≈540px measure, 3 lines
+     max. 13ch broke Noloco's headline into 4 lines; 14ch holds 3 on all six. */
+  .p-title {
+    color: inherit;
+    font-size: clamp(2.5rem, 1.6rem + 2.4vw, 3.75rem);
+    line-height: 1.06;
+    max-width: 14ch;
+  }
+  .p-lead {
+    margin-top: var(--s-5);
+    font-size: var(--step-1);
+    line-height: 1.5;
+    color: var(--on-chapter-muted);
+    max-width: 44ch;
+  }
+  .p-plans { margin-top: var(--s-7); }
+  .p-secondary {
+    justify-self: start;
+    margin-top: var(--s-6);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .p-secondary:hover { text-decoration-color: currentColor; }
+
+  @media (min-width: 64rem) {
+    .p-grid {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+      grid-template-rows: auto auto auto 1fr;
+      grid-template-areas: none;
+      column-gap: var(--s-5);
+    }
+    .p-title { grid-column: 1 / span 7; grid-row: 1; }
+    .p-lead { grid-column: 1 / span 6; grid-row: 2; }
+    .p-secondary { grid-column: 1 / span 6; grid-row: 3; }
+    .p-plans { grid-column: 8 / -1; grid-row: 1 / -1; margin-top: 0; }
+  }
+
+  /* Plan list: one set of hairlines, the entry plan on a light surface. */
+  .pl-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.25rem var(--s-4);
+    padding: 0 var(--s-4) var(--s-3);
+    border-bottom: 1px solid oklch(1 0 0 / 0.22);
+    font-size: 0.875rem;
+    line-height: 1.3;
+  }
+  .pl-title { font-size: 0.9375rem; font-weight: 700; }
+  .pl-basis { color: var(--on-chapter-muted); font-weight: 560; }
+  .pl-list { list-style: none; margin: 0; padding: 0; }
+  .pl-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-4);
+    border-bottom: 1px solid oklch(1 0 0 / 0.22);
+  }
+  .pl-row.is-entry {
+    --plan-ink: oklch(0.19 0.016 262);
+    background: var(--on-chapter);
+    color: var(--plan-ink);
+    border-radius: var(--r-btn);
+    border-bottom-color: transparent;
+    /* The fill covers the rule above it too. */
+    margin-top: -1px;
+  }
+  .pl-name { display: grid; gap: 0.15rem; }
+  .pl-name strong { font-size: 1.125rem; font-weight: 720; line-height: 1.2; }
+  .pl-start { font-size: 0.8125rem; font-weight: 650; line-height: 1.3; color: var(--ch-deep); }
+  /* Figure and "/mo" are one unit on one baseline; the monthly price sits
+     under it, both right-aligned. */
+  .pl-price {
+    display: grid;
+    justify-items: end;
+    text-align: right;
+  }
+  .pl-amt { display: inline-flex; align-items: baseline; gap: 0.15rem; white-space: nowrap; }
+  .pl-fig {
+    font-size: var(--step-3);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .pl-per { font-size: 0.9375rem; font-weight: 600; color: var(--on-chapter-muted); }
+  .pl-monthly {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.875rem;
+    line-height: 1.3;
+    color: var(--on-chapter-muted);
+  }
+  .is-entry :is(.pl-per, .pl-monthly) { color: oklch(0.4 0.016 262); }
+  .pl-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-4) var(--s-5);
+    padding: var(--s-5) var(--s-4) 0;
+  }
+  .pl-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9375rem;
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .pl-link:hover { text-decoration-color: currentColor; }
+  @media (max-width: 22rem) {
+    .pl-row, .pl-head { padding-inline: var(--s-3); }
+    .pl-actions { padding-inline: 0; }
+  }
+
+  /* The screen sits on the grid: screens at least as wide as the shell span
+     it edge to edge (H1 left edge to plan list right edge); smaller ones keep
+     their native width, left-aligned with the H1. */
+  .p-shot {
+    position: relative;
+    margin-top: clamp(3rem, 2rem + 3vw, 4.5rem);
+  }
+  .p-shot :global(.shot) { margin-inline: 0; }
+  .p-shot::before {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 40% 0 0;
+    background: var(--bg);
+    /* Full bleed without widening the page: the shadow paints sideways and
+       clip-path keeps it to this box vertically. */
+    box-shadow: 0 0 0 100vmax var(--bg);
+    clip-path: inset(0 -100vmax);
+  }
+</style>

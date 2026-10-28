@@ -1,0 +1,74 @@
+---
+title: "Accessibility for client portals and forms: a WCAG 2.2 checklist you can run in an hour"
+seoTitle: "WCAG 2.2 checklist for client portals and forms"
+description: "A one-hour accessibility check for your portal and intake form, built on WCAG 2.2, including the six criteria added in 2023 for logins and forms."
+type: post
+topic: web
+products: [fillout, softr, noloco]
+sourceIds: [wcag22New, wcag22]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    Check five things first: keyboard use, visible focus, labels on every
+    field, text contrast of at least 4.5:1, and error messages that say how to
+    fix the problem. Then check WCAG 2.2's newer rules for targets of at least
+    24 by 24 pixels, logins without puzzles, and not asking for the same
+    information twice.
+  </p>
+</aside>
+
+The people who fill in your intake form and log in to your portal are clients. Some use a screen reader. Some use only a keyboard. Some are on a phone in bright sun, or have tired eyes at the end of a long day. An inaccessible form is not a niche problem. It is a lost brief.
+
+WCAG, the Web Content Accessibility Guidelines from the W3C, is the standard most accessibility checks refer to. Version 2.2 was published in October 2023. You do not need to read all of it to catch the problems that stop clients.
+
+## The one-hour check
+
+You need a laptop, a phone and the form or portal open in a browser.
+
+**1. Put the mouse away.** Use only the Tab key, Shift+Tab, Enter and Space. Can you reach every field, button and link? Can you submit the form? Can you open and close every menu?
+
+**2. Watch the focus.** As you tab, can you always see where you are? A faint or missing outline is one of the most common failures.
+
+**3. Check every label.** Each field needs a visible label that stays when you type. A placeholder that disappears is not a label.
+
+**4. Check contrast.** Body text needs a contrast ratio of at least 4.5:1 against its background. Grey placeholder text and light buttons fail most often. A free contrast checker in the browser will tell you.
+
+**5. Make a mistake on purpose.** Leave a required field empty and submit. The error should name the field and say how to fix it, not only turn it red.
+
+**6. Zoom to 200%.** Text should get bigger without content disappearing or overlapping.
+
+**7. Repeat on a phone.** Tap every control with a thumb.
+
+## What WCAG 2.2 added
+
+The W3C lists six new success criteria in WCAG 2.2. Four of them land squarely on forms and portals:
+
+| Criterion | Level | What it means for you |
+| --- | --- | --- |
+| 2.4.11 Focus Not Obscured (Minimum) | AA | A sticky header or cookie banner must not hide the field someone is on |
+| 2.5.7 Dragging Movements | AA | Anything done by dragging, such as a kanban card, needs a non-drag alternative |
+| 2.5.8 Target Size (Minimum) | AA | Click and tap targets at least 24 by 24 CSS pixels, with some exceptions |
+| 3.2.6 Consistent Help | A | If you offer help, such as a contact link, keep it in the same place on each page |
+| 3.3.7 Redundant Entry | A | Do not make people type the same information twice in one process |
+| 3.3.8 Accessible Authentication (Minimum) | AA | Logins should not depend on a memory or puzzle test without an alternative |
+
+WCAG 2.2 also removed one older criterion, 4.1.1 Parsing, which the W3C now treats as obsolete.
+
+## What you control in a no-code tool
+
+You cannot rewrite how Fillout, Softr or Noloco render their components. You can control a lot of what goes into them:
+
+- **Wording.** Clear labels, helpful error text and instructions before the field, not after.
+- **Colors.** Theme colors for buttons, text and backgrounds. Check every combination you choose.
+- **Structure.** One question per field, logical page order, and headings that describe each section.
+- **Redundant entry.** Use prefill and hidden fields so a returning client does not type their name and email again.
+- **Login method.** Magic links and single sign-on avoid password puzzles. Check which your tool offers.
+
+If a component fails a check and you cannot fix it in settings, report it to the vendor. Accessibility bugs get fixed faster when customers ask.
+
+## Keep it going
+
+Run the one-hour check when you launch, and again whenever you change the theme or add a page. Accessibility is not a badge you earn once. It is a habit, like testing that each client sees only their own records.

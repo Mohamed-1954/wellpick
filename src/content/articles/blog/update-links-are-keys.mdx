@@ -1,0 +1,73 @@
+---
+title: "Update links are keys, not forms: what a client sees when they fix a brief"
+seoTitle: "Fillout update links: what clients can see"
+description: Fillout's Airtable update links let a client correct their own record. They can also show every field on that record. Here is what to check before you send one.
+type: post
+topic: intake
+products: [fillout]
+sourceIds: [filloutUpdate, filloutLogin, filloutAirtable, filloutUrlParams]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    An update link opens one Airtable record for editing. Fillout's docs warn
+    that anyone with the link can see every field on that record unless
+    "Restrict prefilled data" is on. Turn it on, or keep internal fields in a
+    separate table, before you send a single link.
+  </p>
+</aside>
+
+A client sends a brief with the wrong launch date. You could email back and forth, retype it, and hope nobody misreads the thread. Or you could send a link that reopens their own answers so they can fix the date themselves.
+
+Fillout calls this an update link: one URL per Airtable record that prefills a form with the record's current values and saves changes back to the same row. It is one of the most useful features in client intake. It is also the one most likely to show a client something you never meant them to see.
+
+## Why the link shows more than the form
+
+A form shows questions. An update link is built on the record behind the form. To prefill the answers, the link loads data from that record. Fillout's update-form documentation warns that this can expose fields that are not questions on the form.
+
+Think about what lives on a typical enquiry record after a week:
+
+- **Status:** "Declined" or "Waiting on budget".
+- **Internal notes:** "Slow payer last time" or "Price high, they will negotiate".
+- **Owner:** which colleague is handling it.
+- **Score or margin:** whatever your team uses to rank leads.
+
+None of those are questions. All of them can sit on the same row as the client's answers.
+
+## The two fixes the docs describe
+
+**Restrict prefilled data.** This setting limits what the link can load to the fields the form actually uses. It is the quickest fix and the one to turn on first.
+
+**Keep internal fields somewhere else.** Put staff-only data in a separate table linked to the enquiry. The client's record then holds only what the client gave you. This takes more setup, but it is safer when several forms and links touch the same base.
+
+You can do both. Restricting the link protects you from today's form. Separating the tables protects you from the form a colleague adds next year.
+
+## Who has the link is who has access
+
+An update link has no password. Whoever opens it can edit the record. That is the point, and it is also the risk.
+
+- **Links get forwarded.** A client's assistant, a contractor, a new hire. Assume the link travels.
+- **Links live a long time.** An update link sent in March still works in September unless you change the setup.
+- **Links are not identity.** A filled-in name or email on the form says what the link contained, not who opened it.
+
+If only a specific person may change a record, use a login instead. Fillout's login pages are on the Starter plan and above, and they check who the respondent is before the form opens.
+
+## A five-minute check before you send update links
+
+1. Open the update link for a test record in a private browser window.
+2. Look at every page of the form, including hidden pages and the final step.
+3. Add a note in an internal field, such as "TEST INTERNAL", and reload the link. It must not appear on any page.
+4. Change one answer and submit. Confirm that only the intended field changed in Airtable.
+5. Confirm "Restrict prefilled data" is on in the form settings. A visual check shows what the form displays; the setting controls what the link can load.
+
+Our [two-client launch test](/guides/client-portal-launch/) includes this check as one row of a longer table, next to the same tests for portals.
+
+## When an update link is the wrong tool
+
+- **The client needs to see the status of their work.** That is a portal, not a form. See [what a client portal is](/blog/what-is-a-client-portal/).
+- **Several people at the client should edit different parts.** Give each of them their own login and permissions instead of sharing one link.
+- **The record holds anything you would not show the client in a meeting.** Move those fields first, then decide.
+
+The [Fillout to Airtable guide](/guides/fillout-intake-to-airtable/) shows the full setup, including the formula field that builds each record's update link.

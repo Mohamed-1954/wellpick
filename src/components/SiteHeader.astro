@@ -1,0 +1,567 @@
+---
+// Site header (v12). After Airtable's mega panel and Mintlify's floating card:
+// the wordmark, one "Tools" panel where each tool shows its job and entry
+// price and the pointed-at tool's real screen comes forward on its lit field
+// (the brand's "pick"), then the reading sections and one action.
+// The bar is tall and open at the top of the page and condenses onto a
+// surface after scroll; long pages draw a reading-progress line on its edge.
+// Phones get a right-hand drawer over a scrim.
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import Glyph from './Glyph.astro';
+import { getPricing } from '../lib/pricing';
+import { vendorImage } from '../lib/media';
+
+const path = Astro.url.pathname;
+const COSTS = '/guides/portal-costs/';
+const isActive = (href: string) => {
+  if (href === '/') return path === '/';
+  if (href === '/guides/') return path.startsWith(href) && !path.startsWith(COSTS);
+  return path.startsWith(href);
+};
+
+const [fillout, softr, noloco] = await Promise.all([getPricing('fillout'), getPricing('softr'), getPricing('noloco')]);
+const entry = (p: typeof fillout, name: string) => p.plans.find((x) => x.name === name)?.yearlyMonthly;
+const tools = [
+  { id: 'fillout', href: '/fillout/', label: 'Fillout', job: 'Intake forms that write records', glyph: 'intake', price: entry(fillout, 'Starter'), shot: 'fillout-airtable-form.png' },
+  { id: 'softr', href: '/softr/', label: 'Softr', job: 'A client portal on your records', glyph: 'portal', price: entry(softr, 'Basic'), shot: 'softr-portal.webp' },
+  { id: 'noloco', href: '/noloco/', label: 'Noloco', job: 'Portal and team ops in one app', glyph: 'team', price: entry(noloco, 'Build'), shot: 'noloco-portal-canvas.png' },
+] as const;
+const sections = [
+  { href: '/guides/', label: 'Guides' },
+  { href: '/compare/', label: 'Compare' },
+  { href: COSTS, label: 'Costs' },
+  { href: '/blog/', label: 'Blog' },
+];
+const reading = [...sections, { href: '/methodology/', label: 'How we work' }];
+const current = tools.find((t) => path.startsWith(t.href))?.id ?? 'softr';
+const toolsActive = tools.some((t) => path.startsWith(t.href));
+---
+
+<header class="site-header">
+  <div class="bar">
+    <a href="/" class="brand" aria-label="Wellpick, home">
+      <Logo size={30} word />
+    </a>
+
+    <nav class="nav-desktop" aria-label="Main">
+      <ul class="nav-list">
+        <li class="has-panel" data-panel-root>
+          <button type="button" class="nav-item nav-trigger" aria-expanded="false" aria-controls="tools-panel" data-active={toolsActive ? '' : undefined}>
+            Tools <Icon name="alt-arrow-down-linear" class="nav-chev" size="1rem" />
+          </button>
+          <div id="tools-panel" class="tools-panel" data-panel>
+            <ul class="tp-list" aria-label="Tools we cover">
+              {
+                tools.map((t) => (
+                  <li class="tp-item" data-chapter={t.id} data-pick={t.id}>
+                    <a class="tp-main" href={t.href} aria-current={isActive(t.href) ? 'page' : undefined}>
+                      <Glyph name={t.glyph} tone="canvas" size="2.75rem" />
+                      <span class="tp-text">
+                        <span class="tp-name">{t.label}</span>
+                        <span class="tp-job">{t.job}</span>
+                      </span>
+                    </a>
+                    <a class="tp-price" href={`${t.href}pricing/`}>
+                      <span class="num">From ${t.price}/mo</span> <span class="tp-price-label">Pricing</span>
+                    </a>
+                  </li>
+                ))
+              }
+            </ul>
+            <div class="tp-stage" aria-hidden="true">
+              {
+                tools.map((t) => {
+                  const img = vendorImage(t.shot);
+                  return (
+                    <div class="tp-scene field" data-chapter={t.id} data-scene={t.id} data-active={t.id === current ? '' : undefined}>
+                      <span class="tp-scene-tool">{t.label}</span>
+                      <span class="tp-plane plane">
+                        <img src={img.src} srcset={img.srcset} sizes="26rem" width={img.width} height={img.height} alt="" loading="lazy" decoding="async" />
+                      </span>
+                    </div>
+                  );
+                })
+              }
+            </div>
+            <p class="tp-foot">
+              <a href="/start/">Not sure which job comes first? <span class="tp-foot-strong">Start here</span></a>
+              <a href="/compare/softr-vs-noloco/">Softr or Noloco for the portal</a>
+            </p>
+          </div>
+        </li>
+        {
+          sections.map((s) => (
+            <li>
+              <a class="nav-item" href={s.href} aria-current={isActive(s.href) ? 'page' : undefined}>
+                {s.label}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <button type="button" class="icon-btn theme-toggle" aria-label="Switch color theme" title="Switch color theme">
+        <Icon name="moon-linear" size="1.25rem" class="tt-moon" />
+        <Icon name="sun-2-linear" size="1.25rem" class="tt-sun" />
+      </button>
+      <a class="btn header-cta" href="/start/">Start here</a>
+      <button type="button" class="icon-btn nav-toggle" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-nav">
+        <span class="line"></span><span class="line"></span>
+      </button>
+    </div>
+  </div>
+  <span class="read-progress" aria-hidden="true"><span data-read-bar></span></span>
+</header>
+
+<dialog id="mobile-nav" class="mobile-nav" aria-label="Menu">
+  <div class="sheet">
+    <div class="sheet-head">
+      <a href="/" class="brand" aria-label="Wellpick, home"><Logo size={28} word /></a>
+      <button type="button" class="icon-btn nav-close" aria-label="Close menu">
+        <span class="line"></span><span class="line"></span>
+      </button>
+    </div>
+    <nav class="sheet-nav" aria-label="Mobile">
+      <p class="sheet-label">Tools</p>
+      <ul class="sheet-tools">
+        {
+          tools.map((t) => (
+            <li data-chapter={t.id}>
+              <a class="st-main" href={t.href} aria-current={isActive(t.href) ? 'page' : undefined}>
+                <Glyph name={t.glyph} tone="canvas" size="2.5rem" />
+                <span class="tp-text">
+                  <span class="st-name">{t.label}</span>
+                  <span class="tp-job">{t.job}</span>
+                </span>
+              </a>
+              <a class="st-price" href={`${t.href}pricing/`}>
+                <span class="num">From ${t.price}/mo</span>{' · '}Pricing
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sheet-label">Read</p>
+      <ul class="sheet-read">
+        {
+          reading.map((s) => (
+            <li>
+              <a href={s.href} aria-current={isActive(s.href) ? 'page' : undefined}>
+                {s.label} <Icon name="arrow-right-linear" />
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <a class="btn sheet-cta" href="/start/">
+        Start here <Icon name="arrow-right-linear" class="btn-icon" />
+      </a>
+    </nav>
+  </div>
+</dialog>
+
+<script>
+  import { initTheme } from '../scripts/theme';
+  initTheme();
+
+  const header = document.querySelector<HTMLElement>('.site-header');
+
+  // Condensed bar after scroll, and the reading-progress line on long pages.
+  const bar = document.querySelector<HTMLElement>('[data-read-bar]');
+  let ticking = false;
+  const onScroll = () => {
+    ticking = false;
+    const y = window.scrollY;
+    header?.classList.toggle('is-scrolled', y > 8);
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    const long = max > window.innerHeight * 2.5;
+    header?.classList.toggle('has-progress', long);
+    if (bar && long) bar.style.transform = `scaleX(${Math.min(1, Math.max(0, y / max))})`;
+  };
+  window.addEventListener('scroll', () => {
+    if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+  }, { passive: true });
+  onScroll();
+
+  // Tools panel: click or hover (fine pointers, with intent delays); Escape
+  // closes and returns focus; leaving with focus or clicking outside closes.
+  const root = document.querySelector<HTMLElement>('[data-panel-root]');
+  const trigger = root?.querySelector<HTMLButtonElement>('.nav-trigger');
+  const panel = root?.querySelector<HTMLElement>('[data-panel]');
+  if (root && trigger && panel) {
+    let timer = 0;
+    const setOpen = (open: boolean) => {
+      window.clearTimeout(timer);
+      root.classList.toggle('is-open', open);
+      trigger.setAttribute('aria-expanded', String(open));
+    };
+    const isOpen = () => root.classList.contains('is-open');
+    trigger.addEventListener('click', () => setOpen(!isOpen()));
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setOpen(true);
+        panel.querySelector<HTMLAnchorElement>('a')?.focus();
+      }
+    });
+    const fine = window.matchMedia('(hover: hover) and (pointer: fine)');
+    root.addEventListener('pointerenter', () => {
+      if (!fine.matches) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setOpen(true), 120);
+    });
+    root.addEventListener('pointerleave', () => {
+      if (!fine.matches) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => setOpen(false), 220);
+    });
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && isOpen()) {
+        setOpen(false);
+        trigger.focus();
+      }
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        const links = [...panel.querySelectorAll<HTMLAnchorElement>('a')];
+        const i = links.indexOf(document.activeElement as HTMLAnchorElement);
+        if (i < 0) return;
+        e.preventDefault();
+        links[(i + (e.key === 'ArrowDown' ? 1 : -1) + links.length) % links.length].focus();
+      }
+    });
+    root.addEventListener('focusout', (e) => {
+      if (!root.contains(e.relatedTarget as Node)) setOpen(false);
+    });
+    document.addEventListener('pointerdown', (e) => {
+      if (isOpen() && !root.contains(e.target as Node)) setOpen(false);
+    });
+    // The pointed-at or focused tool's screen comes forward.
+    const scenes = [...panel.querySelectorAll<HTMLElement>('[data-scene]')];
+    panel.querySelectorAll<HTMLElement>('[data-pick]').forEach((item) => {
+      const pick = () => scenes.forEach((s) => s.toggleAttribute('data-active', s.dataset.scene === item.dataset.pick));
+      item.addEventListener('pointerenter', pick);
+      item.addEventListener('focusin', pick);
+    });
+  }
+
+  // Drawer (phones and tablets).
+  const dlg = document.getElementById('mobile-nav') as HTMLDialogElement | null;
+  const openBtn = document.querySelector<HTMLButtonElement>('.nav-toggle');
+  const closeBtn = document.querySelector<HTMLButtonElement>('.nav-close');
+  const quick = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const closeNav = () => {
+    if (!dlg?.open) return;
+    dlg.classList.remove('is-open');
+    openBtn?.setAttribute('aria-expanded', 'false');
+    // showModal() returns focus to the menu button when the dialog closes.
+    window.setTimeout(() => dlg.close(), quick.matches ? 0 : 260);
+  };
+  openBtn?.addEventListener('click', () => {
+    if (!dlg) return;
+    dlg.showModal();
+    requestAnimationFrame(() => dlg.classList.add('is-open'));
+    openBtn.setAttribute('aria-expanded', 'true');
+  });
+  closeBtn?.addEventListener('click', closeNav);
+  dlg?.addEventListener('cancel', (e) => {
+    e.preventDefault();
+    closeNav();
+  });
+  // A click on the scrim (the dialog box itself, outside the sheet) closes it.
+  dlg?.addEventListener('click', (e) => { if (e.target === dlg) closeNav(); });
+  dlg?.querySelectorAll('a').forEach((a) => a.addEventListener('click', closeNav));
+  window.matchMedia('(min-width: 64rem)').addEventListener('change', (m) => m.matches && closeNav());
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    padding-inline: var(--gutter);
+    background: var(--bg);
+    border-bottom: 1px solid transparent;
+    transition: background-color var(--t-med) var(--ease-out), border-color var(--t-med) var(--ease-out), box-shadow var(--t-med) var(--ease-out);
+  }
+  .site-header.is-scrolled {
+    background: color-mix(in oklab, var(--surface) 86%, transparent);
+    backdrop-filter: saturate(1.4) blur(14px);
+    border-bottom-color: var(--line);
+    box-shadow: 0 10px 30px -24px hsl(var(--shadow-tint) / 0.5);
+  }
+  /* 76px open bar at the top, 60px once the page moves. Under large text the
+     bar grows instead of overflowing. */
+  .bar {
+    position: relative;
+    max-width: calc(var(--max) - 2 * var(--gutter));
+    min-height: 4.75rem;
+    margin-inline: auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-1) var(--s-2);
+    padding-block: var(--s-2);
+    transition: min-height var(--t-med) var(--ease-out);
+  }
+  .is-scrolled .bar { min-height: 3.75rem; }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    min-width: 0;
+    color: var(--ink);
+    text-decoration: none;
+  }
+
+  /* Desktop nav: grouped beside the brand, after a hairline. */
+  .nav-desktop { display: none; margin-left: var(--s-6); padding-left: var(--s-5); border-left: 1px solid var(--line); }
+  .nav-list { display: flex; align-items: center; gap: var(--s-1); list-style: none; margin: 0; padding: 0; }
+  .nav-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-height: 2.75rem;
+    padding: 0 0.75rem;
+    border: 0;
+    border-radius: var(--r-btn);
+    background: none;
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out);
+  }
+  .nav-item:hover, .is-open > .nav-trigger { color: var(--ink); background: color-mix(in oklab, var(--ink) 6%, transparent); }
+  .nav-item[aria-current='page'], .nav-trigger[data-active] { color: var(--ink); box-shadow: inset 0 -2px 0 var(--ink); border-radius: var(--r-btn) var(--r-btn) 0 0; }
+  .nav-trigger :global(.nav-chev) { transition: transform var(--t-fast) var(--ease-out); }
+  .is-open > .nav-trigger :global(.nav-chev) { transform: rotate(180deg); }
+
+  /* Tools panel: a floating card, list left, the picked tool's screen right.
+     It hangs from the bar (not the trigger), so it never runs past the
+     viewport, even with enlarged text. */
+  .has-panel { position: static; }
+  .tools-panel {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    left: 0;
+    width: min(56rem, 100%);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    grid-template-areas: 'list stage' 'foot foot';
+    gap: var(--s-4);
+    padding: var(--s-4);
+    border-radius: var(--r-block);
+    background: var(--surface);
+    box-shadow: 0 0 0 1px var(--line), 0 30px 70px -30px hsl(var(--shadow-tint) / 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-0.4rem);
+    transition: opacity var(--t-fast) var(--ease-out), transform var(--t-med) var(--ease-out), visibility 0s linear var(--t-fast);
+  }
+  .is-open > .tools-panel {
+    opacity: 1;
+    visibility: visible;
+    transform: none;
+    transition: opacity var(--t-fast) var(--ease-out), transform var(--t-med) var(--ease-out), visibility 0s;
+  }
+  /* A bridge so the pointer can travel from the trigger to the card. */
+  .tools-panel::before { content: ""; position: absolute; left: 0; right: 0; top: -0.75rem; height: 0.75rem; }
+  .tp-list { grid-area: list; list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-1); align-content: start; }
+  .tp-item { border-radius: var(--r-card); transition: background-color var(--t-fast) var(--ease-out); }
+  .tp-item:hover, .tp-item:focus-within { background: color-mix(in oklab, var(--ch) 9%, var(--surface)); }
+  .tp-main {
+    display: flex;
+    align-items: center;
+    gap: var(--s-4);
+    padding: var(--s-3) var(--s-3) var(--s-1);
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .tp-main:focus-visible, .tp-price:focus-visible { outline-offset: -2px; border-radius: var(--r-card); }
+  .tp-text { display: grid; gap: 0.1rem; min-width: 0; }
+  .tp-name { font-size: 1.1875rem; font-weight: 740; letter-spacing: -0.015em; line-height: 1.2; }
+  .tp-job { font-size: 0.9375rem; color: var(--muted); line-height: 1.35; }
+  .tp-price {
+    display: flex;
+    justify-content: space-between;
+    margin: 0 var(--s-3) 0 calc(2.75rem + var(--s-3) + var(--s-4));
+    padding: 0.35rem 0 var(--s-3);
+    min-height: 2.25rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-decoration: none;
+    border-top: 1px solid var(--line);
+  }
+  .tp-price-label { text-decoration: underline 1.5px color-mix(in oklab, currentColor 35%, transparent); text-underline-offset: 0.2em; }
+  .tp-price:hover .tp-price-label { text-decoration-color: currentColor; }
+  .tp-stage { grid-area: stage; position: relative; min-height: 17rem; border-radius: var(--r-card); overflow: hidden; }
+  .tp-scene {
+    position: absolute;
+    inset: 0;
+    --field-at: 90% 0%;
+    border-radius: var(--r-card);
+    opacity: 0;
+    transition: opacity var(--t-med) var(--ease-out);
+  }
+  .tp-scene[data-active] { opacity: 1; }
+  .tp-scene-tool { position: absolute; left: 1.25rem; top: 1rem; font-size: 0.9375rem; font-weight: 700; color: var(--on-chapter); }
+  .tp-plane {
+    position: absolute;
+    left: 1.25rem;
+    top: 3.25rem;
+    width: 128%;
+    transform: translateY(0.75rem) scale(0.98);
+    transform-origin: top left;
+    transition: transform var(--t-slow) var(--ease-out);
+  }
+  .tp-scene[data-active] .tp-plane { transform: none; }
+  .tp-foot {
+    grid-area: foot;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--s-2) var(--s-5);
+    padding: var(--s-3) var(--s-3) var(--s-1);
+    border-top: 1px solid var(--line);
+    font-size: 0.9375rem;
+  }
+  .tp-foot a { color: var(--ink-2); text-decoration: none; min-height: 2rem; display: inline-flex; align-items: center; gap: 0.35rem; }
+  .tp-foot a:hover { color: var(--ink); text-decoration: underline 1.5px; text-underline-offset: 0.2em; }
+  .tp-foot-strong { color: var(--ink); font-weight: 650; }
+
+  .header-actions { display: flex; align-items: center; gap: var(--s-2); margin-left: auto; }
+  .icon-btn {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-btn);
+    background: none;
+    color: var(--ink-2);
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease-out), background-color var(--t-fast) var(--ease-out);
+  }
+  .icon-btn:hover { color: var(--ink); background: color-mix(in oklab, var(--ink) 6%, transparent); }
+  .icon-btn:focus-visible { outline-offset: 0; }
+  .theme-toggle :global(.icon) { grid-area: 1 / 1; }
+  .theme-toggle :global(.tt-sun) { display: none; }
+  :global([data-theme='dark']) .theme-toggle :global(.tt-sun) { display: inline-block; }
+  :global([data-theme='dark']) .theme-toggle :global(.tt-moon) { display: none; }
+  .header-cta { display: none; min-height: 2.75rem; padding: 0.55em 1.1em; font-size: 0.9375rem; white-space: nowrap; }
+
+  .line {
+    position: absolute;
+    left: 50%;
+    width: 1.125rem;
+    height: 2px;
+    border-radius: 1px;
+    background: currentColor;
+    translate: -50% 0;
+  }
+  .nav-toggle .line:first-child { top: calc(50% - 4px); }
+  .nav-toggle .line:last-child { top: calc(50% + 3px); }
+  .nav-close .line { top: calc(50% - 1px); }
+  .nav-close .line:first-child { transform: rotate(45deg); }
+  .nav-close .line:last-child { transform: rotate(-45deg); }
+
+  /* Reading progress: a 2px line on the header's lower edge, long pages only. */
+  .read-progress {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--t-med) var(--ease-out);
+  }
+  .has-progress.is-scrolled .read-progress { opacity: 1; }
+  .read-progress > span {
+    display: block;
+    height: 100%;
+    transform: scaleX(0);
+    transform-origin: left;
+    background: linear-gradient(90deg, var(--fillout), var(--softr) 55%, var(--noloco));
+  }
+  :global(body[data-chapter]) .read-progress > span { background: var(--ch); }
+
+  @media (min-width: 40rem) { .header-cta { display: inline-flex; } }
+  @media (min-width: 64rem) {
+    .nav-desktop { display: flex; }
+    .nav-toggle { display: none; }
+  }
+  @media (max-width: 26rem) { .brand :global(.logo-word) { font-size: 1.25rem; } }
+
+  /* Drawer: slides in from the right over a scrim, so the page stays in view. */
+  .mobile-nav {
+    width: min(26rem, 92vw);
+    max-width: none;
+    height: 100dvh;
+    max-height: none;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    background: var(--bg);
+    color: var(--ink);
+    box-shadow: -30px 0 60px -30px hsl(var(--shadow-tint) / 0.6);
+    translate: 100% 0;
+    transition: translate var(--t-med) var(--ease-out);
+  }
+  .mobile-nav:not([open]) { display: none; }
+  .mobile-nav.is-open { translate: none; }
+  .mobile-nav::backdrop { background: oklch(0.15 0.02 262 / 0); transition: background-color var(--t-med) var(--ease-out); }
+  .mobile-nav.is-open::backdrop { background: oklch(0.15 0.02 262 / 0.45); }
+  @media (prefers-reduced-motion: reduce) {
+    .mobile-nav { transition: none; translate: none; }
+  }
+  .sheet { display: flex; flex-direction: column; min-height: 100%; padding: 0 var(--s-5) var(--s-5); }
+  .sheet-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-2);
+    min-height: 4.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-nav { display: flex; flex-direction: column; flex: 1; }
+  .sheet-label { margin-top: var(--s-5); font-size: 0.8125rem; font-weight: 650; color: var(--muted); }
+  .sheet-tools, .sheet-read { list-style: none; margin: var(--s-2) 0 0; padding: 0; }
+  .sheet-tools li { border-bottom: 1px solid var(--line); }
+  .st-main { display: flex; align-items: center; gap: var(--s-4); padding-top: var(--s-3); color: var(--ink); text-decoration: none; }
+  .st-name { font-size: 1.375rem; font-weight: 740; letter-spacing: -0.02em; line-height: 1.15; }
+  .st-main[aria-current='page'] .st-name { text-decoration: underline 2px var(--ink); text-underline-offset: 0.25em; }
+  .st-price {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    margin-left: calc(2.5rem + var(--s-4));
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink-2);
+    text-decoration: underline 1.5px color-mix(in oklab, currentColor 30%, transparent);
+    text-underline-offset: 0.2em;
+  }
+  .sheet-read a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 3rem;
+    font-size: 1.125rem;
+    font-weight: 650;
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .sheet-read a[aria-current='page'] { text-decoration: underline 2px; text-underline-offset: 0.25em; }
+  .sheet-cta { margin-top: auto; width: 100%; }
+  .sheet-read { margin-bottom: var(--s-6); }
+</style>

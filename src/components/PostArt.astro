@@ -1,0 +1,138 @@
+---
+// Blog cover art (v13), after Mintlify's drawn blog covers, Airtable's
+// icon-on-grid article covers and Customer.io's color-field covers: original
+// artwork, no screenshots and no text. A lit field in the topic's color (the
+// three product topics use their chapter color; AI, web and buying use the
+// ink field), a fine drawn grid, the topic glyph on a soft halo, two quiet
+// glyphs snapped beside it, and the mark's rising stroke in a corner.
+// Sizes are in container-height units so the composition holds at a card
+// ratio and at the post page's banner ratio. The slug seeds the arrangement.
+// Decorative: the card's title is the link text.
+import Glyph from './Glyph.astro';
+import { TOPICS, type TopicId } from '../data/blog';
+
+interface Props {
+  topic: TopicId;
+  seed: string;
+  size?: 'lead' | 'card';
+  class?: string;
+}
+const { topic, seed, size = 'card', class: cls } = Astro.props;
+const t = TOPICS[topic];
+
+// FNV-1a: a stable small hash so the same post always draws the same cover.
+let h = 2166136261;
+for (const c of seed) h = Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0;
+const pick = (n: number, shift: number) => (h >>> shift) % n;
+
+const others = (['intake', 'portal', 'team', 'records', 'gate', 'client'] as const).filter((g) => g !== t.glyph);
+const i1 = pick(others.length, 3);
+const back1 = others[i1];
+const back2 = others[(i1 + 1 + pick(others.length - 1, 7)) % others.length];
+// The main glyph's center, as a share of the width. The stroke takes the
+// lower corner away from the glyph; the lower ghost tile sits on the glyph's
+// open side, the upper one toward the stroke.
+const x = [58, 64, 42, 36][pick(4, 11)];
+const strokeLeft = x > 50;
+const tilt = (pick(5, 15) - 2) * 3;
+const grid = [14, 18, 22][pick(3, 19)];
+const mirror = !strokeLeft;
+---
+<div
+  class:list={['post-art', `post-art-${size}`, t.chapter ? 'field' : 'post-art-ink', cls]}
+  data-chapter={t.chapter ?? undefined}
+  style={`--pa-x: ${x}%; --pa-tilt: ${tilt}deg; --pa-grid: ${grid}cqh; --pa-m: ${mirror ? -1 : 1};`}
+  aria-hidden="true"
+>
+  <span class="pa-grid"></span>
+  <span class="pa-halo"></span>
+  <span class="pa-back pa-back-1"><Glyph name={back1} size="100%" /></span>
+  <span class="pa-back pa-back-2"><Glyph name={back2} size="100%" /></span>
+  <span class="pa-main"><Glyph name={t.glyph} size="100%" /></span>
+  <svg class:list={['pa-stroke', { 'is-left': strokeLeft }]} viewBox="0 0 64 40" focusable="false">
+    <path class="pa-stroke-glow" d="M5 14 L14 33 L23 18 L32 33 L58 5" />
+    <path class="pa-stroke-line" d="M5 14 L14 33 L23 18 L32 33 L58 5" />
+  </svg>
+</div>
+
+<style>
+  .post-art {
+    position: relative;
+    overflow: hidden;
+    container-type: size;
+    aspect-ratio: 16 / 9;
+    border-radius: var(--r-card);
+    color: var(--on-chapter);
+  }
+  .post-art-lead { aspect-ratio: 16 / 10; }
+  /* Ink field: the footer's dark stage, lit faintly in the mark's three colors. */
+  .post-art-ink {
+    isolation: isolate;
+    background:
+      radial-gradient(70% 90% at 92% 0%, oklch(0.42 0.12 266 / 0.75) 0%, transparent 62%),
+      radial-gradient(60% 80% at 0% 100%, oklch(0.42 0.11 38 / 0.6) 0%, transparent 62%),
+      radial-gradient(50% 60% at 60% 110%, oklch(0.42 0.09 158 / 0.5) 0%, transparent 70%),
+      oklch(0.2 0.018 262);
+    color: oklch(0.97 0.004 110);
+  }
+  .post-art-ink::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--grain);
+    background-size: 160px;
+    mix-blend-mode: soft-light;
+    opacity: 0.6;
+  }
+
+  /* A fine grid that fades toward the edges, so the field reads as a stage. */
+  .pa-grid {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to right, currentColor 1px, transparent 1px) 0 0 / var(--pa-grid) var(--pa-grid),
+      linear-gradient(to bottom, currentColor 1px, transparent 1px) 0 0 / var(--pa-grid) var(--pa-grid);
+    opacity: 0.12;
+    mask-image: radial-gradient(75% 85% at var(--pa-x) 50%, #000 30%, transparent 85%);
+  }
+  .pa-halo {
+    position: absolute;
+    left: var(--pa-x);
+    top: 50%;
+    width: 110cqh;
+    aspect-ratio: 1;
+    translate: -50% -50%;
+    border-radius: 50%;
+    background: radial-gradient(closest-side, oklch(1 0 0 / 0.22), transparent 70%);
+  }
+
+  .pa-main, .pa-back { position: absolute; display: block; translate: -50% -50%; }
+  .pa-main :global(svg), .pa-back :global(svg) { width: 100%; height: 100%; }
+  .pa-main {
+    left: var(--pa-x);
+    top: 50%;
+    width: 44cqh;
+    height: 44cqh;
+    rotate: var(--pa-tilt);
+    filter: drop-shadow(0 2.5cqh 4cqh oklch(0.12 0.03 262 / 0.35));
+    transition: rotate var(--t-med) var(--ease-out), translate var(--t-med) var(--ease-out);
+  }
+  .pa-back { width: 26cqh; height: 26cqh; opacity: 0.4; }
+  .pa-back-1 { left: calc(var(--pa-x) - 36cqh * var(--pa-m)); top: calc(50% - 22cqh); }
+  .pa-back-2 { left: calc(var(--pa-x) + 38cqh * var(--pa-m)); top: calc(50% + 24cqh); }
+
+  /* The mark's rising stroke, whole, in the corner away from the glyph. */
+  .pa-stroke { position: absolute; right: 7cqh; bottom: 8cqh; width: 40cqh; overflow: visible; }
+  .pa-stroke.is-left { right: auto; left: 7cqh; }
+  .pa-stroke path { fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; }
+  .pa-stroke-line { stroke-width: 2.6; opacity: 0.6; }
+  .pa-stroke-glow { stroke-width: 7; opacity: 0.12; filter: blur(2px); }
+
+  /* The card the art sits in lifts its glyph a little on hover and focus. */
+  :global(a:hover) .post-art .pa-main,
+  :global(a:focus-visible) .post-art .pa-main { rotate: 0deg; translate: -50% calc(-50% - 1.5cqh); }
+  @media (prefers-reduced-motion: reduce) {
+    .pa-main { transition: none; }
+  }
+</style>

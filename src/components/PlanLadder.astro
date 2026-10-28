@@ -1,0 +1,340 @@
+---
+// Plans as one joined grid, after ClickUp's pricing table: a billing toggle,
+// one column per plan with the start plan flagged and chapter-filled, a
+// grouped "Included" header, then one marked row per limit (a check for a
+// value, a dash for none), and the watch line. Rows line up across columns
+// through subgrid. Numbers come only from the pricing claim; the "who" and
+// "watch" lines are editorial guidance. Without JavaScript the toggle stays
+// hidden and each column shows the yearly price with the monthly price under
+// it (the complete static state).
+import { getProduct, type ProductId } from '../lib/site';
+import { getPricing } from '../lib/pricing';
+import Icon from './Icon.astro';
+
+interface Pick {
+  who: string;
+  watch?: string;
+  /** Mark the plan most readers of this site should start on */
+  start?: boolean;
+}
+interface Props {
+  product: ProductId;
+  specs: { key: string; label: string; format?: 'number' | 'text' }[];
+  picks: Record<string, Pick>;
+}
+const { product, specs, picks } = Astro.props;
+const p = await getProduct(product);
+const { plans } = await getPricing(product);
+
+const fmt = (v: unknown) =>
+  v === null || v === undefined ? 'n/a' : typeof v === 'number' ? v.toLocaleString('en-US') : String(v);
+const none = (v: unknown) => v === null || v === undefined || v === 0 || v === 'n/a';
+// A vendor with only two published plans gets its custom tier as a third,
+// text-only column (the claim says "Enterprise custom"), so the grid spans
+// the page instead of leaving a third of it empty.
+const pair = plans.length <= 2;
+---
+
+<div class="ladder-wrap" data-billing-root>
+  <div class="billing" role="radiogroup" aria-label="Billing period" data-billing hidden>
+    <button type="button" role="radio" aria-checked="true" data-period="yearly">Billed yearly</button>
+    <button type="button" role="radio" aria-checked="false" data-period="monthly">Billed monthly</button>
+  </div>
+  <div class="ladder" data-chapter={product} style={{ '--plans': plans.length + (pair ? 1 : 0), '--specs': specs.length }}>
+    <ol class="ladder-cols" aria-label={`${p.name} plans`}>
+      {
+        plans.map((plan) => {
+          const pick = picks[plan.name];
+          const free = plan.yearlyMonthly === 0;
+          const custom = plan.yearlyMonthly === null;
+          return (
+            <li class:list={['plan', { start: pick?.start, field: pick?.start }]}>
+              <p class="plan-name">
+                <strong>{plan.name}</strong>
+                {pick?.start && <span class="plan-flag">Start here</span>}
+              </p>
+              <p class="plan-price num" data-yearly={plan.yearlyMonthly ?? ''} data-monthly={plan.monthly ?? ''}>
+                {custom ? (
+                  <span class="plan-fig">Custom</span>
+                ) : (
+                  <>
+                    <span class="plan-fig" data-fig>${plan.yearlyMonthly}</span>
+                    {!free && <span class="plan-per" data-per>/mo billed yearly</span>}
+                  </>
+                )}
+                {!free && plan.monthly != null && (
+                  <span class="plan-monthly" data-alt>
+                    ${plan.monthly} if billed monthly
+                  </span>
+                )}
+              </p>
+              <p class="plan-who">{pick?.who}</p>
+              <p class="plan-group" aria-hidden="true">Included</p>
+              <dl class="plan-specs">
+                {specs.map((s) => (
+                  <div class:list={{ 'is-none': none(plan[s.key]) }}>
+                    <Icon name={none(plan[s.key]) ? 'minus-circle-linear' : 'check-circle-linear'} size="1.125rem" class="spec-mark" />
+                    <dt>{s.label}</dt>
+                    <dd class="num">{fmt(plan[s.key])}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p class="plan-watch">{pick?.watch && <><strong>Watch:</strong> {pick.watch}</>}</p>
+            </li>
+          );
+        })
+      }
+      {
+        pair && (
+          <li class="plan plan-custom">
+            <p class="plan-name"><strong>Enterprise</strong></p>
+            <p class="plan-price"><span class="plan-fig">Custom</span></p>
+            <p class="plan-who">Priced by {p.name} on request. Seats, records and workflow runs are set per contract.</p>
+            <div class="plan-custom-body">
+              <p>Most small service businesses never need it. Ask once you outgrow the {plans.at(-1)?.name} limits on the left.</p>
+              <a class="plan-custom-link" href={p.pricingUrl} rel="noopener">
+                See {p.name}’s plan page <Icon name="arrow-right-up-linear" />
+              </a>
+            </div>
+          </li>
+        )
+      }
+    </ol>
+  </div>
+</div>
+
+<script>
+  // Billing toggle: swaps each column's figure between the yearly per-month
+  // price and the monthly price. Every number is already in the markup.
+  for (const root of document.querySelectorAll<HTMLElement>('[data-billing-root]')) {
+    const group = root.querySelector<HTMLElement>('[data-billing]');
+    if (!group) continue;
+    group.hidden = false;
+    root.dataset.billingReady = '';
+    const radios = [...group.querySelectorAll<HTMLButtonElement>('[data-period]')];
+    const set = (period: string) => {
+      radios.forEach((r) => r.setAttribute('aria-checked', String(r.dataset.period === period)));
+      for (const price of root.querySelectorAll<HTMLElement>('.plan-price')) {
+        const fig = price.querySelector<HTMLElement>('[data-fig]');
+        const per = price.querySelector<HTMLElement>('[data-per]');
+        const alt = price.querySelector<HTMLElement>('[data-alt]');
+        const { yearly, monthly } = price.dataset;
+        if (!fig || !yearly || !monthly || Number(yearly) === 0) continue;
+        const m = period === 'monthly';
+        fig.textContent = `$${m ? monthly : yearly}`;
+        if (per) per.textContent = m ? '/mo billed monthly' : '/mo billed yearly';
+        if (alt) alt.textContent = m ? `$${yearly}/mo if billed yearly` : `$${monthly} if billed monthly`;
+      }
+    };
+    radios.forEach((r, i) => {
+      r.addEventListener('click', () => set(r.dataset.period!));
+      r.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const next = radios[(i + (e.key === 'ArrowRight' ? 1 : radios.length - 1)) % radios.length];
+        next.focus();
+        set(next.dataset.period!);
+      });
+    });
+  }
+</script>
+
+<style>
+  /* One hairline frame. Phones: plans stack as ruled sections. Wide screens:
+     plans become columns and every row is shared through subgrid, so names,
+     prices, limits and advice read straight across like a price sheet. */
+  .ladder-wrap { display: grid; gap: var(--s-4); }
+  /* Billing toggle: a two-segment switch, ink for the chosen period. */
+  .billing {
+    display: inline-flex;
+    justify-self: start;
+    padding: 4px;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .billing[hidden] { display: none; }
+  .billing button {
+    min-height: 2.5rem;
+    padding: 0 1.1rem;
+    border: 0;
+    border-radius: var(--r-pill);
+    background: transparent;
+    color: var(--ink-2);
+    font: inherit;
+    font-size: 0.9375rem;
+    font-weight: 620;
+    cursor: pointer;
+    transition: background-color var(--t-fast) var(--ease-out), color var(--t-fast) var(--ease-out);
+  }
+  .billing button[aria-checked='true'] { background: var(--ink); color: var(--on-ink); }
+  .ladder {
+    --pad: var(--s-5);
+    border: 1px solid var(--line);
+    border-radius: var(--r-card);
+    overflow: hidden;
+    background: var(--bg);
+  }
+  .ladder-cols { list-style: none; margin: 0; padding: 0; }
+  .plan {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    padding: var(--pad);
+    column-gap: var(--s-4);
+    transition: background-color var(--t-fast) var(--ease-out);
+  }
+  .plan + .plan { border-top: 1px solid var(--line); }
+  .plan > :not(.plan-name, .plan-price) { grid-column: 1 / -1; }
+  .plan:not(.start):hover { background: var(--surface); }
+
+  .plan.start {
+    --line: oklch(1 0 0 / 0.24);
+    color: var(--on-chapter);
+  }
+  /* Specs run down the column: keep the field's light up top at every width. */
+  .plan.start.field { --field-at: 92% -8%; }
+  .plan.start + .plan, .plan + .plan.start { border-top-color: transparent; }
+
+  .plan-name { display: grid; gap: 0.2rem; align-content: start; }
+  .plan-name strong {
+    font-size: var(--step-2);
+    font-weight: 760;
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .plan-flag { font-size: 0.8125rem; font-weight: 650; line-height: 1.3; }
+
+  .plan-price {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: flex-end;
+    column-gap: 0.35rem;
+    text-align: right;
+  }
+  .plan-fig {
+    font-size: var(--step-3);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .plan-per, .plan-monthly { font-size: 0.875rem; line-height: 1.35; color: var(--muted); }
+  .plan-monthly { flex-basis: 100%; margin-top: 0.3rem; }
+
+  .plan-who { margin-top: var(--s-4); font-size: 1rem; line-height: 1.5; color: var(--ink-2); }
+  .plan-group { margin-top: var(--s-5); font-size: 0.8125rem; font-weight: 650; line-height: 1.3; color: var(--muted); }
+  .plan-specs {
+    margin: var(--s-3) 0 0;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  /* A marked row per limit: check for a value, dash for none. */
+  .plan-specs > div {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.625rem;
+    padding-block: 0.625rem;
+    border-top: 1px solid var(--line);
+  }
+  .plan-specs :global(.spec-mark) { color: var(--ch); }
+  .plan-specs .is-none :global(.spec-mark) { color: var(--muted); }
+  .plan-specs dt { font-size: 0.9375rem; line-height: 1.35; color: var(--ink-2); }
+  .plan-specs dd { margin: 0; font-size: 1rem; font-weight: 680; line-height: 1.35; text-align: right; }
+  .plan-specs .is-none dd { color: var(--muted); font-weight: 560; }
+  .plan-watch { margin-top: var(--s-4); font-size: 0.9375rem; line-height: 1.45; color: var(--ink-2); }
+  .plan-watch:empty { display: none; }
+  .plan-watch strong { font-weight: 650; color: var(--ink); }
+
+  .plan.start :is(.plan-who, .plan-watch, .plan-per, .plan-monthly, .plan-specs dt, .plan-group) { color: var(--on-chapter-muted); }
+  .plan.start .plan-watch strong { color: var(--on-chapter); }
+  .plan.start .plan-specs :global(.spec-mark) { color: var(--on-chapter); }
+  :global([data-theme='dark']) .plan-specs :global(.spec-mark) { color: color-mix(in oklch, var(--ch) 60%, white); }
+  :global([data-theme='dark']) .plan.start .plan-specs :global(.spec-mark) { color: var(--on-chapter); }
+
+  @media (max-width: 22rem) {
+    .ladder { --pad: var(--s-4); }
+  }
+
+  @media (min-width: 64rem) {
+    .ladder-cols {
+      display: grid;
+      grid-template-columns: repeat(var(--plans), minmax(0, 1fr));
+      /* name, price, who, group head, one row per spec, watch */
+      grid-template-rows: auto auto auto auto repeat(var(--specs), auto) auto;
+    }
+    /* The custom tier: one text cell across the limit rows, on the wash. */
+    .plan-custom-body { grid-row: 4 / -1; }
+
+    .plan {
+      grid-row: 1 / -1;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: subgrid;
+      row-gap: 0;
+      padding: 0;
+    }
+    .plan + .plan { border-top: 0; border-left: 1px solid var(--line); }
+    .plan.start + .plan, .plan + .plan.start { border-left-color: transparent; }
+    /* The spec list spans the column edge to edge so its rules run across;
+       its cells carry the column padding themselves. */
+    .plan > * { grid-column: 1; margin: 0; }
+    .plan > :not(.plan-specs) { padding-inline: var(--pad); }
+
+    .plan-name { padding-top: var(--pad); }
+    .plan-name strong { font-size: var(--step-1); }
+    .plan-price {
+      justify-content: flex-start;
+      text-align: left;
+      padding-top: var(--s-5);
+      padding-bottom: var(--s-5);
+    }
+    .plan-fig { font-size: var(--step-4); }
+    .plan-who { padding-bottom: var(--pad); font-size: 0.9375rem; }
+
+    .plan-group { padding-block: var(--s-4) var(--s-2); border-top: 1px solid var(--line); }
+    .plan-specs {
+      grid-row: span var(--specs);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: subgrid;
+      gap: 0;
+      padding-inline: 0;
+    }
+    .plan-specs > div { padding: 0.625rem var(--pad); }
+    .plan-specs > div:first-child { border-top: 0; }
+    .plan-watch {
+      display: block;
+      padding-block: var(--s-4) var(--pad);
+      border-top: 1px solid var(--line);
+      font-size: 0.875rem;
+    }
+    .plan-watch:empty { display: block; }
+  }
+  .plan-custom { background: color-mix(in oklab, var(--ch-wash) 45%, transparent); }
+  .plan-custom .plan-fig { color: var(--ink); }
+  .plan-custom-body {
+    display: grid;
+    align-content: start;
+    gap: var(--s-4);
+    padding: var(--s-4) var(--pad) var(--pad);
+    border-top: 1px solid var(--line);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--ink-2);
+  }
+  .plan-custom-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    justify-self: start;
+    font-weight: 650;
+    color: var(--ink);
+    text-decoration: underline 1.5px color-mix(in oklab, currentColor 35%, transparent);
+    text-underline-offset: 0.22em;
+  }
+  .plan-custom-link:hover { text-decoration-color: currentColor; }
+</style>

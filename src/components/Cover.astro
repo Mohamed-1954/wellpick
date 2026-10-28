@@ -1,0 +1,83 @@
+---
+// The cover system for guide and comparison cards: the product's lit chapter
+// field (two products blend across the field), each product's motif glyph
+// top-left, and real vendor screens staged as planes that run off the
+// bottom-right edge. Decorative: the card's title is the link text, so the
+// images carry empty alt text. All screens come from the media manifest.
+import type { ProductId } from '../lib/site';
+import { vendorImage } from '../lib/media';
+import Glyph from './Glyph.astro';
+
+interface Props {
+  products: ProductId[];
+  /** Main screen; defaults to the first product's cover screen */
+  shot?: string;
+  /** Second product's screen; defaults to its cover screen */
+  shot2?: string;
+  sizes?: string;
+}
+const { products, shot, shot2, sizes = '(min-width: 64rem) 26rem, (min-width: 40rem) 46vw, 92vw' } = Astro.props;
+
+const COVER_SHOT: Record<ProductId, string> = {
+  fillout: 'fillout-builder-card.png',
+  softr: 'softr-uc-projects.webp',
+  noloco: 'noloco-project-canvas.png',
+};
+const GLYPH = { fillout: 'intake', softr: 'portal', noloco: 'team' } as const;
+const [first, second] = products;
+const main = vendorImage(shot ?? COVER_SHOT[first]);
+const secondName = second ? (shot2 ?? COVER_SHOT[second]) : null;
+const other = secondName && secondName !== (shot ?? COVER_SHOT[first]) ? vendorImage(secondName) : null;
+---
+
+<span
+  class:list={['cover', 'field', { 'is-pair': Boolean(second) }]}
+  data-chapter={first}
+  style={second ? `--c2: var(--${second}); --c2-deep: var(--${second}-deep);` : undefined}
+  aria-hidden="true"
+>
+  <span class="cover-glyphs">
+    {products.map((p) => <span data-chapter={p}><Glyph name={GLYPH[p]} size="2.25rem" /></span>)}
+  </span>
+  <span class="cover-plane plane">
+    <img src={main.src} srcset={main.srcset} sizes={sizes} width={main.width} height={main.height} alt="" loading="lazy" decoding="async" />
+  </span>
+  {
+    other && (
+      <span class="cover-plane cover-plane-2 plane">
+        <img src={other.src} srcset={other.srcset} sizes={sizes} width={other.width} height={other.height} alt="" loading="lazy" decoding="async" />
+      </span>
+    )
+  }
+</span>
+
+<style>
+  .cover {
+    display: block;
+    position: relative;
+    aspect-ratio: 16 / 10;
+    border-radius: var(--r-card);
+    overflow: clip;
+  }
+  /* Two products: the field blends from one chapter color into the other. */
+  .cover.is-pair {
+    background:
+      radial-gradient(90% 70% at 90% -10%, oklch(1 0 0 / 0.18) 0%, transparent 60%),
+      linear-gradient(105deg, var(--ch-deep) 0%, var(--ch) 32%, var(--c2) 72%, var(--c2-deep) 100%);
+  }
+  .cover-glyphs { position: absolute; z-index: 1; top: 7%; left: 5.5%; display: flex; gap: 0.5rem; }
+  .cover-plane {
+    position: absolute;
+    left: 16%;
+    top: 30%;
+    width: 100%;
+    border-radius: 10px 0 0 0;
+    transition: transform var(--t-med) var(--ease-out);
+  }
+  .cover-plane img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; object-position: top left; }
+  .cover.is-pair .cover-plane { left: 8%; top: 32%; width: 62%; border-radius: 10px; }
+  .cover.is-pair .cover-plane-2 { left: 46%; top: 46%; width: 70%; border-radius: 10px 0 0 0; }
+  :global(a:hover) > .cover .cover-plane,
+  :global(a:hover) .cover .cover-plane { transform: translate(-0.35rem, -0.35rem); }
+  :global(a:hover) .cover .cover-plane-2 { transform: translate(-0.6rem, -0.6rem); }
+</style>

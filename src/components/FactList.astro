@@ -1,0 +1,97 @@
+---
+import { getEntry } from 'astro:content';
+
+interface FactItem {
+  text: string;
+  source?: string;
+}
+interface Props {
+  items: FactItem[];
+  /** Larger text for hero-scale fact sections */
+  large?: boolean;
+}
+const { items, large = false } = Astro.props;
+
+// Each fact links straight to the vendor page that supports it.
+const facts = await Promise.all(
+  items.map(async (item) => {
+    if (!item.source) return { ...item, url: undefined, publisher: undefined };
+    const entry = await getEntry('sources', item.source);
+    if (!entry) throw new Error(`[FactList] Unknown source id: ${item.source}`);
+    return { ...item, url: entry.data.url, publisher: entry.data.publisher };
+  }),
+);
+---
+
+<ul class:list={['fact-list', { large }]}>
+  {
+    facts.map((f) => (
+      <li>
+        {large ? (
+          <>
+            <p class="fact-text">{f.text}</p>
+            {f.url && (
+              <a class="fact-src" href={f.url} target="_blank" rel="noopener">
+                {f.publisher} docs<span class="sr-only"> (opens vendor source)</span>
+              </a>
+            )}
+          </>
+        ) : (
+          <p class="fact-text">
+            {f.text}
+            {f.url && (
+              <a class="fact-src" href={f.url} target="_blank" rel="noopener">
+                {f.publisher} docs<span class="sr-only"> (opens vendor source)</span>
+              </a>
+            )}
+          </p>
+        )}
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  /* Facts are parallel, not a sequence: no numbers, one hairline between rows.
+     Colors come from --ink / --muted / --line, so a chapter panel that remaps
+     them (home chapters) keeps the list legible on its color. */
+  .fact-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+  }
+  .fact-list li { padding-block: var(--s-4); }
+  .fact-list li + li { border-top: 1px solid var(--line); }
+  .fact-list li:first-child { padding-top: 0; }
+  .fact-text { color: var(--ink); max-width: 62ch; line-height: 1.55; }
+  .fact-src {
+    display: inline-block;
+    margin-left: 0.5em;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    text-decoration-color: color-mix(in oklab, currentColor 35%, transparent);
+    white-space: nowrap;
+  }
+  .fact-src:hover { color: var(--ink); }
+
+  /* Large: ruled rows, the fact at reading size, its source in a column of its own. */
+  .large li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-2);
+    padding-block: var(--s-5);
+    border-top: 1px solid var(--line);
+  }
+  .large li:first-child { padding-top: var(--s-5); border-top-color: var(--ink); }
+  .large li:last-child { border-bottom: 1px solid var(--line); }
+  .large .fact-text { font-size: var(--step-1); line-height: 1.45; letter-spacing: -0.005em; }
+  .large .fact-src { justify-self: start; margin-left: 0; font-size: 0.875rem; }
+  @media (min-width: 48rem) {
+    .large li { grid-template-columns: minmax(0, 1fr) 9rem; column-gap: var(--s-6); align-items: baseline; }
+    .large .fact-src { justify-self: end; text-align: right; }
+  }
+</style>

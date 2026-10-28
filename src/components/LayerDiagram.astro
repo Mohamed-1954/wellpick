@@ -1,0 +1,179 @@
+---
+// A vertical stack of layers on the shared diagram system: ruled rows joined
+// by one spine at the left, ending in the enforced layer as a solid band.
+interface Layer {
+  label: string;
+  detail?: string;
+}
+interface Props {
+  title: string;
+  description?: string;
+  layers: Layer[];
+  /** 'last' (default): the last layer is the enforced boundary, drawn as a
+      solid band. 'none': every layer is an equal ruled row. */
+  emphasis?: 'last' | 'none';
+}
+const { title, description, layers, emphasis = 'last' } = Astro.props;
+const last = layers.length - 1;
+const focal = emphasis === 'last';
+const id = `dg-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+---
+
+<figure class="diagram-block ly" aria-labelledby={id}>
+  <div class="dg-head">
+    <p class="dg-title" id={id}>{title}</p>
+    {description && <p class="dg-desc">{description}</p>}
+  </div>
+  <div class:list={['ly-grid', { 'has-focal': focal }]} style={`--n: ${layers.length};`}>
+    <span class="ly-rail" aria-hidden="true">
+      <svg viewBox="0 0 2 100" preserveAspectRatio="none" focusable="false"><line x1="1" y1="0" x2="1" y2="100" data-draw></line></svg>
+    </span>
+    <ol class="ly-list">
+      {
+        layers.map((layer, i) => (
+          <li class:list={['ly-row', { 'is-focal': focal && i === last }]}>
+            <span class="ly-mark" aria-hidden="true" />
+            <div class="ly-text">
+              <p class="ly-label">{layer.label}</p>
+              {layer.detail && <p class="ly-detail">{layer.detail}</p>}
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</figure>
+
+<style>
+  .ly {
+    --dg-bg: var(--bg);
+    --rail-c: var(--ch, var(--muted));
+    --spine: 2rem;
+    --dot: 12px;
+    --pad: 1.1rem;
+    container: ly / inline-size;
+    margin: 0;
+  }
+  :global([data-theme='dark']) .ly { --rail-c: color-mix(in oklab, var(--ch, var(--muted)) 72%, var(--ink)); }
+
+  .dg-head { display: grid; gap: 0.35rem; margin-bottom: var(--s-5); max-width: 64ch; }
+  .dg-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    color: var(--ink);
+  }
+  .dg-desc { font-size: 1rem; line-height: 1.5; color: var(--ink-2); }
+
+  .ly-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--spine) minmax(0, 1fr);
+    grid-template-rows: repeat(var(--n), auto);
+    column-gap: var(--s-3);
+    max-width: 52rem;
+  }
+  .ly-list {
+    grid-column: 1 / -1;
+    grid-row: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-template-rows: subgrid;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .ly-row {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: subgrid;
+    margin: 0;
+    position: relative;
+  }
+
+  /* One spine from the first layer's node down into the band (or to the last node). */
+  .ly-rail {
+    position: relative;
+    grid-column: 1;
+    grid-row: 1 / -2;
+    justify-self: center;
+    width: 2px;
+    margin-top: calc(var(--pad) + 0.75rem);
+    margin-bottom: calc(-1 * (var(--pad) + 0.75rem));
+    pointer-events: none;
+  }
+  .has-focal .ly-rail { margin-bottom: calc(-1 * var(--s-3)); }
+  .ly-rail svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .ly-rail line { stroke: var(--rail-c); stroke-width: 2; fill: none; }
+
+  .ly-mark {
+    grid-column: 1;
+    justify-self: center;
+    align-self: start;
+    width: var(--dot);
+    height: var(--dot);
+    margin-top: calc(var(--pad) + 0.75rem - var(--dot) / 2);
+    border-radius: 50%;
+    background: var(--dg-bg);
+    border: 2px solid var(--rail-c);
+  }
+  .ly-text {
+    grid-column: 2;
+    display: grid;
+    gap: 0.3rem;
+    padding-block: var(--pad);
+    border-top: 1px solid var(--line);
+  }
+  .ly-row:last-child .ly-text { border-bottom: 1px solid var(--line); }
+  .ly-label {
+    font-size: clamp(1.1875rem, 1.1rem + 0.35vw, 1.3125rem);
+    font-weight: 700;
+    line-height: 1.5rem;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .ly-detail { font-size: 1rem; line-height: 1.45; color: var(--ink-2); max-width: 52ch; }
+
+  /* The enforced layer: a solid band the spine runs into. */
+  .ly-row.is-focal { margin-top: var(--s-3); }
+  .is-focal .ly-mark { display: none; }
+  .is-focal .ly-text {
+    grid-column: 1 / -1;
+    padding: var(--s-5) var(--s-5) var(--s-5) calc(var(--spine) + var(--s-3));
+    border: 0;
+    border-radius: var(--r-card);
+    background: var(--ink);
+    color: var(--on-ink);
+  }
+  :global([data-chapter]) .is-focal .ly-text { background: var(--ch); color: var(--on-chapter); }
+  .is-focal .ly-text::before {
+    content: "";
+    position: absolute;
+    top: calc(var(--dot) / -2);
+    left: calc(var(--spine) / 2 - var(--dot) / 2);
+    width: var(--dot);
+    height: var(--dot);
+    border-radius: 50%;
+    background: var(--dg-bg);
+    border: 2px solid var(--rail-c);
+  }
+  .is-focal .ly-text { position: relative; }
+  .is-focal .ly-label {
+    font-size: var(--step-2);
+    font-weight: 760;
+    font-variation-settings: "wdth" 104;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    color: inherit;
+  }
+  .is-focal .ly-detail { color: inherit; opacity: 0.92; }
+
+  /* Wide: label and detail side by side on each ruled row. */
+  @container ly (min-width: 40rem) {
+    .ly-text { grid-template-columns: minmax(0, 14rem) minmax(0, 1fr); column-gap: var(--s-6); align-items: baseline; }
+  }
+</style>

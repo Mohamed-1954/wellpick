@@ -1,0 +1,111 @@
+---
+import { getEntry } from 'astro:content';
+
+interface Props {
+  ids: string[];
+}
+const { ids } = Astro.props;
+const sources = await Promise.all(
+  ids.map(async (id) => {
+    const entry = await getEntry('sources', id);
+    if (!entry) throw new Error(`[Sources] Unknown source id: ${id}`);
+    return { id, ...entry.data };
+  }),
+);
+
+// Group by publisher so the vendor name is said once, not on every line.
+// Titles are stored as "Publisher — Page"; the group heading already names the publisher.
+const groups = [...new Set(sources.map((s) => s.publisher))].map((publisher) => ({
+  publisher,
+  items: sources
+    .filter((s) => s.publisher === publisher)
+    .map((s) => ({ ...s, label: s.title.includes(' — ') ? s.title.split(' — ').slice(1).join(': ') : s.title })),
+}));
+// Short lists stay open; long ones start as a one-line summary.
+const open = sources.length <= 8;
+const summary =
+  groups.length > 1
+    ? `${sources.length} pages we read: ${groups.map((g) => `${g.publisher} ${g.items.length}`).join(', ')}`
+    : `${sources.length} ${groups[0]?.publisher ?? ''} pages we read`;
+---
+
+<details class="sources" id="sources" open={open}>
+  <summary>
+    <span class="src-title">Sources</span>
+    <span class="src-count">{summary}</span>
+  </summary>
+  <div class="src-groups">
+    {
+      groups.map((g) => (
+        <section class="src-group" aria-label={`${g.publisher} sources`}>
+          <h3 class="src-publisher">{g.publisher}</h3>
+          <ol>
+            {g.items.map((s) => (
+              <li id={`src-${s.id}`}>
+                <a href={s.url} rel="noopener" target="_blank">{s.label}</a>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ))
+    }
+  </div>
+</details>
+
+<script>
+  // A link to #src-… opens the list first, so the target is never hidden.
+  const reveal = () => {
+    const target = location.hash.startsWith('#src-') ? document.getElementById(location.hash.slice(1)) : null;
+    const box = target?.closest('details');
+    if (box && !box.open) {
+      box.open = true;
+      target?.scrollIntoView();
+    }
+  };
+  reveal();
+  window.addEventListener('hashchange', reveal);
+</script>
+
+<style>
+  .sources {
+    margin-top: var(--s-7);
+    padding-top: var(--s-4);
+    border-top: 2px solid var(--ink);
+    max-width: none;
+  }
+  summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.9rem;
+    min-height: 2.75rem;
+    padding-block: 0.25rem;
+    cursor: pointer;
+    list-style: none;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: 'Show';
+    margin-left: auto;
+    font-size: 0.8125rem;
+    font-weight: 650;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    color: var(--ink);
+  }
+  .sources[open] summary::after { content: 'Hide'; }
+  .src-title { font-weight: 760; font-size: var(--step-1); font-variation-settings: "wdth" 108; color: var(--ink); }
+  .src-count { font-size: 0.875rem; color: var(--muted); }
+  .src-groups {
+    display: grid;
+    gap: var(--s-5) var(--s-6);
+    margin-top: var(--s-5);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  }
+  .src-publisher { font-size: 0.875rem; font-weight: 650; color: var(--ink); margin: 0 0 var(--s-2); padding-bottom: var(--s-2); border-bottom: 1px solid var(--line); }
+  .sources ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.55rem; font-size: 0.875rem; line-height: 1.4; }
+  .sources ol li { margin: 0; scroll-margin-top: calc(var(--header-h) + 2rem); }
+  .sources ol a { color: var(--ink); font-weight: 560; text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; text-decoration-color: var(--line-strong); }
+  .sources ol a:hover { text-decoration-color: var(--ink); }
+  .sources li:target a { background: var(--ch-wash, var(--surface-2)); }
+</style>

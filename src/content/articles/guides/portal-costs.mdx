@@ -1,0 +1,363 @@
+---
+title: Client portal costs and plan calculator
+description: Enter who logs in, your records and form needs. Get the first Softr, Noloco and Fillout plan that fits, priced on both billing bases.
+type: guide
+products: [softr, noloco, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+stage: decide
+order: 1
+cover:
+  name: noloco-dashboard.png
+  alt: "Noloco's published agency demo: a revenue dashboard with invoices paid, revenue collected and team billable hours, next to a blue sidebar with CRM, Clients, Project Management and Financials"
+---
+
+import PlanStrip from "../../../components/PlanStrip.astro";
+import PlanCalculator from "../../../components/PlanCalculator.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    The cheapest plan is the wrong plan if it lacks the access control you need.
+    Choose the controls and count the people first. Then compare the whole setup
+    on one billing basis.
+  </p>
+  <p>
+    Every price below is a USD list price. The plan
+    finder includes published seat and record add-ons; the tables show base
+    prices. Neither includes tax, discounts or usage overages. Confirm your
+    final bill with the vendor.
+  </p>
+</aside>
+
+<PlanCalculator />
+
+## The plans, on both billing bases
+
+Each vendor shows a lower monthly figure for yearly billing. That figure is the yearly price divided by 12. You pay it upfront. The monthly-billing price is the one you can stop after a month. Noloco's plans come from noloco.io/pricing: on Build, $65/month is the yearly-billing monthly equivalent and $79/month is monthly billing.
+
+<PlanStrip
+  plans={[
+    {
+      name: "Noloco Free",
+      value: "$0 · unlimited team seats · 50 active clients · 2 user roles",
+      barLabel: "2,000 records · 100 workflow runs/mo · 1 GB files",
+    },
+    {
+      name: "Noloco Build",
+      value:
+        "$79/mo billed monthly · $65/mo billed yearly · 10 team seats · 1,000 active clients",
+      barLabel: "25,000 records (buy up to 250,000) · 3,000 runs/mo · 20 GB",
+    },
+    {
+      name: "Noloco Enterprise",
+      value: "Custom price · custom seats · unlimited records and runs",
+      barLabel: "Unlimited",
+    },
+  ]}
+/>
+
+Softr's prices come from the structured pricing data on softr.io/pricing and the Softr pricing docs. User counts are app users; builders are counted separately.
+
+<PlanStrip
+  plans={[
+    {
+      name: "Softr Free",
+      value: "$0 · up to 3 builders · 5 app users in total",
+      barLabel: "5,000 records · 500 workflow actions/mo",
+    },
+    {
+      name: "Softr Basic",
+      value:
+        "$25/mo billed monthly · $19/mo billed yearly ($228) · 1 builder · 5 team + 5 client users",
+      barLabel: "50,000 records · 2,500 actions/mo",
+    },
+    {
+      name: "Softr Pro",
+      value:
+        "$119/mo billed monthly · $99/mo billed yearly ($1,188) · 2 builders · 10 team + 50 client users",
+      barLabel: "500,000 records · 10,000 actions/mo",
+    },
+    {
+      name: "Softr Business",
+      value:
+        "$395/mo billed monthly · $329/mo billed yearly ($3,948) · 3 builders · 30 team + 100 client users",
+      barLabel: "1M records · 25,000 actions/mo",
+    },
+  ]}
+/>
+
+Fillout's plans come from fillout.com/pricing. The Team bundle sits on the pricing page's Scale tab. Fillout does not charge per seat.
+
+<PlanStrip
+  plans={[
+    {
+      name: "Fillout Free",
+      value: "$0 · unlimited forms and seats",
+      barLabel: "1,000 responses/mo",
+    },
+    {
+      name: "Fillout Starter",
+      value: "$19/mo billed monthly · $15/mo billed yearly ($180)",
+      barLabel: "2,000 responses/mo",
+    },
+    {
+      name: "Fillout Pro",
+      value: "$49/mo billed monthly · $40/mo billed yearly ($480)",
+      barLabel: "5,000 responses/mo",
+    },
+    {
+      name: "Fillout Business",
+      value: "$89/mo billed monthly · $75/mo billed yearly ($900)",
+      barLabel: "Unlimited responses",
+    },
+    {
+      name: "Fillout Team",
+      value: "$300/mo billed monthly · $250/mo billed yearly ($3,000)",
+      barLabel: "Bundle: check contents",
+    },
+  ]}
+/>
+
+## The conditions that change the total
+
+The price row is the smallest part of the decision. These documented conditions decide which row you actually need.
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Plan conditions that change the cost of a portal setup"
+  tabIndex={0}
+>
+  <table>
+    <caption>Plans and what each includes</caption>
+    <thead>
+      <tr>
+        <th scope="col">Plan</th>
+        <th scope="col">What matters for a client portal</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Softr Free</th>
+        <td>
+          5 app users in total and up to 3 builders. That is enough for a
+          two-client test with one internal user. It is not enough for a real
+          client list.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Softr Basic</th>
+        <td>
+          5 team users and 5 client users, with no option to buy more. A team
+          user shares a business email domain with a builder. Gmail and other
+          free domains always count as client users.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Softr Pro</th>
+        <td>
+          Extra users cost $3/month per team user (up to 50) and $1/month per
+          client user (up to 250), per the docs. The plan adds granular
+          permissions and 3 custom user groups. An extra builder costs
+          $10/month billed yearly or $12/month billed monthly.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Softr Business</th>
+        <td>
+          The first plan with global create, edit and delete data
+          restrictions. 10 custom user groups. Extra users cost $5 (team, up to
+          100) and $2 (client, up to 500) per month.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Noloco Free</th>
+        <td>
+          2 user roles. Data comes from Noloco Tables or a CSV import only.
+          Workflows stop running after 100 runs in a month. The app shows a
+          “Powered by Noloco” badge.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Noloco Build</th>
+        <td>
+          Extra team seats cost $6 each on monthly billing or $5 on yearly
+          billing. Extra records cost $25 per 25,000, up to 250,000; beyond that
+          you need Enterprise. Runs above 3,000 continue and are billed as
+          overage. Extra storage costs $15/month per 10 GB. External sources
+          such as Airtable and Google Sheets start here.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Fillout Free, Starter, Pro</th>
+        <td>
+          20 MB per uploaded file. Login pages start at Starter. Over the
+          monthly response limit, forms keep collecting; you then upgrade, buy
+          bulk submissions or wait for the next month.
+        </td>
+      </tr>
+      <tr>
+        <th scope="row">Fillout Business and Team</th>
+        <td>
+          Business lists unlimited responses, uploads of 1 GB or more, and
+          Airtable duplicate prevention. The help docs list up to 1 GB per file
+          on Team. Confirm the rest of the Team bundle on the Scale tab before
+          you rely on it.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+One Softr feature has two different answers. The pricing page lists “Conditional form logic” under **Basic**. The Softr forms docs say the in-app Conditional Form Block is on the **Professional plan and higher**. If your portal needs a conditional form inside the app, ask Softr support which plan includes it before you buy Basic. Standalone Softr Forms are documented as free, with unlimited forms and submissions.
+
+## Worked examples: arithmetic, not recommendations
+
+**Noloco Build plus Fillout Starter.** Suppose you pay Noloco monthly and Fillout yearly. The monthly equivalent is $79 + $15 = **$94**. The first payment is different: $79 for the first portal month plus $180 for the form year = **$259**. Over 12 months, at unchanged rates, the two subscriptions total $79 × 12 + $180 = **$1,128**. Pay both monthly and the year costs ($79 + $19) × 12 = **$1,176**. Pay both yearly and it costs $65 × 12 + $180 = **$960**, all upfront.
+
+**Softr Basic plus Fillout Starter.** Both billed yearly: $228 + $180 = **$408** upfront, or $34/month as an equivalent. Fillout's Softr embed method needs a paid Softr account, so Free does not work for this pairing. Basic caps you at 5 client users. A sixth client contact means Pro: $1,188 + $180 = **$1,368** a year, both billed yearly.
+
+**Buy nothing.** If a shared folder and a weekly email already keep clients informed, the cost is **$0** plus the time you spend now. A portal has to beat that.
+
+These totals leave out extra seats, usage overage, data-source plans, storage, setup time and upkeep. [Softr vs Noloco](/compare/softr-vs-noloco/) prices both at six team sizes.
+
+## Put the required permissions above the price
+
+Documented boundaries:
+
+- **Softr:** global *view* restrictions on all plans, including Free. Global *create, edit and delete* restrictions on Business and above.
+- **Noloco:** record permissions on all plans. Field-level permissions and unlimited custom roles on Build and above. Free has 2 roles.
+- **Fillout:** Airtable duplicate prevention on Business and Enterprise only. It works with email and single-line fields.
+
+These are not matching feature bundles. If a plan lacks a control you need, it is not an alternative at any price. Run the [two-client test](/guides/client-portal-launch/) to decide which controls you need.
+
+## Capture the whole stack
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Portal budget categories"
+  tabIndex={0}
+>
+  <table>
+    <caption>Cost categories to investigate, not assumed charges</caption>
+    <thead>
+      <tr>
+        <th scope="col">Category</th>
+        <th scope="col">What to record</th>
+        <th scope="col">Question to resolve</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Portal subscription</th>
+        <td>
+          Exact plan, seats or users, currency and billing interval.
+        </td>
+        <td>Does it include every required control?</td>
+      </tr>
+      <tr>
+        <th scope="row">Data source</th>
+        <td>
+          Connected database or spreadsheet plan and any paid collaborators.
+        </td>
+        <td>Do portal users also need paid access to the source?</td>
+      </tr>
+      <tr>
+        <th scope="row">Intake</th>
+        <td>
+          Native forms or separate Fillout plan, response and feature needs.
+        </td>
+        <td>Does the extra form product solve a specific gap?</td>
+      </tr>
+      <tr>
+        <th scope="row">Files and automation</th>
+        <td>Storage, workflow usage, overage rules, and related services.</td>
+        <td>What happens during a busy month or a repeated run?</td>
+      </tr>
+      <tr>
+        <th scope="row">Setup and upkeep</th>
+        <td>
+          Estimated setup hours, ongoing hours, and an explicit internal hourly
+          value.
+        </td>
+        <td>Who owns changes, failures, and user support?</td>
+      </tr>
+      <tr>
+        <th scope="row">Exit and billing risk</th>
+        <td>
+          Cancellation, renewal, refunds, export needs, taxes, and payment fees.
+        </td>
+        <td>What cash is committed before you know the setup works?</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<a
+  class="download-link"
+  href="/resources/portal-cost-worksheet.csv"
+  download
+>
+  Download the blank cost worksheet (.csv) →
+</a>
+
+The worksheet is blank by design. It does not fetch live prices, calculate vendor charges, or treat an unknown cost as zero.
+
+## Count people the way each vendor counts them
+
+Count people, not client companies. One company can have several contacts.
+
+- **Noloco** counts a seat once a user logs in. An invited person who never signs in does not count. A team member shares an email domain with the app's builders; everyone else is a client. A deactivated user frees the seat from the next billing cycle.
+- **Softr** splits app users into team and client users by email domain. Builders are a separate count: 1, 2 or 3 included on Basic, Pro and Business.
+- **Fillout** does not charge per seat. The response limit and plan features set the price.
+
+**Checkpoint:** write down your number of team users, client contacts and builders. Then find the first plan on each product that holds all three.
+
+## Keep monthly equivalents separate from cash due
+
+A monthly equivalent is the yearly price divided by 12. It is not the amount due at checkout. It does not mean you can cancel monthly. Track three numbers separately: the monthly recurring equivalent, the upfront cash, and your estimated internal upkeep. Label estimates as estimates. Keep tax and currency conversion explicit.
+
+Both portal vendors offer a trial. Noloco documents a 14-day trial of Build with no credit card. Softr documents a 7-day trial of Business features, extended by 7 days if you add a card. Both list a 50% discount for non-profits. Price the plan you would keep after the trial, not the trial.
+
+## Which setup to price first
+
+- **Price Softr first** if your records already live in Airtable or another source, and your client list fits the user caps above.
+- **Price Noloco Build first** if staff and clients work in the same records and you need field-level permissions or more than 2 roles.
+- **Add Fillout** only when a native form misses a specific need, such as payments, page branching or large uploads.
+- **Buy nothing yet** if you cannot name the control or the task a portal must deliver.
+
+<NextSteps
+  items={[
+    {
+      to: "/guides/client-portal-launch/",
+      title: "Confirm the required controls before pricing the plan",
+      product: "softr",
+    },
+    {
+      to: "/compare/softr-vs-noloco/",
+      title: "Softr or Noloco: costs at six team sizes",
+      product: "noloco",
+    },
+    { to: "/start/", title: "Back to the stack decision" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrPricing",
+    "softrPlansDocs",
+    "softrRestrictions",
+    "softrForms",
+    "nolocoPricing",
+    "nolocoPricingGuide",
+    "nolocoRoles",
+    "filloutPricing",
+    "filloutBilling",
+    "filloutFiles",
+    "filloutDuplicates",
+    "filloutEmbed",
+  ]}
+/>

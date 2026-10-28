@@ -1,0 +1,74 @@
+---
+title: "Statuses that mean something: design the one field every client reads"
+seoTitle: "Project status fields clients can understand"
+description: "The status field is what clients read first in a portal. How to pick five or six statuses that name an owner and a next step, so board and portal agree."
+type: post
+topic: operations
+products: [noloco]
+sourceIds: [nolocoKanban, nolocoWorkflow, nolocoAccess]
+publishedAt: 2026-10-27
+updatedAt: 2026-10-27
+---
+
+<aside class="short-answer">
+  <p>
+    A good status answers two questions: who acts next, and what are they
+    doing? Keep five or six, one per handoff. Show clients the same field your
+    team uses, or a client-facing label mapped from it, never a second field
+    someone has to remember to update.
+  </p>
+</aside>
+
+Open any client portal and the status is the first thing a client reads. "In progress". "Review". "On hold". Most of them say very little.
+
+"In progress" does not tell the client whether they need to do anything. "Review" does not say who is reviewing. "On hold" invites a phone call. A status field that means something saves more messages than any notification.
+
+## The test for a good status
+
+Every status should complete this sentence:
+
+> Right now, **[someone]** is **[doing something]**, and the next step is **[a handoff]**.
+
+If you cannot finish it, the status is a mood, not a state.
+
+| Vague | Specific |
+| --- | --- |
+| In progress | We are designing (next: your review) |
+| Review | Waiting on your feedback |
+| On hold | Paused until you send the brand files |
+| Done | Delivered, final files in your folder |
+
+## How many statuses
+
+Five or six is plenty for most service work. One per handoff:
+
+1. **Brief received.** We are reading it.
+2. **Scoping.** We are preparing a quote.
+3. **Waiting on you.** A decision, an approval or files.
+4. **In production.** We are making the work.
+5. **In your review.** You are checking a draft.
+6. **Delivered.** Final files are with you.
+
+More than that and two statuses start to mean the same thing. Fewer and "in progress" swallows half the project.
+
+## One field, two labels
+
+Your team may want internal detail: "Internal QA", "Waiting on contractor". Clients do not need it. Resist the urge to add a second status field for clients. Someone will forget to update it.
+
+Instead, keep one status field and map each value to a client-facing label. "Internal QA" and "Waiting on contractor" can both show as "In production". How you do this depends on the tool: a formula field that turns the internal value into a client label is one common way.
+
+Then make sure clients cannot see the internal field itself. Noloco's docs separate visibility (what a page shows) from permissions (what a user can reach). Hiding a column on a page is visibility. Use a field permission if the internal value must stay private.
+
+## Let the status drive the board and the messages
+
+Once the status means something, use it everywhere:
+
+- **The board.** Noloco's docs define a kanban board by its grouping field, "typically a Single Option field like Status". Your status becomes the columns, and dragging a card to another column updates it.
+- **The portal.** Clients see the same columns in their own view, filtered to their records.
+- **Notifications.** A workflow triggered when the status changes to "Waiting on you" can email the client. That one message replaces a lot of chasing. Count it against your plan's [workflow runs](/blog/workflow-runs-explained/).
+
+## Test it with a client's eyes
+
+Take three real projects and read only their status, as a client would. For each one, ask: do I know whether I need to act? If the answer is "it depends", the status needs a sharper name.
+
+For setting up the records behind the status, see the [portal data model guide](/guides/portal-data-model/), which uses a status like this one throughout.

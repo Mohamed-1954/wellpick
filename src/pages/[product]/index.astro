@@ -1,0 +1,319 @@
+---
+import ProductHubLayout from '../../layouts/ProductHubLayout.astro';
+import { breadcrumbSchema } from '../../lib/breadcrumbSchema';
+import VideoFacade from '../../components/VideoFacade.astro';
+import FlowStage from '../../components/FlowStage.astro';
+import FactList from '../../components/FactList.astro';
+import Verdict from '../../components/Verdict.astro';
+import PlanLadder from '../../components/PlanLadder.astro';
+import OfficialCta from '../../components/OfficialCta.astro';
+import NextSteps from '../../components/NextSteps.astro';
+import Sources from '../../components/Sources.astro';
+import HubShowcase from '../../components/HubShowcase.astro';
+import AnnotatedShot from '../../components/AnnotatedShot.astro';
+import Icon from '../../components/Icon.astro';
+import { PRODUCT_IDS, getProduct, type ProductId } from '../../lib/site';
+import { HUBS } from '../../data/hubs';
+
+export function getStaticPaths() {
+  return PRODUCT_IDS.map((product) => ({ params: { product } }));
+}
+const { product } = Astro.params as { product: ProductId };
+const hub = HUBS[product];
+const p = await getProduct(product);
+const jsonLd = breadcrumbSchema([{ label: 'Home', href: '/' }, { label: p.name }], Astro.site ?? Astro.url);
+---
+
+<ProductHubLayout
+  product={product}
+  title={hub.title}
+  description={hub.description}
+  headline={hub.headline}
+  lead={hub.lead}
+  heroShot={hub.heroShot}
+  secondary={hub.guide}
+  jsonLd={jsonLd}
+>
+  <!-- Decide first -->
+  <section class="section hub-verdict" aria-labelledby="verdict-title">
+    <div class="shell">
+      <div class="hub-head">
+        <h2 id="verdict-title">Should you buy {p.name}?</h2>
+        <p class="lead">Who {p.name} fits, who it does not, and what to buy instead.</p>
+      </div>
+      <Verdict product={p.name} choose={hub.verdict.choose} elsewhere={hub.verdict.elsewhere} />
+    </div>
+  </section>
+
+  {
+    product === 'softr' && (
+      <section class="section annotated-band" aria-labelledby="read-title">
+        <div class="shell">
+          <div class="hub-head">
+            <h2 id="read-title">Read the screen.</h2>
+            <p class="lead">Softr’s demo portal, annotated with what each part does and where the access decisions sit.</p>
+          </div>
+          <AnnotatedShot
+            name="softr-portal.webp"
+            tone="softr"
+            alt="Softr's published client portal demo: sidebar navigation, project cards with status labels and an invoice table"
+            notes={[
+              { x: 11, y: 30, title: 'Portal pages', body: 'Projects, Tasks, Invoices, Contracts. Each page is a view over your records, not a document you maintain by hand.' },
+              { x: 13, y: 90, title: 'The signed-in client', body: 'Email is the unique user identifier. Deactivating a user blocks login but keeps the record.' },
+              { x: 52, y: 32, title: 'Status on the card', body: 'List and detail blocks read live records, so the client sees the current state without asking you.' },
+              { x: 55, y: 84, title: 'Records clients act on', body: 'The official tutorial adds Stripe invoice payment here. That is template behavior, not a default permission.' },
+            ]}
+          />
+        </div>
+      </section>
+    )
+  }
+
+  <!-- Screen showcase (v12): tabbed screens on the product's lit field. -->
+  <section class="section gallery" aria-labelledby="ui-title" data-chapter={product}>
+    <div class="shell">
+      <div class="hub-head">
+        <h2 id="ui-title">What you would be working in.</h2>
+        <p class="lead">{hub.galleryLead}</p>
+      </div>
+      <HubShowcase product={product} shots={hub.shots} />
+    </div>
+  </section>
+
+  <!-- Facts -->
+  <section class="section facts-band" aria-labelledby="facts-title">
+    <div class="shell facts-grid">
+      <div class="facts-side">
+        <h2 id="facts-title">Six facts that change the decision.</h2>
+        <p class="lead">The details that decide whether {p.name} works for you.</p>
+      </div>
+      <FactList items={hub.facts} large />
+    </div>
+  </section>
+
+  <!-- How it fits -->
+  <section class="section fit" aria-labelledby="fit-title">
+    <div class="shell">
+      <div class="hub-head">
+        <h2 id="fit-title">How it fits your workflow.</h2>
+        <p class="lead">{hub.fit.description}</p>
+      </div>
+      <FlowStage product={product} stops={hub.fit.stops} />
+    </div>
+  </section>
+
+  <!-- Plans -->
+  <section class="section plans" aria-labelledby="plans-title">
+    <div class="shell">
+      <div class="hub-head">
+        <h2 id="plans-title">Plans, and which one is yours.</h2>
+        <p class="lead">
+          {hub.planNote} <a class="text-link" href={`/${product}/pricing/`}>Full {p.name} pricing breakdown</a>
+        </p>
+      </div>
+      <PlanLadder product={product} specs={hub.specs} picks={hub.picks} />
+    </div>
+  </section>
+
+  <!-- Video -->
+  <section class="section video-band" aria-labelledby="video-title">
+    <div class="shell video-grid">
+      <div class="video-side">
+        <h2 id="video-title">Watch {p.name} explain it.</h2>
+        <p class="lead">{hub.video.note}</p>
+      </div>
+      <VideoFacade provider="youtube" id={hub.video.id} title={hub.video.title} product={product} channelNote={hub.video.channelNote} />
+    </div>
+  </section>
+
+  <!-- Deeper -->
+  <section class="section deeper" aria-labelledby="deeper-title">
+    <div class="shell deeper-layout">
+      <div class="deeper-head">
+        <h2 id="deeper-title">Details worth knowing before you build.</h2>
+        <p class="lead">Four checks to run before you commit. Open the ones that match your setup.</p>
+      </div>
+      <div class="deeper-grid">
+        {
+          product === 'softr' && (
+            <>
+              <details class="details">
+                <summary>Standalone forms vs the in-app form block</summary>
+                <p>Standalone Softr Forms collect a brief before someone has a portal account. They are documented with unlimited forms and submissions, even on Free. Unlimited submissions does not mean every connected service is unlimited.</p>
+                <p>The in-app Conditional Form Block lives inside a Softr app. Its plan is unclear: the pricing page lists conditional form logic on Basic, while the forms documentation says Professional and higher. Ask Softr before you build a workflow around it.</p>
+              </details>
+              <details class="details">
+                <summary>User sync, deactivation and deletion</summary>
+                <p>Users can be managed in Softr or synced from a data source. A filtered sync mode (Business) syncs only selected records, which can separate approved client contacts from every lead.</p>
+                <p>Deactivation keeps the record and blocks login. Unsyncing keeps the login but removes the source connection. Deleting a source record is not account removal: the user can come back on the next sync. Email is the unique identifier, so decide who handles email changes before inviting clients.</p>
+              </details>
+              <details class="details">
+                <summary>Global restrictions and the Comments exception</summary>
+                <p>Global data restrictions attach rules to a table and user groups, separately for view, create, edit and delete. A login page alone does not make a connected table safe for clients.</p>
+                <p>View restrictions work on every plan; create, edit and delete need Business. An earlier version of the same documentation said restrictions do not cover the Comments block. Confirm that exception before using comments with clients.</p>
+              </details>
+              <details class="details">
+                <summary>Choosing a data source</summary>
+                <p>New workflow with no database: evaluate Softr Databases. Existing Airtable: connect it before considering a migration. A spreadsheet acting as a database: clean up owners and stable IDs first. A technical database or API: evaluate the connector with its technical owner.</p>
+                <p>Softr’s own performance comparison between sources is an estimate, not a capacity guarantee.</p>
+              </details>
+            </>
+          )
+        }
+        {
+          product === 'noloco' && (
+            <>
+              <details class="details">
+                <summary>Agency OS and the smaller client view</summary>
+                <p>The official first-steps guide starts in CRM, creates a deal, marks the company as a client and creates a project. The same company record then appears in several views instead of separate lead and client copies.</p>
+                <p>In the template, clients see Portal Home, Projects, Tasks and Client Invoices, filtered to their company. They view and reply; they do not create or edit projects. Treat it as a reference setup, not a promise about a blank app.</p>
+              </details>
+              <details class="details">
+                <summary>Replies vs notes, and additive roles</summary>
+                <p>Agency OS separates a client-visible Reply from an internal Note. Internal notes are a Build feature. Staff need to know which one they are posting before they discuss an internal issue.</p>
+                <p>Roles add up across a user’s roles. A client account that also has a broad staff role keeps the staff access. Review every role a client has, not just the client role.</p>
+              </details>
+              <details class="details">
+                <summary>Sync, schema and manual recovery</summary>
+                <p>Live sync covers Airtable, SmartSuite and Stripe, with limited HubSpot support. Google Sheets, MySQL, PostgreSQL and Xano sync on a schedule that depends on the plan. Edits made in Noloco write back to the source.</p>
+                <p>For manual recovery, the guide describes Data, then the table, then Syncing, then Sync Now. A full source sync and a schema sync are separate actions. Put that in your handover notes.</p>
+              </details>
+              <details class="details">
+                <summary>Exports: what you can take with you</summary>
+                <p>Noloco documents CSV exports from table views and from the data table. For a linked field, the export includes both the display text and the Noloco ID.</p>
+                <p>A CSV is not a full app export: files, comments, permissions, workflows and settings need separate accounting. Test an export with fictional data before you commit.</p>
+              </details>
+            </>
+          )
+        }
+        {
+          product === 'fillout' && (
+            <>
+              <details class="details">
+                <summary>Update links are keys to a record</summary>
+                <p>Update mode gives you an Airtable formula that builds a unique link per record. Anyone who opens that link can see every field on the record, including fields that are not questions, because they feed prefill and logic.</p>
+                <p>Turn on “Restrict prefilled data” so the form loads only mapped fields, or keep private fields in a separate table. Test the case where the id is missing: the form then creates a new record.</p>
+              </details>
+              <details class="details">
+                <summary>Login forms vs prefilled values</summary>
+                <p>Login pages support email codes, passwords or SSO from Starter, with domain restrictions and a users table. Confirm your method is included in your plan.</p>
+                <p>An email in a URL parameter prefills the form. It does not prove the person owns that address. A record ID passed from a portal is context, not an access policy.</p>
+              </details>
+              <details class="details">
+                <summary>Several records from one submission</summary>
+                <p>Fillout documents a linked-record subform, combined forms, repeating a form and a webhook route for creating several Airtable records at once.</p>
+                <p>Every extra record type is a relationship to maintain. For many studios, one intake record plus a human review step is enough.</p>
+              </details>
+              <details class="details">
+                <summary>Files and duplicates</summary>
+                <p>Uploads allow 20 MB per file on Free, Starter and Pro, 1 GB on Business and Team, and 5 GB on Enterprise. The number of uploads is unlimited under fair use; file size is not.</p>
+                <p>Duplicate prevention for Airtable is Business only and checks email or single-line fields. Decide whether you are stopping duplicate contacts, duplicate requests or double processing.</p>
+              </details>
+            </>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Where next -->
+  <section class="section hub-next">
+    <div class="shell">
+      <NextSteps items={hub.next} />
+      <Sources ids={hub.sources} />
+    </div>
+  </section>
+
+  <!-- End: the one colored decision surface, full bleed like the hero band -->
+  <section class="hub-end" data-chapter={product}>
+    <div class="shell end-grid">
+      <p class="end-title">
+        Try the free plan with fictional data first. <span class="tone-2">Pay only when a real client workflow needs a paid limit or feature.</span>
+      </p>
+      <div class="end-actions">
+        <OfficialCta product={product} to="pricing" label={`See ${p.name} pricing`} placement="hub-end" onDark />
+        <a class="end-link" href={hub.guide.href}>{hub.guide.label} <Icon name="arrow-right-linear" /></a>
+      </div>
+    </div>
+  </section>
+</ProductHubLayout>
+
+<style>
+  /* Section heads: the headline, one line under it, then 40px to the content. */
+  .hub-head { display: grid; gap: var(--s-3); margin-bottom: clamp(2rem, 1.6rem + 1vw, 2.5rem); }
+  .hub-head .lead { max-width: 56ch; }
+  .hub-verdict { padding-top: clamp(3rem, 2rem + 3vw, 5rem); }
+
+  /* Facts: a full-bleed flat band, the heading sticky beside ruled rows. */
+  .facts-band { background: var(--surface-2); }
+  .facts-grid { display: grid; gap: var(--s-6); }
+  .facts-side { display: grid; gap: var(--s-4); align-content: start; }
+  @media (min-width: 64rem) {
+    .facts-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-8); }
+    .facts-side { position: sticky; top: calc(var(--header-h) + var(--s-6)); align-self: start; }
+  }
+
+  /* Video: 5/7 */
+  .video-grid { display: grid; gap: var(--s-6); }
+  @media (min-width: 64rem) { .video-grid { grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: var(--s-8); align-items: center; } }
+  .video-side { display: grid; gap: var(--s-4); }
+
+  /* Details (after Customer.io's FAQ): the heading holds the left column and
+     stays in view; one list of rows on the right, so open rows never leave a
+     gap beside a closed one. */
+  .deeper-layout { display: grid; gap: var(--s-6); }
+  .deeper-head { display: grid; gap: var(--s-4); align-content: start; }
+  @media (min-width: 64rem) {
+    .deeper-layout { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: var(--s-9); }
+    .deeper-head { position: sticky; top: calc(var(--header-h) + 2.5rem); }
+  }
+  .deeper-grid .details > summary { font-size: 1.1875rem; font-weight: 680; padding-block: 1.35rem; }
+  .deeper-grid .details > summary::before { top: calc(1.35rem + 0.7em - 1rem); }
+  .deeper-grid .details > p { max-width: 62ch; color: var(--ink-2); line-height: 1.65; }
+
+  .hub-next { padding-top: 0; }
+
+  /* End band: full bleed and square-edged like the hero band. */
+  .hub-end {
+    padding-block: var(--section);
+    background:
+      var(--grain),
+      radial-gradient(60% 100% at 96% 110%, color-mix(in oklab, var(--ch) 88%, oklch(0.94 0.03 90)) 0%, transparent 60%),
+      radial-gradient(60% 90% at 0% -10%, var(--ch-deep) 0%, transparent 62%),
+      var(--ch);
+    background-size: 160px, auto, auto, auto;
+    background-blend-mode: soft-light, normal, normal, normal;
+    color: var(--on-chapter);
+    --focus: var(--on-chapter);
+  }
+  .end-grid { display: grid; gap: var(--s-6); }
+  @media (min-width: 64rem) {
+    .end-grid { grid-template-columns: minmax(0, 8fr) minmax(0, 4fr); column-gap: var(--s-8); align-items: end; }
+  }
+  /* Three lines at 1280 and up: the size sits between --step-3 and --step-4. */
+  .end-title {
+    font-size: clamp(2rem, 1.45rem + 1.2vw, 2.5rem);
+    font-weight: var(--display-wght);
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.03em;
+    line-height: 1.04;
+    max-width: 30ch;
+    text-wrap: balance;
+  }
+  /* Muted clause on the chapter color: 3.65:1 on Fillout, 4.55:1 Softr, 4.66:1 Noloco (large text). */
+  .end-title .tone-2 { color: color-mix(in oklab, var(--on-chapter) 72%, var(--ch)); }
+  .end-actions { display: flex; flex-wrap: wrap; gap: var(--s-4) var(--s-5); align-items: center; }
+  @media (min-width: 64rem) { .end-actions { justify-content: flex-end; } }
+  .end-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 650;
+    text-decoration: underline;
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.22em;
+    text-decoration-color: color-mix(in oklab, currentColor 45%, transparent);
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .end-link:hover { text-decoration-color: currentColor; }
+</style>

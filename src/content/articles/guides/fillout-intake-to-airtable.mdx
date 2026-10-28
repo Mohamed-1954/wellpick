@@ -1,0 +1,366 @@
+---
+title: Send a Fillout intake form into Airtable
+description: Map Fillout intake questions to Airtable fields, then create a restricted update link so a client can correct a record without seeing internal fields.
+type: guide
+products: [fillout, softr]
+publishedAt: 2026-09-26
+updatedAt: 2026-09-26
+stage: build
+order: 3
+cover:
+  name: fillout-airtable-sync.png
+  alt: "Fillout's published illustration: a lead form with company, budget and lead-type fields whose Submit button feeds a new row into an Airtable table"
+---
+
+import FlowDiagram from "../../../components/FlowDiagram.astro";
+import Shot from "../../../components/Shot.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Build the Airtable table first, then connect one Fillout form to it and map
+    every question to a field. Add an update link only after you turn on
+    “Restrict prefilled data”, because the docs warn that an update link
+    otherwise shows every field on the record.
+  </p>
+  <p>
+    Fillout Free covers this build at up to 1,000 responses a month. Login
+    pages start on Starter ($15/mo billed annually, $19 monthly), and duplicate
+    prevention needs Business.
+  </p>
+</aside>
+
+<FlowDiagram
+  title="One enquiry, one record"
+  description="The form creates the record. Staff review it. The client corrects it through a per-record update link that edits the same row."
+  nodes={[
+    { label: "Visitor", sub: "opens form, ?source= in URL", glyph: "client" },
+    { label: "Fillout form", sub: "logic, hidden fields", product: "fillout" },
+    { label: "Airtable record", sub: "Enquiries table", marks: ["airtable"] },
+    { label: "Staff review", sub: "status set in Airtable", glyph: "team" },
+    { label: "Update link", sub: "same record, mapped fields only", product: "fillout" },
+  ]}
+  arrowLabels={["answers", "create", "review", "corrections"]}
+/>
+
+## What you are building
+
+The example business is fictional. **Fernhill Studio** is a two-person brand and web design studio. It gets about 40 enquiries a month. Today they arrive by email and someone retypes them into Airtable.
+
+The goal has two parts:
+
+1. A public intake form creates one Airtable record per enquiry. No retyping.
+2. Each record gets a unique update link. A client can correct their own answers. They cannot see Fernhill's internal notes.
+
+You need an Airtable base you can edit and a Fillout account. Use test data until the last step.
+
+## Step 1: build the Airtable table first
+
+Create an **Enquiries** table before you open Fillout. The form can only write to fields that exist. Fillout's Airtable guide states: “A form can only connect to one database and table at a time” (Google Sheets is the exception). So decide now which table owns the enquiry.
+
+Add these staff-only fields as well: **Status** (single select: New, Qualified, Declined), **Internal notes** (long text) and **Update link** (formula, added in step 7). The form never asks for them.
+
+If one submission must create several linked records, for example one enquiry plus two contacts, read Fillout's linked-record guide first. The help index also lists a separate multi-table feature. Do not design around it until you have read that page for your plan.
+
+**Checkpoint:** you can name the one table this form writes to. Every field in the mapping table below exists in it.
+
+## Step 2: create the form and map fields
+
+Create a form, choose Airtable as the integration, and connect your base and table. Map each question to a field, then publish. The docs say that after this, “Form responses will now automatically populate inside your Airtable database.”
+
+<Shot
+  name="fillout-form.png"
+  tone="fillout"
+  alt="Fillout's published illustration of the form editor: a short-answer field is dragged into a registration form between the Name and Email fields"
+/>
+
+The mapping for the fictional studio:
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Example field mapping for a fictional studio"
+  tabIndex={0}
+>
+  <table>
+    <caption>Example mapping for Fernhill Studio (fictional)</caption>
+    <thead>
+      <tr>
+        <th scope="col">Form question</th>
+        <th scope="col">Fillout field</th>
+        <th scope="col">Airtable field (type)</th>
+        <th scope="col">Note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Your name</th>
+        <td>Short answer</td>
+        <td>Contact name (single line text)</td>
+        <td>Required.</td>
+      </tr>
+      <tr>
+        <th scope="row">Work email</th>
+        <td>Email</td>
+        <td>Email (email)</td>
+        <td>Required. The key for duplicate checks on Business.</td>
+      </tr>
+      <tr>
+        <th scope="row">Company</th>
+        <td>Short answer</td>
+        <td>Company (single line text)</td>
+        <td>Free text. Staff link it to a Companies record later.</td>
+      </tr>
+      <tr>
+        <th scope="row">What do you need?</th>
+        <td>Multiple choice</td>
+        <td>Service (single select)</td>
+        <td>Brand identity, Website, Both. Use the same option text in both tools.</td>
+      </tr>
+      <tr>
+        <th scope="row">Budget range</th>
+        <td>Dropdown</td>
+        <td>Budget band (single select)</td>
+        <td>Under $3k, $3k to $8k, Over $8k.</td>
+      </tr>
+      <tr>
+        <th scope="row">Tell us about the project</th>
+        <td>Long answer</td>
+        <td>Brief (long text)</td>
+        <td>Required.</td>
+      </tr>
+      <tr>
+        <th scope="row">Current site or brand files</th>
+        <td>File upload</td>
+        <td>Attachments (attachment)</td>
+        <td>20 MB per file below Business.</td>
+      </tr>
+      <tr>
+        <th scope="row">Ideal start date</th>
+        <td>Date picker</td>
+        <td>Target start (date)</td>
+        <td>Optional.</td>
+      </tr>
+      <tr>
+        <th scope="row">(hidden) source</th>
+        <td>Hidden field from URL parameter</td>
+        <td>Lead source (single line text)</td>
+        <td>Filled from <code>?source=</code>. See step 4.</td>
+      </tr>
+      <tr>
+        <th scope="row">(not asked)</th>
+        <td>None</td>
+        <td>Status, Internal notes</td>
+        <td>Staff only. Never map these.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+**Checkpoint:** submit one test response. A new row appears in Enquiries, and each of the nine mapped fields holds the value you typed.
+
+## Step 3: add conditional fields and page branching
+
+Fillout lists conditional logic as included on the Free plan. The docs say a field can show or hide based on previous answers, URL parameters, data from an integration, or date information.
+
+Page logic is a separate feature. It sends the visitor to a different page based on answers. For Fernhill, a “Website” answer goes to a page that asks for the current site URL and page count. A “Brand identity” answer skips that page.
+
+<Shot
+  name="fillout-designer.png"
+  tone="fillout"
+  alt="Fillout's published illustration of the form designer: a qualifying form with company size, industry and product dropdowns next to a theme panel for brand colors"
+/>
+
+Mark a question as required only if every path shows it. If a branch hides a required question, test that the form still submits on that path (step 10).
+
+**Checkpoint:** preview the form twice, once per service. Each path shows only its own questions, and both paths reach the submit button.
+
+## Step 4: capture context with URL parameters and hidden fields
+
+You want to know where each enquiry came from without asking the visitor. Use a URL parameter:
+
+1. In the form, open **Settings → URL parameters** and register `source`. The docs have you register a parameter before you use it.
+2. Add a hidden field. The docs say: “To prefill a hidden field, set the parameter as the Default value, and `Hide always`.”
+3. Map the hidden field to **Lead source** in Airtable.
+4. Share links such as `…?source=newsletter` and `…?source=instagram`.
+
+URL parameters are one of several prefill sources. The docs also list other answers (including login info), calculations, dates, enriched emails, static values and database records. Pricing lists prefill and hidden fields on all plans.
+
+A URL parameter is text the visitor can edit. Use it for attribution, not for anything that grants access.
+
+**Checkpoint:** open the form with `?source=test-link` and submit. Lead source in Airtable reads `test-link`. Open it again with no parameter. Lead source is empty, not an error.
+
+## Step 5: decide when the form writes, and what counts as a duplicate
+
+Fillout documents **conditional integrations**. The Airtable write runs only when a condition you set is true. Fernhill could skip the write when a visitor answers “No” to “Are you a business?”. Remember the cost: if the condition fails, there is no Airtable record for staff to see. Show those visitors a clear ending page instead.
+
+Duplicates are the next question. The same person may submit twice. Fillout's “Prevent duplicates?” toggle for Airtable is documented for Business and Enterprise only. It “currently works with email and single line fields”. On lower plans, plan a staff routine instead: sort Enquiries by Email once a week and merge by hand.
+
+**Checkpoint:** you have written down two things. First, which answers stop the Airtable write. Second, who handles a repeat email, and how.
+
+## Step 6: set file and payment rules
+
+**Files.** The file-upload guide lists these per-file limits: up to 20 MB on Free, Starter and Pro; up to 1 GB on Business and Team; up to 5 GB on Enterprise. The number of uploads is unlimited under a fair-use policy. The pricing page shows Business as “1 GB+”, while the help page says “up to 1 GB”. Plan for 1 GB and confirm with Fillout if you need more. You can also set a minimum and maximum number of files, a size limit and accepted file types. A brand-files question should accept PDF, PNG, SVG and ZIP, not everything.
+
+**Payments.** Fillout documents a Stripe-powered payment page for one-time payments, subscriptions or pay-what-you-want amounts. The docs say it is available “on all plans with no additional fees”. The usual Stripe fees still apply. There is one gap for VAT-registered businesses: “Fillout doesn't support automatically adding VAT.” You must build VAT into the amount yourself, or take payment elsewhere. The Stripe Payment ID can be mapped to an integration. Map it to a field, for example **Deposit payment ID**, so staff can match a deposit to an enquiry.
+
+**Checkpoint:** upload a file over 20 MB on a Free-plan test form. It is rejected. If you added a payment, a Stripe test payment writes its Payment ID to the record.
+
+## Step 7: add the update link for corrections
+
+Clients will send corrections: a new budget, a different start date. Do not let them email changes to staff. Give each record its own edit link.
+
+1. In the form's Airtable integration, choose **Update record**. The docs say: “You'll now get a formula that defines a unique link for every record.”
+2. Copy that formula into the **Update link** formula field in Enquiries.
+3. Turn on **Restrict prefilled data**.
+
+Step 3 is the important one. Fillout's warning is direct: “An update link acts as a key to the entire record: anyone who opens it can view every field on the record.” For Fernhill that includes Internal notes and Status. The “Restrict prefilled data” toggle limits the link to mapped fields. The docs' other option is to keep private fields in a separate table.
+
+Also know the fallback: “If you don't provide an id in the unique URL, the form will create a new record instead.” A broken or trimmed link does not fail. It creates a second row.
+
+The docs use two similar names. Update forms that pre-fetch record data work on Free. A separate feature called “Pre-fetch data” is listed for Business and Enterprise only. If you need to load data other than the record being edited, check that page against your plan.
+
+**Checkpoint:** open one record's update link. The form shows that record's answers. Internal notes is not visible anywhere on the page. Change the budget and submit. The same row changes and no new row appears.
+
+## Step 8: decide who may open the form
+
+An update link is a bearer key. Anyone who has it can use it. If that is not acceptable, use a login page.
+
+Login pages are “available on Starter, Pro, Business, and Enterprise plans”. The documented types are Email (code), Password and SSO. The options include “Restrict domains”, “Limit to 1 submission”, “Connect to database” (a users table) and “Can edit existing responses”.
+
+A prefilled email is not a login. An email passed in the URL, or from a Softr page, fills a field. It does not prove who is typing.
+
+**Checkpoint:** answer one question in writing. Is a leaked update link acceptable for this data? If not, budget for Starter or higher and turn on a login page.
+
+## Step 9: embed in Softr and trigger a workflow (optional)
+
+If your client portal runs on Softr, you can put the form inside it. Fillout's Softr guide makes three points:
+
+- It uses a **Custom code block** and says “You'll need a paid Softr account to use this method”. Softr Basic is $19/mo billed annually or $25 monthly.
+- Some field types need at least **600 px** of embed height. Examples are date, record picker, signature, subform and address fields.
+- The embed snippet can pass the logged-in Softr user. It sets `data-email`, `data-name` and `data-id` from `window.logged_in_user` (`softr_user_email`, `softr_user_full_name`, `airtable_record_id`). The form also inherits URL parameters from the Softr page, such as `recordID`, if you registered them.
+
+On the Softr side, Softr Workflows include a Fillout **New Submission** trigger. Use it to send the next step, such as a notification to the project owner.
+
+The passed user values fill fields. They are context, not proof of identity (see step 8).
+
+**Checkpoint:** sign in to the Softr test app as a test client on a phone-width screen. The form shows the whole date field without clipping. The submitted record carries the test client's email.
+
+## Step 10: test these five submissions
+
+Use test data and check Airtable after each one.
+
+1. **Clean path with a source.** Open `…?source=test-a` and choose Website. *Expect:* one new row, all mapped fields filled, and Lead source `test-a`.
+2. **Other branch with a file.** Choose Brand identity and upload one small PDF and one file over your plan's limit. *Expect:* the website page is skipped, the large file is rejected, and the PDF is in Attachments.
+3. **Condition not met.** Give the answer that stops the conditional integration. *Expect:* the visitor sees your ending page and no row appears. Confirm staff accept that loss.
+4. **Correction via update link.** Open the Update link from submission 1 and change the budget. *Expect:* the same row changes, there is no new row, and Internal notes never appears. Then open the link with the record id deleted. *Expect:* a new row, as documented. Delete it.
+5. **Repeat email.** Submit again with submission 1's email. *Expect:* a second row on Free, Starter and Pro. On Business with “Prevent duplicates?” on, record what actually happens before you rely on it.
+
+If all five behave as expected, share the real link.
+
+## What it costs
+
+Annual prices below are per month, billed annually.
+
+<div
+  class="table-scroll"
+  role="region"
+  aria-label="Fillout plans relevant to this build"
+  tabIndex={0}
+>
+  <table>
+    <caption>Fillout plans for an intake form</caption>
+    <thead>
+      <tr>
+        <th scope="col">Plan</th>
+        <th scope="col">Annual billing</th>
+        <th scope="col">Monthly billing</th>
+        <th scope="col">Responses/mo</th>
+        <th scope="col">What this build gains</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Free</th>
+        <td>$0</td>
+        <td>$0</td>
+        <td>1,000</td>
+        <td>Airtable create and update, logic, hidden fields, payments, 20 MB files</td>
+      </tr>
+      <tr>
+        <th scope="row">Starter</th>
+        <td>$15/mo</td>
+        <td>$19/mo</td>
+        <td>2,000</td>
+        <td>Login pages, redirect on completion, CAPTCHA</td>
+      </tr>
+      <tr>
+        <th scope="row">Pro</th>
+        <td>$40/mo</td>
+        <td>$49/mo</td>
+        <td>5,000</td>
+        <td>Remove Fillout branding</td>
+      </tr>
+      <tr>
+        <th scope="row">Business</th>
+        <td>$75/mo</td>
+        <td>$89/mo</td>
+        <td>Unlimited</td>
+        <td>Duplicate prevention, 1 GB files, pre-fetch data, partial submissions, custom domain</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+For Fernhill's 40 enquiries a month, volume never decides the plan. Features do. Stay on Free if a bearer update link is acceptable and files are small. Move to Starter for a login page. Move to Business only if you need duplicate prevention or large uploads. The pricing FAQ says that over the response limit “Your forms will still collect responses”, and you then upgrade, buy more, or wait for the next month.
+
+## When you do not need Fillout
+
+Some readers should stop here.
+
+- **Your portal is on Softr and the form is simple.** Standalone Softr Forms are documented with unlimited forms and submissions, including on Free, plus conditional logic and validation. For the in-app Conditional Form Block, the sources disagree: the pricing page lists conditional form logic under Basic, while the forms docs say Professional and higher. Check in your workspace before you pay. The full comparison is in [Softr Forms vs Fillout](/compare/softr-forms-vs-fillout/).
+- **Your team runs on Noloco.** Noloco views include forms that create records. Compare that route in [Softr vs Noloco](/compare/softr-vs-noloco/).
+- **You get a few enquiries a month and nobody retypes them.** Then an email inbox is fine. Buy nothing until the retyping costs you real time.
+
+Choose Fillout when you need at least one of these: page branching, URL-parameter attribution, per-record update links, a payment step, or a login page, all writing to Airtable.
+
+<NextSteps
+  items={[
+    {
+      to: "/compare/softr-forms-vs-fillout/",
+      title: "Check whether Softr Forms already cover it",
+      product: "softr",
+    },
+    {
+      to: "/guides/portal-data-model/",
+      title: "Move each brief through five intake states",
+      product: "fillout",
+    },
+    { to: "/fillout/pricing/", title: "Compare Fillout plans", product: "fillout" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "filloutAirtable",
+    "filloutLinked",
+    "filloutLogic",
+    "filloutPageLogic",
+    "filloutUrlParams",
+    "filloutPrefill",
+    "filloutConditionalIntegration",
+    "filloutDuplicates",
+    "filloutFiles",
+    "filloutPayments",
+    "filloutUpdate",
+    "filloutPrefetch",
+    "filloutLogin",
+    "filloutEmbed",
+    "softrFilloutTrigger",
+    "softrPricing",
+    "softrForms",
+    "nolocoForms",
+    "filloutPricing",
+  ]}
+/>

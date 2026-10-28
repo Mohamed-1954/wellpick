@@ -1,0 +1,77 @@
+---
+// Comparisons as a card grid after Mintlify's blog index: a cover (the
+// compared products' lit fields blended, their glyphs, their real screens
+// staged as overlapping planes), then the title, the one-line description
+// and the products named in text. Shared by home and /compare/.
+import type { CollectionEntry } from 'astro:content';
+import type { ProductId } from '../lib/site';
+import Icon from './Icon.astro';
+import Cover from './Cover.astro';
+
+interface Props {
+  items: CollectionEntry<'articles'>[];
+}
+const { items } = Astro.props;
+const PRODUCT_NAME: Record<string, string> = { fillout: 'Fillout', softr: 'Softr', noloco: 'Noloco' };
+// Each comparison gets its own pair of real screens, so no two covers repeat.
+const SCREENS: Record<string, { shot?: string; shot2?: string }> = {
+  'compare/softr-vs-noloco': { shot: 'softr-portal.webp', shot2: 'noloco-portal-canvas.png' },
+  'compare/airtable-portals-vs-softr': { shot: 'softr-uc-documents.webp', shot2: 'noloco-limit-access.png' },
+  'compare/softr-forms-vs-fillout': { shot: 'softr-form.webp', shot2: 'fillout-builder-card.png' },
+  'compare/fillout-vs-tally': { shot: 'fillout-airtable-form.png' },
+};
+---
+
+<ul class="cmp-grid" data-reveal-stagger="90">
+  {
+    items.map((c) => {
+      const ids = c.data.products.map((p) => p.id as ProductId);
+      return (
+        <li data-reveal>
+          <a class="cmp-card" href={`/${c.id}/`}>
+            <Cover products={ids.slice(0, 2)} {...SCREENS[c.id]} sizes="(min-width: 64rem) 36rem, 92vw" />
+            <span class="cmp-title">
+              {c.data.title}
+              <Icon name="arrow-right-linear" class="cmp-arrow" size="1.25rem" />
+            </span>
+            <span class="cmp-desc">{c.data.description}</span>
+            <span class="cmp-tools">
+              {ids.map((p) => (
+                <span data-chapter={p}>
+                  <span class="chip-dot" aria-hidden="true" />
+                  {PRODUCT_NAME[p]}
+                </span>
+              ))}
+            </span>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>
+
+<style>
+  .cmp-grid { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s-7) var(--s-6); }
+  @media (min-width: 48rem) { .cmp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .cmp-card { display: grid; align-content: start; gap: var(--s-3); color: var(--ink); text-decoration: none; }
+  .cmp-card :global(.cover) { margin-bottom: var(--s-2); }
+  .cmp-title {
+    font-size: var(--step-2);
+    font-weight: 720;
+    font-variation-settings: "wdth" var(--display-wdth);
+    letter-spacing: -0.015em;
+    line-height: 1.2;
+    text-wrap: balance;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 0.18em;
+    text-decoration-color: transparent;
+    transition: text-decoration-color var(--t-fast) var(--ease-out);
+  }
+  .cmp-card :global(.cmp-arrow) { display: inline-block; margin-left: 0.3em; vertical-align: -0.12em; transition: transform var(--t-fast) var(--ease-out); }
+  .cmp-desc { max-width: 60ch; font-size: 1rem; line-height: 1.5; color: var(--ink-2); }
+  .cmp-tools { display: flex; flex-wrap: wrap; gap: 0.25rem var(--s-4); font-size: 0.875rem; font-weight: 600; color: var(--ink-2); }
+  .cmp-tools > span { display: inline-flex; align-items: center; gap: 0.45rem; }
+  .cmp-card:hover .cmp-title, .cmp-card:focus-visible .cmp-title { text-decoration-color: currentColor; }
+  .cmp-card:hover :global(.cmp-arrow) { transform: translateX(4px); }
+</style>

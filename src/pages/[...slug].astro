@@ -1,0 +1,77 @@
+---
+import { getCollection, render } from 'astro:content';
+import ArticleLayout from '../layouts/ArticleLayout.astro';
+import MorePosts from '../components/MorePosts.astro';
+import Sources from '../components/Sources.astro';
+import { breadcrumbSchema } from '../lib/breadcrumbSchema';
+import { isoDate } from '../lib/format';
+import { vendorImage } from '../lib/media';
+import { readingMinutes as estimate } from '../lib/posts';
+import { SITE } from '../lib/site';
+import type { TopicId } from '../data/blog';
+
+export async function getStaticPaths() {
+  const articles = await getCollection('articles', (a) => !a.data.draft);
+  return articles.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { Content, headings } = await render(entry);
+const d = entry.data;
+
+const STAGE_LABEL = { decide: 'Decide', build: 'Build', launch: 'Launch' } as const;
+const section = entry.id.split('/')[0];
+const kind = d.type === 'post' ? 'post' : d.type === 'comparison' ? 'comparison' : d.type === 'page' ? 'page' : 'guide';
+if (kind === 'post' && !d.topic) throw new Error(`[blog] ${entry.id} has no topic`);
+const stageLabel = kind === 'guide' && d.stage ? `${STAGE_LABEL[d.stage]} stage` : undefined;
+const crumbs = [
+  { label: 'Home', href: '/' },
+  ...(section === 'guides' ? [{ label: 'Guides', href: '/guides/' }] : []),
+  ...(section === 'compare' ? [{ label: 'Compare', href: '/compare/' }] : []),
+  ...(section === 'blog' ? [{ label: 'Blog', href: '/blog/' }] : []),
+  { label: d.title },
+];
+const readingMinutes = kind === 'page' ? undefined : estimate(entry.body);
+
+// Article markup is for editorial guides, comparisons and posts, not legal or
+// trust pages. Breadcrumb markup always mirrors the visible trail.
+const site = Astro.site ?? Astro.url;
+const abs = (path: string) => new URL(path, site).href;
+const jsonLd = [
+  ...(kind === 'page' ? [] : [{
+    '@context': 'https://schema.org',
+    '@type': kind === 'post' ? 'BlogPosting' : 'Article',
+    headline: d.title,
+    description: d.description,
+    datePublished: isoDate(d.publishedAt),
+    dateModified: isoDate(d.updatedAt),
+    author: { '@type': 'Organization', name: SITE.name, url: abs('/about/') },
+    publisher: { '@type': 'Organization', name: SITE.name, url: abs('/') },
+    mainEntityOfPage: abs(`/${entry.id}/`),
+    ...(d.cover ? { image: abs(vendorImage(d.cover.name).src) } : kind === 'post' ? { image: abs('/og.jpg') } : {}),
+  }]),
+  breadcrumbSchema(crumbs, site),
+];
+const post = kind === 'post'
+  ? { topic: d.topic as TopicId, publishedAt: d.publishedAt, updatedAt: d.updatedAt, seed: entry.id }
+  : undefined;
+---
+
+<ArticleLayout
+  title={d.title}
+  description={d.description}
+  kind={kind}
+  stageLabel={stageLabel}
+  breadcrumbs={crumbs}
+  headings={headings}
+  products={d.products.map((p) => p.id as 'softr' | 'noloco' | 'fillout')}
+  readingMinutes={readingMinutes}
+  cover={d.cover}
+  jsonLd={jsonLd}
+  post={post}
+  seoTitle={d.seoTitle}
+>
+  <Content />
+  {post && d.sourceIds.length > 0 && <Sources ids={d.sourceIds.map((s) => s.id)} />}
+  {post && <MorePosts slot="after" current={entry.id} topic={post.topic} />}
+</ArticleLayout>

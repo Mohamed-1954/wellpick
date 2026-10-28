@@ -1,0 +1,155 @@
+---
+title: Client portal launch and access checklist
+description: "Test cross-client access before you invite anyone: two fictional clients, a downloadable permission log, plan limits and a rollback plan."
+type: guide
+products: [softr, noloco, fillout]
+publishedAt: 2026-09-18
+updatedAt: 2026-09-27
+stage: launch
+order: 1
+cover:
+  name: softr-uc-account.webp
+  alt: "Softr's published client-portal use case: a signed-in user's My account page with name, email and password fields, an Update button, and the user's role shown as Employee"
+---
+
+import LayerDiagram from "../../../components/LayerDiagram.astro";
+import NextSteps from "../../../components/NextSteps.astro";
+import Sources from "../../../components/Sources.astro";
+
+<aside class="short-answer">
+  <p>
+    Before you invite anyone, sign in as a fictional Client A and try to reach
+    Client B's records: through lists, search, direct links, pickers, exports,
+    files and comments. One success is a stop.
+  </p>
+  <p>
+    Then check the limit you will hit first, name who can switch the portal
+    off, and invite one client before the rest. Every check in the downloadable
+    log starts as NOT_RUN. It is a test plan, not a passed test.
+  </p>
+</aside>
+
+<LayerDiagram
+  title="Where the boundary actually lives"
+  description="Filters and visibility shape what a view displays; only permissions control which records and fields a user can reach."
+  layers={[
+    { label: "Filters", detail: "Records shown in a view; cosmetic only" },
+    { label: "Visibility", detail: "Pages and interface elements a user sees" },
+    { label: "Permissions", detail: "Record and field access: the real boundary" },
+  ]}
+/>
+
+A record that disappears from a list can still be reachable. Noloco's docs say this directly: visibility rules and filters change the interface, and the data stays reachable by URL or API. Test what an unauthorized user receives, not what the screen shows. Only test an app you own, with fictional records.
+
+## 1. Build a fixture you can read at a glance
+
+Create two fictional companies, Company A and Company B, with two projects each and obvious labels such as “A-only project”. Add one client user per company, one staff user, an internal-only note and a harmless sample file.
+
+Write the expected rules before you touch the settings:
+
+- Each client reads only its own company's records.
+- Neither client can read internal notes or change which company a record belongs to.
+- Only the intended role can create, edit or delete each record type.
+
+## 2. Know the rule your product applies
+
+- **Softr:** global data restrictions separate view, create, edit and delete. View restrictions work on every plan; create, edit and delete restrictions need Business. Pro has 3 custom user groups and Business 10. An earlier version of the docs said a “Can't” rule beats a conflicting group rule, and that the restrictions do not cover the Comments block. Test comments on their own.
+- **Noloco:** permissions are enforced on the server. Permissions from several roles add up; two record rules inside one role narrow to records that match both. Free has 2 roles; field-level permissions and more roles need Build. Use “View as User”, then repeat the test in a real session.
+- **Fillout:** an Airtable update link is a key to the whole record. Anyone who opens it can see every field unless “Restrict prefilled data” is on. A hidden field or prefilled email is context, not proof of who submitted.
+
+## 3. Run the checks in separate sessions
+
+Use separate browser profiles or private windows for A, B and the staff user. An admin preview is not the path a client takes. Record the plan, the date and each user's roles with every run.
+
+<div class="table-scroll" role="region" aria-label="Two-client permission checks" tabIndex={0}>
+  <table>
+    <caption>Minimum checks before inviting a real client</caption>
+    <thead>
+      <tr><th scope="col">Check</th><th scope="col">Action</th><th scope="col">Pass when</th></tr>
+    </thead>
+    <tbody>
+      <tr><th scope="row">List and search</th><td>Sign in as A. Search for B's unique project label.</td><td>No B data is returned.</td></tr>
+      <tr><th scope="row">Direct link</th><td>Open a known B record URL while signed in as A.</td><td>No B data, even outside normal navigation.</td></tr>
+      <tr><th scope="row">Pickers and related lists</th><td>Open every relationship selector as A, then as B.</td><td>No other company's names are offered, even in a dropdown.</td></tr>
+      <tr><th scope="row">Exports</th><td>Run each enabled export as a client; open the file.</td><td>Only permitted rows and columns.</td></tr>
+      <tr><th scope="row">Create and edit</th><td>Try actions outside the client's role.</td><td>Denied; the record is unchanged.</td></tr>
+      <tr><th scope="row">Company assignment</th><td>Try to move a record to the other company.</td><td>The client cannot grant itself access.</td></tr>
+      <tr><th scope="row">Files and comments</th><td>Open linked files and comments as the other client, then signed out.</td><td>Access matches your written rule.</td></tr>
+      <tr><th scope="row">Several roles</th><td>Give a test user the real combination of roles or groups.</td><td>Access matches the policy, not one role's settings.</td></tr>
+      <tr><th scope="row">Update links</th><td>Open a Fillout update link for an A record in a fresh window.</td><td>No internal fields are visible.</td></tr>
+      <tr><th scope="row">Offboarding</th><td>Revoke access; try the old session, a new login and saved links.</td><td>Access is gone; any exception is written down.</td></tr>
+    </tbody>
+  </table>
+</div>
+
+Run every cross-client check in both directions: a rule can protect A and still expose B. A rejected edit can still reveal another client's name in its error or picker.
+
+<a class="download-link" href="/resources/portal-permission-checks.csv" download>
+  Download the permission test log (.csv) →
+</a>
+
+For each row, record the expected outcome, the actual outcome, where the evidence is and which user you were signed in as. Mark PASS only when you observed the expected outcome. Mark FAIL when you did not, BLOCKED when setup was missing, and NOT_RUN when nobody tried. Keep secrets and personal data out of screenshots.
+
+**If a check fails:** stop. Fix the configuration and rerun the whole table. Hiding the route is not a fix. If the control you need is on a higher plan, price that plan in the [cost guide](/guides/portal-costs/) before you compare products. A passing run covers only that configuration and date. Rerun after any change to roles, tables or file storage.
+
+## 4. Check the limit you will hit first
+
+What happens at each limit, per the vendors' docs:
+
+- **Softr users:** Free allows 5 app users in total. Basic allows 5 team and 5 client users, and you cannot buy more. Past a plan's maximum, new users are created but stay deactivated. That means a client can be invited and still be unable to sign in. Staff on Gmail count as client users.
+- **Noloco seats:** a user takes a seat once they log in. Deactivating a user frees the seat from the next billing cycle, and the records stay.
+- **Noloco workflows:** Free allows 100 runs a month, then workflows stop. Build includes 3,000; extra runs continue and are billed.
+- **Fillout responses:** over the monthly limit, forms keep collecting. You then upgrade, buy bulk submissions or wait for the next month.
+
+**Checkpoint:** for each product, write down the limit you are closest to and who gets told when you reach it.
+
+## 5. Name who can switch it off
+
+Name one person for each of these:
+
+- approving permission changes;
+- chasing a missing form response;
+- fixing a broken record link or a wrong notification;
+- billing and renewal;
+- pausing access or reversing a bad change.
+
+Write down the route for “a client saw the wrong project”: who pauses access, how the change is reversed, and whether your export is usable. Noloco documents CSV exports that keep linked-record IDs, but a CSV is records, not a whole app. Records in Airtable stay in Airtable.
+
+## 6. Send an invitation that sets expectations
+
+Tell the client what the portal is for, the first thing to do, who to contact when access fails, and which channel to use for anything urgent. A pattern to adapt:
+
+> Your project workspace is ready. Open it and check the project brief. If anything is wrong, reply to your project contact before approving it.
+
+Record “invited” as an event. It does not prove the client logged in.
+
+## 7. Invite one client, then review
+
+Invite one friendly client first. After their first real week, check four things. Where did they stop? Which submissions arrived incomplete? Did internal notes stay internal? Did the promised process happen? If a boundary fails, disable the exposed path first, tell the internal owner, fix the setup and rerun section 3 before you invite anyone else.
+
+<NextSteps
+  items={[
+    { to: "/guides/portal-costs/", title: "Price the plan that has the control you need" },
+    { to: "/guides/portal-data-model/", title: "Link contacts to companies before you test" },
+    { to: "/guides/build-noloco-client-portal/", title: "Set up company-scoped permissions in Noloco", product: "noloco" },
+    { to: "/guides/build-softr-client-portal/", title: "Configure user groups in Softr", product: "softr" },
+  ]}
+/>
+
+<Sources
+  ids={[
+    "softrRestrictions",
+    "softrPlansDocs",
+    "softrUserSync",
+    "nolocoRoles",
+    "nolocoAccess",
+    "nolocoRecordRules",
+    "nolocoQuickStart",
+    "nolocoPricing",
+    "nolocoPricingGuide",
+    "nolocoExport",
+    "filloutUpdate",
+    "filloutLogin",
+    "filloutPricing",
+  ]}
+/>

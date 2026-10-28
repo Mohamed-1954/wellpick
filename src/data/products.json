@@ -1,0 +1,38 @@
+{
+  "softr": {
+    "name": "Softr",
+    "role": "Client portal",
+    "tagline": "Turn your records into a client portal.",
+    "hue": 280,
+    "officialUrl": "https://www.softr.io",
+    "pricingUrl": "https://www.softr.io/pricing",
+    "affiliateUrl": null,
+    "affiliateStatus": "none",
+    "videoIds": ["9QHOcQMY2RA"],
+    "order": 1
+  },
+  "noloco": {
+    "name": "Noloco",
+    "role": "Portal + team operations",
+    "tagline": "The portal and the team that runs it, on the same records.",
+    "hue": 190,
+    "officialUrl": "https://noloco.io",
+    "pricingUrl": "https://noloco.io/pricing",
+    "affiliateUrl": null,
+    "affiliateStatus": "none",
+    "videoIds": ["6GT82uz0QrM"],
+    "order": 2
+  },
+  "fillout": {
+    "name": "Fillout",
+    "role": "Intake + connected records",
+    "tagline": "Collect a brief you can actually work from.",
+    "hue": 60,
+    "officialUrl": "https://www.fillout.com",
+    "pricingUrl": "https://www.fillout.com/pricing",
+    "affiliateUrl": null,
+    "affiliateStatus": "none",
+    "videoIds": ["ZhdKHlztgsk"],
+    "order": 3
+  }
+}

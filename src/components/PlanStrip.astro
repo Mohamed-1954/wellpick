@@ -1,0 +1,66 @@
+---
+// A vendor's plans side by side in one joined row: an ink rule on top,
+// hairlines between plans, no boxes. Each plan's value reads as lines
+// (price first); the limit line sits under a hairline. Narrow columns
+// stack the plans as ruled blocks.
+
+interface Plan {
+  name: string;
+  /** Facts joined with " · "; the first one (usually the price) leads. */
+  value: string;
+  barLabel?: string;
+}
+interface Props {
+  plans: Plan[];
+}
+const { plans } = Astro.props;
+const rows = plans.map((p) => {
+  const [lead, ...rest] = p.value.split(' · ');
+  return { ...p, lead, rest };
+});
+---
+
+<div class="plan-strip">
+  <ul class="ps-row" style={`--plans: ${plans.length}`}>
+    {
+      rows.map((p) => (
+        <li class="ps-plan">
+          <p class="ps-name">{p.name}</p>
+          <p class="ps-lead num">{p.lead}</p>
+          {p.rest.length > 0 && (
+            <ul class="ps-facts">
+              {p.rest.map((f) => (
+                <li class="num">{f}</li>
+              ))}
+            </ul>
+          )}
+          {p.barLabel && <p class="ps-limit num">{p.barLabel}</p>}
+        </li>
+      ))
+    }
+  </ul>
+</div>
+
+<style>
+  .plan-strip { container-type: inline-size; }
+  .plan-strip ul { list-style: none; margin: 0; padding: 0; }
+  .plan-strip li { margin: 0; }
+  .ps-row { border-top: 2px solid var(--ink); border-bottom: 1px solid var(--line); }
+  .ps-plan { display: grid; align-content: start; gap: 0.35rem; padding-block: 1rem; }
+  .ps-plan + .ps-plan { border-top: 1px solid var(--line); }
+  .ps-name { font-size: 0.9375rem; font-weight: 650; line-height: 1.35; color: var(--ink); }
+  .ps-lead { font-size: 1.0625rem; font-weight: 700; line-height: 1.35; color: var(--ink); }
+  .ps-facts { display: grid; gap: 0.15rem; font-size: 0.9375rem; line-height: 1.45; color: var(--ink-2); }
+  .ps-limit { font-size: 0.875rem; line-height: 1.45; color: var(--muted); padding-top: 0.5rem; margin-top: 0.3rem; border-top: 1px solid var(--line); }
+
+  /* Wide enough: one joined row, a column per plan, hairlines between. */
+  @container (min-width: 44rem) {
+    .ps-row { display: grid; grid-template-columns: repeat(var(--plans), minmax(0, 1fr)); }
+    .ps-plan { grid-template-rows: auto auto 1fr auto; padding: 1.1rem 1.25rem 1.25rem; }
+    .ps-plan:first-child { padding-left: 0; }
+    .ps-plan:last-child { padding-right: 0; }
+    .ps-plan + .ps-plan { border-top: 0; border-left: 1px solid var(--line); }
+    .ps-name { padding-bottom: 0.2rem; }
+    .ps-limit { align-self: end; }
+  }
+</style>

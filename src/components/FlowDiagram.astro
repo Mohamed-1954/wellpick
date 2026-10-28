@@ -1,0 +1,33 @@
+---
+// A numbered sequence on the shared diagram system (FitDiagram): one row per
+// node with handoff arrows between, product nodes as lit chapter rows. Nodes
+// may carry a source mark or a motif glyph, like the hub diagrams.
+import FitDiagram from './FitDiagram.astro';
+import type { ProductId } from '../lib/site';
+import type { FitStop, FitItem } from '../data/hubs';
+
+interface Node {
+  label: string;
+  sub?: string;
+  product?: ProductId;
+  glyph?: FitItem['glyph'];
+  marks?: FitItem['marks'];
+}
+interface Props {
+  title: string;
+  description?: string;
+  nodes: Node[];
+  /** Label for the handoff into each node after the first */
+  arrowLabels?: string[];
+}
+const { title, description, nodes, arrowLabels = [] } = Astro.props;
+
+const stops = nodes.map((node, i): FitStop => ({
+  kind: node.product ? 'focal' : 'node',
+  product: node.product,
+  via: i > 0 ? arrowLabels[i - 1] : undefined,
+  items: [{ title: node.label, detail: node.sub, glyph: node.glyph, marks: node.marks }],
+}));
+---
+
+<FitDiagram title={title} description={description} stops={stops} numbered />
