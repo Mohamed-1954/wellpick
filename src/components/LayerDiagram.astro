@@ -125,6 +125,9 @@ const id = `dg-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/
     grid-column: 2;
     display: grid;
     gap: 0.3rem;
+    min-width: 0;
+    /* Enlarged text: a long word ("Permissions") breaks inside the column. */
+    overflow-wrap: anywhere;
     padding-block: var(--pad);
     border-top: 1px solid var(--line);
   }

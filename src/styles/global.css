@@ -683,6 +683,9 @@ article .prose > .short-answer + :is(p, ul, ol) { margin-top: var(--flow-artifac
   table[data-stack] { border-top: 0; }
   table[data-stack] > tbody { border-top: 2px solid var(--ink); }
   table[data-stack] > tbody > tr > :is(.num, .pp-price) { text-align: left; }
+  /* Stacked cells sit at full width: long words break instead of pushing the
+     page wide when text is enlarged. */
+  table[data-stack] > tbody > tr > * { overflow-wrap: anywhere; }
   table[data-stack] > thead {
     position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
   }

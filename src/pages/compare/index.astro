@@ -107,4 +107,6 @@ const jsonLd = [
   @media (max-width: 40rem) { .glance { min-width: 0; } }
   .glance thead th a { color: var(--ink); font-size: 1rem; text-decoration: none; }
   .glance tbody th { width: 14rem; }
+  /* Stacked on phones the row header is a full-width line, not a column. */
+  @media (max-width: 40rem) { .glance tbody th { width: auto; } }
 </style>

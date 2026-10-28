@@ -209,6 +209,9 @@ const jsonLd = breadcrumbSchema([
   }
   .pp-plan { font-weight: 650; color: var(--ink); }
   .pp-price { white-space: nowrap; color: var(--ink); }
+  /* Stacked on phones, a price sits under its label at full width and may
+     wrap (enlarged text would otherwise push the page sideways). */
+  @media (max-width: 40rem) { .pp-price { white-space: normal; } }
   .pp-note { margin-top: var(--s-4); font-size: 0.875rem; color: var(--muted); max-width: 80ch; }
   /* The billing table and the published price list sit side by side on wide
      screens, both opened by the same ink rule; phones stack them. */

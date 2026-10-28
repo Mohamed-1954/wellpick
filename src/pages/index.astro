@@ -625,7 +625,7 @@ const jsonLd = [
   @media (min-width: 64rem) {
     .problem-list a { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; grid-template-areas: 'quote fix arrow'; padding-inline: var(--s-5); }
   }
-  .pl-quote { grid-area: quote; font-size: var(--step-3); font-weight: 720; font-variation-settings: "wdth" 106; letter-spacing: -0.02em; line-height: 1.12; }
+  .pl-quote { grid-area: quote; font-size: var(--step-3); font-weight: 720; font-variation-settings: "wdth" 106; letter-spacing: -0.02em; line-height: 1.12; overflow-wrap: anywhere; }
   .pl-fix { grid-area: fix; display: grid; gap: 0.25rem; font-weight: 620; }
   .pl-tool { display: inline-flex; align-items: center; gap: 0.45rem; font-size: 0.875rem; opacity: 0.8; font-weight: 560; }
   .problem-list a:hover .chip-dot, .problem-list a:focus-visible .chip-dot { background: var(--on-chapter); }
